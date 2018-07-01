@@ -1,7 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using Orleans.Providers.Streams.Common;
+using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Utils;
 
@@ -11,6 +14,7 @@ namespace Orleans.Streams.Kafka.Core
 	{
 		private readonly QueueProperties _queueProperties;
 		private readonly IStreamQueueMapper _streamQueueMapper;
+		private readonly SerializationManager _serializationManager;
 		private readonly Producer _producer;
 
 		public string Name { get; }
@@ -21,11 +25,13 @@ namespace Orleans.Streams.Kafka.Core
 			string providerName, 
 			QueueProperties queueProperties,
 			IStreamQueueMapper streamQueueMapper,
-			KafkaStreamOptions options // todo: maybe pass producer properties immediately?
+			KafkaStreamOptions options, // todo: maybe pass producer properties immediately?
+			SerializationManager serializationManager
 		)
 		{
 			_queueProperties = queueProperties;
 			_streamQueueMapper = streamQueueMapper;
+			_serializationManager = serializationManager;
 			_producer = new Producer(options.ToProducerProperties()); // todo: investigate other constructor options
 			Name = providerName;
 		}
@@ -43,7 +49,20 @@ namespace Orleans.Streams.Kafka.Core
 
 			try
 			{
-				var message = await _producer.ProduceAsync(_queueProperties.Namespace, streamGuid.ToByteArray(),);
+				var batch = new KafkaBatchContainer(
+					streamGuid, 
+					streamNamespace, 
+					events.Cast<object>().ToList(), 
+					requestContext, 
+					false // todo: to get the if message id external
+				);
+				
+				var message = await _producer.ProduceAsync(
+					_queueProperties.Namespace, 
+					streamGuid.ToByteArray(), 
+					batch.ToByteArray(_serializationManager)
+				);
+				
 				// todo: log message sent
 			}
 			catch (Exception ex)
