@@ -18,7 +18,7 @@ namespace ConfluentSample
 			Task.Run(async () => {
 				while (true)
 				{
-				//	Produce();
+					//Produce();
 					await Task.Delay(100);
 				}
 			});
@@ -33,12 +33,22 @@ namespace ConfluentSample
 				{ "bootstrap.servers", "localhost:9092" } 
 			};
 
-			using (var producer = new Producer<Null, string>(config, null, new StringSerializer(Encoding.UTF8)))
+			using (var producer = new Producer<string, string>(
+				config, 
+				new StringSerializer(Encoding.UTF8), 
+				new StringSerializer(Encoding.UTF8))
+			)
 			{
-				var publishPromise = producer.ProduceAsync("my-topic", null, "test message text");
-				publishPromise.Wait();
+				var publishPromise3 = producer.ProduceAsync("my-topic", "jello", "jelo jello jelllo the world");
+				var publishPromise2 = producer.ProduceAsync("my-topic", "hello", "helloing the world");
+				var publishPromise = producer.ProduceAsync("my-topic", "jonny", "test message text");
+				var publishPromise4 = producer.ProduceAsync("my-topic", "dog-dragons", "dogzinskis");
+				Task.WhenAll(publishPromise, publishPromise2, publishPromise3, publishPromise4).Wait();
 				
-				Console.WriteLine($"Delivered '{publishPromise.Result.Value}' to: {publishPromise.Result.TopicPartitionOffset}");
+				Console.WriteLine($@"Delivered '{publishPromise.Result.Value}' to: {publishPromise.Result.TopicPartitionOffset}");
+				Console.WriteLine($@"Delivered '{publishPromise2.Result.Value}' to: {publishPromise2.Result.TopicPartitionOffset}");
+				Console.WriteLine($@"Delivered '{publishPromise3.Result.Value}' to: {publishPromise3.Result.TopicPartitionOffset}");
+				Console.WriteLine($@"Delivered '{publishPromise4.Result.Value}' to: {publishPromise4.Result.TopicPartitionOffset}");
 			}
 		}
 
@@ -48,21 +58,29 @@ namespace ConfluentSample
 			{ 
 				{ "group.id", "test-consumer-group" },
 				{ "bootstrap.servers", "localhost:9092" },
-				{ "enable.auto.commit", true },
-				{ "auto.commit.interval.ms", 5000 },
+				{ "enable.auto.commit", false },
+				//{ "auto.commit.interval.ms", 5000 },
 //				{ "auto.offset.reset", "earliest" }
 			};
 
-			using (var consumer = new Consumer<Null, string>(conf, null, new StringDeserializer(Encoding.UTF8)))
+			using (var consumer = new Consumer<string, string>(conf, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)))
 			{
-				consumer.OnPartitionsAssigned += (_, partitions) => Console.WriteLine(string.Join(',', partitions.Select(x => x.Partition)));
-				
-				consumer.Assign(new List<TopicPartitionOffset>{new TopicPartitionOffset("my-topic", 0, Offset.Stored)});
+				Console.WriteLine($@"Partition IDs: {
+						string.Join(',', 
+						consumer
+						.GetMetadata(false)
+						.Topics
+						.First(t => t.Topic.Contains("my-topic"))
+						.Partitions
+						.Select(x => x.PartitionId))
+					}"
+				);
 				
 				consumer.OnMessage += (_, msg)
 					=>
 				{
 					Console.WriteLine($"Read '{msg.Value}' from: {msg.TopicPartitionOffset} Partition: {msg.Partition}");
+					consumer.CommitAsync(msg).Wait();
 				};
 
 				consumer.OnError += (_, error)
@@ -78,6 +96,7 @@ namespace ConfluentSample
 					=> Console.WriteLine($"Error consuming from topic/partition/offset {msg.Topic}/{msg.Partition}/{msg.Offset}: {msg.Error}");
 
 				//consumer.Subscribe("my-topic");
+				consumer.Assign(new []{ new TopicPartitionOffset("my-topic", 1, Offset.Stored)});
 
 				while (true)
 				{

@@ -2,6 +2,10 @@
 Microsoft Visual Studio Solution File, Format Version 12.00
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "ConfluentSample", "ConfluentSample\ConfluentSample.csproj", "{071069ED-96BB-466B-84FC-EEB40A27DE0F}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Streams.Kafka", "Orleans.Streams.Kafka\Orleans.Streams.Kafka.csproj", "{2A22B25B-D199-47AE-A7AE-8A86E0F8204D}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Streams.Utils", "..\Orleans.Streams.Utils\Orleans.Streams.Utils\Orleans.Streams.Utils.csproj", "{F6929C30-536B-45C2-941C-265F5A261783}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -12,5 +16,13 @@ Global
 		{071069ED-96BB-466B-84FC-EEB40A27DE0F}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{071069ED-96BB-466B-84FC-EEB40A27DE0F}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{071069ED-96BB-466B-84FC-EEB40A27DE0F}.Release|Any CPU.Build.0 = Release|Any CPU
+		{2A22B25B-D199-47AE-A7AE-8A86E0F8204D}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{2A22B25B-D199-47AE-A7AE-8A86E0F8204D}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{2A22B25B-D199-47AE-A7AE-8A86E0F8204D}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{2A22B25B-D199-47AE-A7AE-8A86E0F8204D}.Release|Any CPU.Build.0 = Release|Any CPU
+		{F6929C30-536B-45C2-941C-265F5A261783}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{F6929C30-536B-45C2-941C-265F5A261783}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{F6929C30-536B-45C2-941C-265F5A261783}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{F6929C30-536B-45C2-941C-265F5A261783}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 EndGlobal

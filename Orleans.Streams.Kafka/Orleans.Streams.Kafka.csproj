@@ -1,0 +1,22 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <Description>Orleans streaming provider for Kafka.</Description>
+    <PackageTags>orleans kafka streams providers streamprovider</PackageTags>
+  </PropertyGroup>
+  <!-- vendor packages -->
+  <ItemGroup>
+    <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
+    <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="2.0.0" />
+    <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.0.0" />
+    <PackageReference Include="Confluent.Kafka" Version="0.11.4" />
+    <PackageReference Include="librdkafka.redist.osx-x64" Version="0.11.1-TEST4" />
+  </ItemGroup>
+  <!-- packages -->
+  <ItemGroup Condition="'$(Configuration)' == 'Release'">
+  </ItemGroup>
+  <!-- libraries -->
+  <ItemGroup Condition="'$(Configuration)' == 'Debug'">
+    <ProjectReference Include="..\..\Orleans.Streams.Utils\Orleans.Streams.Utils\Orleans.Streams.Utils.csproj" />
+  </ItemGroup>
+</Project>
