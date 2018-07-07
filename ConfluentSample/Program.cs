@@ -100,7 +100,7 @@ namespace ConfluentSample
 
 				while (true)
 				{
-					consumer.Poll(TimeSpan.FromMilliseconds(100));
+					
 				}
 
 //				while (true)

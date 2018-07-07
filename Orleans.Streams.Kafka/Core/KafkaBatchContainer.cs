@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using Confluent.Kafka;
 using Newtonsoft.Json;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
@@ -47,6 +48,9 @@ namespace Orleans.Streams.Kafka.Core
 			_requestContext = requestContext;
 			_isExternalBatch = isExternalBatch;
 		}
+		
+		internal static IBatchContainer ToBatchContainer(Message message, SerializationManager serializationManager) 
+			=> serializationManager.DeserializeFromByteArray<KafkaBatchContainer>(message.Value);
 
 		public IEnumerable<Tuple<T, StreamSequenceToken>> GetEvents<T>()
 		{

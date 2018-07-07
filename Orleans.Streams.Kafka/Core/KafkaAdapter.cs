@@ -3,7 +3,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
-using Orleans.Providers.Streams.Common;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Utils;
@@ -45,7 +44,7 @@ namespace Orleans.Streams.Kafka.Core
 		)
 		{
 			var queueId = _streamQueueMapper.GetQueueForStream(streamGuid, streamNamespace);
-			var partitionId = queueId.GetNumericId();
+//			var partitionId = (int)queueId.GetNumericId();
 
 			try
 			{
@@ -57,12 +56,29 @@ namespace Orleans.Streams.Kafka.Core
 					false // todo: to get the if message id external
 				);
 				
+//				var key = streamGuid.ToByteArray();
+//				var value = batch.ToByteArray(_serializationManager);
+				
+//				var message = await _producer.ProduceAsync(
+//					_queueProperties.Namespace, 
+//					key,
+//					0,
+//					key.Length,
+//					value,
+//					0,
+//					value.Length,
+//					partitionId,
+//					true
+//				);
+				
+				// do we need orleans partition assigning since kafka already handels it for us?
 				var message = await _producer.ProduceAsync(
 					_queueProperties.Namespace, 
 					streamGuid.ToByteArray(), 
 					batch.ToByteArray(_serializationManager)
 				);
-				
+
+
 				// todo: log message sent
 			}
 			catch (Exception ex)
