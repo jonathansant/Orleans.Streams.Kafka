@@ -1,66 +1,79 @@
-﻿using System;
+﻿using Confluent.Kafka;
+using Microsoft.Extensions.Logging;
+using Orleans.Serialization;
+using Orleans.Streams.Kafka.Config;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Confluent.Kafka;
-using Orleans.Serialization;
-using Orleans.Streams.Kafka.Config;
-using Orleans.Streams.Utils;
+using Confluent.Kafka.Serialization;
+using Orleans.Streams.Kafka.Utils;
 
 namespace Orleans.Streams.Kafka.Core
 {
 	public class KafkaAdapter : IQueueAdapter, IDisposable
 	{
-		private readonly QueueProperties _queueProperties;
+		//		private readonly QueueProperties _queueProperties;
 		private readonly IStreamQueueMapper _streamQueueMapper;
+		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
-		private readonly Producer _producer;
+		private readonly ILoggerFactory _loggerFactory;
+		private readonly Producer<byte[], KafkaBatchContainer> _producer;
 
 		public string Name { get; }
-		public bool IsRewindable { get; } = true;
+		public bool IsRewindable { get; } = true; // todo: provide way to pass sequence token (offset) so that we can rewind
 		public StreamProviderDirection Direction { get; } = StreamProviderDirection.ReadWrite;
 
 		public KafkaAdapter(
-			string providerName, 
-			QueueProperties queueProperties,
+			string providerName,
+			//QueueProperties queueProperties,
 			IStreamQueueMapper streamQueueMapper,
 			KafkaStreamOptions options, // todo: maybe pass producer properties immediately?
-			SerializationManager serializationManager
+			SerializationManager serializationManager,
+			ILoggerFactory loggerFactory
 		)
 		{
-			_queueProperties = queueProperties;
+			//_queueProperties = queueProperties;
 			_streamQueueMapper = streamQueueMapper;
+			_options = options;
 			_serializationManager = serializationManager;
-			_producer = new Producer(options.ToProducerProperties()); // todo: investigate other constructor options
+			_loggerFactory = loggerFactory;
+
 			Name = providerName;
+
+			_producer = new Producer<byte[], KafkaBatchContainer>(
+				options.ToProducerProperties(), // todo: investigate other constructor options
+				new ByteArraySerializer(), 
+				new BatchContainerSerializer(serializationManager)
+			); 
 		}
-		
+
 		public async Task QueueMessageBatchAsync<T>(
-			Guid streamGuid, 
-			string streamNamespace, 
-			IEnumerable<T> events, 
+			Guid streamGuid,
+			string streamNamespace,
+			IEnumerable<T> events,
 			StreamSequenceToken token,
 			Dictionary<string, object> requestContext
 		)
 		{
-			var queueId = _streamQueueMapper.GetQueueForStream(streamGuid, streamNamespace);
-//			var partitionId = (int)queueId.GetNumericId();
+			//var queueId = _streamQueueMapper.GetQueueForStream(streamGuid, streamNamespace);
+			//var partitionId = (int)queueId.GetNumericId();
 
 			try
 			{
 				var batch = new KafkaBatchContainer(
-					streamGuid, 
-					streamNamespace, 
-					events.Cast<object>().ToList(), 
-					requestContext, 
+					streamGuid,
+					streamNamespace,
+					events.Cast<object>().ToList(),
+					requestContext,
 					false // todo: to get the if message id external
 				);
-				
+
 //				var key = streamGuid.ToByteArray();
 //				var value = batch.ToByteArray(_serializationManager);
-				
+
 //				var message = await _producer.ProduceAsync(
-//					_queueProperties.Namespace, 
+//					queueId.GetStringNamePrefix(),
 //					key,
 //					0,
 //					key.Length,
@@ -68,16 +81,17 @@ namespace Orleans.Streams.Kafka.Core
 //					0,
 //					value.Length,
 //					partitionId,
-//					true
+//					true // todo: true?
 //				);
-				
-				// do we need orleans partition assigning since kafka already handels it for us?
-				var message = await _producer.ProduceAsync(
-					_queueProperties.Namespace, 
-					streamGuid.ToByteArray(), 
-					batch.ToByteArray(_serializationManager)
-				);
 
+				var message = await _producer.ProduceAsync(
+					streamNamespace,
+					new Message<byte[], KafkaBatchContainer>
+					{
+						Value = batch,
+						Key = streamGuid.ToByteArray()
+					} // todo: consider adding a cancellation token 
+				);
 
 				// todo: log message sent
 			}
@@ -88,9 +102,7 @@ namespace Orleans.Streams.Kafka.Core
 		}
 
 		public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
-		{
-			throw new NotImplementedException();
-		}
+			=> new KafkaAdapterReceiver(queueId, _options, _serializationManager, _loggerFactory);
 
 		public void Dispose()
 		{

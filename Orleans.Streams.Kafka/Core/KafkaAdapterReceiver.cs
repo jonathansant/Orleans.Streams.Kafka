@@ -1,24 +1,26 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Threading.Tasks;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
+using Confluent.Kafka.Serialization;
 using Microsoft.Extensions.Logging;
 using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
+using Orleans.Streams.Kafka.Utils;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.Core
 {
 	public class KafkaAdapterReceiver : IQueueAdapterReceiver
 	{
+		private readonly ILogger<KafkaAdapterReceiver> _logger;
+		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly QueueId _queueId;
-		private readonly KafkaStreamOptions _options;
-		private readonly IList<IBatchContainer> _messages;
-		private readonly ILogger<KafkaAdapterReceiver> _logger;
-		private TaskCompletionSource<bool> _currentBatchCompletion;
-		private Task _outstandingTask;
-		private Consumer _consumer;
+		private readonly List<ConsumeResult<byte[], KafkaBatchContainer>> _consumedMessages;
+		private Consumer<byte[], KafkaBatchContainer> _consumer;
+		private Task _outstandingPromise;
 
 		public KafkaAdapterReceiver(
 			QueueId queueId,
@@ -27,73 +29,83 @@ namespace Orleans.Streams.Kafka.Core
 			ILoggerFactory loggerFactory
 		)
 		{
-			_queueId = queueId ?? throw new ArgumentNullException("queueId");
-			_options = options ?? throw new ArgumentNullException("options");
-			
+			_queueId = queueId ?? throw new ArgumentNullException(nameof(queueId));
+			_options = options ?? throw new ArgumentNullException(nameof(options));
 			_serializationManager = serializationManager;
-			_messages = new List<IBatchContainer>();
+			_consumedMessages = new List<ConsumeResult<byte[], KafkaBatchContainer>>();
+
 			_logger = loggerFactory.CreateLogger<KafkaAdapterReceiver>();
 		}
-		
+
 		public Task Initialize(TimeSpan timeout)
 		{
-			_consumer = new Consumer(_options.ToConsumerProperties());
+			_consumer = new Consumer<byte[], KafkaBatchContainer>(
+				_options.ToConsumerProperties(),
+				new ByteArrayDeserializer(),
+				new BatchContainerDeserializer(_serializationManager)
+			);
 
-			_consumer.OnMessage += OnMessageReceived;
-			_consumer.OnError += (_, message) => _logger.LogError($"Error dequeueuing message due to: {message.Reason}");
-			
-			_consumer.Assign(new []{ new TopicPartitionOffset(
-				_queueId.GetStringNamePrefix(), 
-				(int)_queueId.GetNumericId(), 
-				Offset.Stored)
-			});
-			
+			_consumer.Assign(new TopicPartitionOffset(_queueId.GetStringNamePrefix(), (int)_queueId.GetNumericId(), Offset.Beginning));
 			return Task.CompletedTask;
 		}
 
-		public Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)
+		public async Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)
 		{
-			_messages.Clear();
-			
-			var consumerRef = _consumer; // store direct ref, in case we are somehow asked to shutdown while we are receiving.    
-			if (consumerRef == null)
-				return Task.FromResult<IList<IBatchContainer>>(new List<IBatchContainer>());
-			
-			_currentBatchCompletion = new TaskCompletionSource<bool>();
-			_outstandingTask = _currentBatchCompletion.Task;
-			
-			_consumer.Poll(TimeSpan.FromMilliseconds(_options.PollTimeout));
-			
-			_currentBatchCompletion.SetResult(true);
+			var consumerRef = _consumer; // store direct ref, in case we are somehow asked to shutdown while we are receiving.
 
-			return Task.FromResult(_messages);
+			if (consumerRef == null)
+				return new List<IBatchContainer>();
+
+			try
+			{
+				var messagePromise = _consumer.Poll(TimeSpan.FromMilliseconds(_options.PollTimeout));
+				_outstandingPromise = messagePromise;
+
+				var consumeResult = await messagePromise;
+				_consumedMessages.Add(consumeResult);
+
+				_logger.Info("Received batch: {@batch}", consumeResult.Value);
+
+				return new List<IBatchContainer> { consumeResult.Value };
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Failed to poll for messages.");
+				throw;
+			}
 		}
 
-		public Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
+		public async Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
 		{
-			throw new NotImplementedException();
+			try
+			{
+				var messagesCommitted = await _consumer.Commit(_consumedMessages);
+				foreach (var topicPartitionOffset in messagesCommitted)
+				{
+					_consumedMessages.Remove(_consumedMessages.First(msg =>
+						msg.TopicPartitionOffset == topicPartitionOffset)
+					);
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Failed to commit messages. {@messages}", messages);
+				throw;// todo: should we throw?
+			}
 		}
 
 		public async Task Shutdown(TimeSpan timeout)
 		{
 			try
 			{
-				if(_outstandingTask != null)
-					await _outstandingTask;
+				if (_outstandingPromise != null)
+					await _outstandingPromise;
 			}
 			finally
 			{
 				_consumer.Dispose();
 				_consumer = null;
 			}
-		}
-
-		private void OnMessageReceived(object sender, Message message)
-		{
-			var batch = KafkaBatchContainer.ToBatchContainer(message, _serializationManager);
-			
-			_logger.Info("Recieved batch: @batch", batch);
-			_messages.Add(batch);
 		}
 	}
 }

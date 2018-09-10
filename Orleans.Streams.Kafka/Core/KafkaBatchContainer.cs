@@ -10,7 +10,7 @@ using Orleans.Serialization;
 namespace Orleans.Streams.Kafka.Core
 {
 	[Serializable]
-	internal class KafkaBatchContainer : IBatchContainer
+	public class KafkaBatchContainer : IBatchContainer
 	{
 		private readonly List<object> _events;
 		private readonly Dictionary<string, object> _requestContext;
