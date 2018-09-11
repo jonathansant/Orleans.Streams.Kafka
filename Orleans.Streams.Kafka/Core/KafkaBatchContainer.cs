@@ -1,11 +1,11 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
 using Newtonsoft.Json;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
 using Orleans.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Linq;
 
 namespace Orleans.Streams.Kafka.Core
 {
@@ -15,10 +15,10 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly List<object> _events;
 		private readonly Dictionary<string, object> _requestContext;
 		private readonly bool _isExternalBatch;
-		
+
 		public Guid StreamGuid { get; }
 		public string StreamNamespace { get; }
-		public StreamSequenceToken SequenceToken { get; }
+		public StreamSequenceToken SequenceToken { get; internal set; }
 
 		public KafkaBatchContainer(
 			Guid streamGuid,
@@ -31,7 +31,7 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			SequenceToken = streamSequenceToken;
 		}
-		
+
 		public KafkaBatchContainer(
 			Guid streamGuid,
 			string streamNamespace,
@@ -41,28 +41,28 @@ namespace Orleans.Streams.Kafka.Core
 		)
 		{
 			_events = events ?? throw new ArgumentNullException(nameof(events), "Message contains no events");
-			
+
 			StreamGuid = streamGuid;
 			StreamNamespace = streamNamespace;
-			
+
 			_requestContext = requestContext;
 			_isExternalBatch = isExternalBatch;
 		}
-		
-		internal static IBatchContainer ToBatchContainer(Message message, SerializationManager serializationManager) 
+
+		internal static IBatchContainer ToBatchContainer(Message message, SerializationManager serializationManager)
 			=> serializationManager.DeserializeFromByteArray<KafkaBatchContainer>(message.Value);
 
 		public IEnumerable<Tuple<T, StreamSequenceToken>> GetEvents<T>()
 		{
-			var sequenceToken = (EventSequenceTokenV2) SequenceToken;
-			
+			var sequenceToken = (EventSequenceTokenV2)SequenceToken;
+
 			if (!_isExternalBatch)
 			{
 				return _events
 					.OfType<T>()
 					.Select((@event, iteration) =>
 						Tuple.Create<T, StreamSequenceToken>(
-							@event, 
+							@event,
 							sequenceToken.CreateSequenceTokenForEvent(iteration))
 						);
 			}
@@ -75,9 +75,13 @@ namespace Orleans.Streams.Kafka.Core
 						T message;
 
 						if (typeof(T).IsPrimitive || typeof(T) == typeof(string) || typeof(T) == typeof(decimal))
-							message = (T) Convert.ChangeType(@event, typeof(T));
+						{
+							message = (T)Convert.ChangeType(@event, typeof(T));
+						}
 						else
-							message = JsonConvert.DeserializeObject<T>((string) @event); // todo: support for multiple serializer
+						{
+							message = JsonConvert.DeserializeObject<T>((string)@event); // todo: support for multiple serializer
+						}
 
 						return Tuple.Create<T, StreamSequenceToken>(message, sequenceToken.CreateSequenceTokenForEvent(iteration));
 					}
@@ -95,7 +99,7 @@ namespace Orleans.Streams.Kafka.Core
 			// else the consumer is not interested in any of these events, so don't send.
 			return _events.Any(item => shouldReceiveFunc(stream, filterData, item));
 		}
-		
+
 
 		public bool ImportRequestContext()
 		{
@@ -110,7 +114,7 @@ namespace Orleans.Streams.Kafka.Core
 			return true;
 		}
 
-		public byte[] ToByteArray(SerializationManager serializationManager) 
+		public byte[] ToByteArray(SerializationManager serializationManager)
 			=> serializationManager.SerializeToByteArray(this);
 
 		public override string ToString()

@@ -1,20 +1,19 @@
 ﻿using Confluent.Kafka;
+using Confluent.Kafka.Serialization;
 using Microsoft.Extensions.Logging;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
+using Orleans.Streams.Kafka.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Confluent.Kafka.Serialization;
-using Orleans.Streams.Kafka.Utils;
 
 namespace Orleans.Streams.Kafka.Core
 {
 	public class KafkaAdapter : IQueueAdapter, IDisposable
 	{
-		//		private readonly QueueProperties _queueProperties;
-		private readonly IStreamQueueMapper _streamQueueMapper;
+		//		private readonly IStreamQueueMapper _streamQueueMapper;
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
@@ -26,15 +25,13 @@ namespace Orleans.Streams.Kafka.Core
 
 		public KafkaAdapter(
 			string providerName,
-			//QueueProperties queueProperties,
 			IStreamQueueMapper streamQueueMapper,
 			KafkaStreamOptions options, // todo: maybe pass producer properties immediately?
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory
 		)
 		{
-			//_queueProperties = queueProperties;
-			_streamQueueMapper = streamQueueMapper;
+			//			_streamQueueMapper = streamQueueMapper;
 			_options = options;
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
@@ -43,9 +40,9 @@ namespace Orleans.Streams.Kafka.Core
 
 			_producer = new Producer<byte[], KafkaBatchContainer>(
 				options.ToProducerProperties(), // todo: investigate other constructor options
-				new ByteArraySerializer(), 
+				new ByteArraySerializer(),
 				new BatchContainerSerializer(serializationManager)
-			); 
+			);
 		}
 
 		public async Task QueueMessageBatchAsync<T>(
@@ -66,23 +63,8 @@ namespace Orleans.Streams.Kafka.Core
 					streamNamespace,
 					events.Cast<object>().ToList(),
 					requestContext,
-					false // todo: to get the if message id external
+					false
 				);
-
-//				var key = streamGuid.ToByteArray();
-//				var value = batch.ToByteArray(_serializationManager);
-
-//				var message = await _producer.ProduceAsync(
-//					queueId.GetStringNamePrefix(),
-//					key,
-//					0,
-//					key.Length,
-//					value,
-//					0,
-//					value.Length,
-//					partitionId,
-//					true // todo: true?
-//				);
 
 				var message = await _producer.ProduceAsync(
 					streamNamespace,
@@ -98,6 +80,7 @@ namespace Orleans.Streams.Kafka.Core
 			catch (Exception ex)
 			{
 				// todo: log
+				throw;
 			}
 		}
 
@@ -105,8 +88,6 @@ namespace Orleans.Streams.Kafka.Core
 			=> new KafkaAdapterReceiver(queueId, _options, _serializationManager, _loggerFactory);
 
 		public void Dispose()
-		{
-			_producer.Dispose(); // todo: is this enough?
-		}
+			=> _producer.Dispose();
 	}
 }

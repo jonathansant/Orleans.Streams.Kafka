@@ -12,16 +12,16 @@ namespace ConfluentSample
 	{
 		private static async Task Main(string[] args)
 		{
-			Task.Run(() => Consume());
+			//Task.Run(() => Consume());
 
-//			Task.Run(async () =>
-//			{
-//				while (true)
-//				{
-//					await Produce();
-//					await Task.Delay(100);
-//				}
-//			});
+			Task.Run(async () =>
+			{
+				while (true)
+				{
+					await Produce();
+					await Task.Delay(100);
+				}
+			});
 
 			Console.ReadKey();
 		}
@@ -63,7 +63,14 @@ namespace ConfluentSample
 					Value = "dogzinskis"
 				});
 
-				await Task.WhenAll(publishPromise, publishPromise2, publishPromise3, publishPromise4);
+				var publishPromise5 = producer.ProduceAsync("gossip-testing", new Message<string, string>
+				{
+					Key = "streamId",
+					Value = "{ greeting: 'hello world' }",
+					Headers = new Headers { new Header("external", BitConverter.GetBytes(true)) }
+				});
+
+				await Task.WhenAll(publishPromise, publishPromise2, publishPromise3, publishPromise4, publishPromise5);
 
 				Console.WriteLine($@"Delivered '{publishPromise.Result.Value}' to: {publishPromise.Result.TopicPartitionOffset}");
 				Console.WriteLine($@"Delivered '{publishPromise2.Result.Value}' to: {publishPromise2.Result.TopicPartitionOffset}");
@@ -99,7 +106,7 @@ namespace ConfluentSample
 
 				consumer.OnPartitionEOF += (_, end)
 					=> Console.WriteLine($"Reached end of topic {end.Topic} partition {end.Partition}, next message will be at offset {end.Offset}");
-				
+
 
 				consumer.Assign(new TopicPartitionOffset("my-topic", 1, Offset.Beginning));
 				//consumer.Subscribe("my-topic");
@@ -108,7 +115,9 @@ namespace ConfluentSample
 				{
 					var message = consumer.Consume(TimeSpan.FromMilliseconds(100));
 					if (message != null)
+					{
 						Console.WriteLine(message.Value);
+					}
 				}
 			}
 		}

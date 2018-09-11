@@ -22,7 +22,7 @@ namespace TestGrains
 
 			var streamId = this.GetPrimaryKeyString();
 
-			var testStream = kafkaProvider.GetStream<TestModel>(streamId, "gossip-testing"); // todo: use stream utils
+			var testStream = kafkaProvider.GetStream<TestModel>("streamId", "gossip-testing"); // todo: use stream utils
 
 			// To resume stream in case of stream deactivation
 			var subscriptionHandles = await testStream.GetAllSubscriptionHandles();

@@ -21,21 +21,19 @@ namespace TestClient
 			Console.Title = "Client";
 
 			var clientTask = StartClientWithRetries();
-			clientTask.Wait();
 
-			var clusterClient = clientTask.Result;
+			var clusterClient = await clientTask;
 
-			var testGrain = clusterClient.GetGrain<ITestGrain>("PLAYER-5a98c80e-26b8-4d1c-a5da-cb64237f2392");
+			var grainId = "PLAYER-5a98c80e-26b8-4d1c-a5da-cb64237f2392";
+			var testGrain = clusterClient.GetGrain<ITestGrain>(grainId);
 
 			var result = await testGrain.GetThePhrase();
 
 			Console.BackgroundColor = ConsoleColor.DarkMagenta;
 			Console.WriteLine(result);
 
-			var streamId = testGrain.GetPrimaryKeyString();
-
-			var streamProvider = clientTask.Result.GetStreamProvider("KafkaProvider");
-			var stream = streamProvider.GetStream<TestModel>(streamId, "gossip-testing");
+			var streamProvider = clusterClient.GetStreamProvider("KafkaProvider");
+			var stream = streamProvider.GetStream<TestModel>("streamId", "gossip-testing");
 
 			string line;
 			while ((line = Console.ReadLine()) != string.Empty)

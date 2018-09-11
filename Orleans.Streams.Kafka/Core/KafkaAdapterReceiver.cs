@@ -7,7 +7,6 @@ using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Utils;
 using System;
 using System.Collections.Generic;
-using System.Linq;
 using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.Core
@@ -18,8 +17,10 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly QueueId _queueId;
-		private readonly List<ConsumeResult<byte[], KafkaBatchContainer>> _consumedMessages;
-		private Consumer<byte[], KafkaBatchContainer> _consumer;
+		private readonly List<ConsumeResult<byte[], byte[]>> _consumedMessages;
+		private readonly string _streamNamespace;
+
+		private Consumer<byte[], byte[]> _consumer;
 		private Task _outstandingPromise;
 
 		public KafkaAdapterReceiver(
@@ -31,21 +32,25 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			_queueId = queueId ?? throw new ArgumentNullException(nameof(queueId));
 			_options = options ?? throw new ArgumentNullException(nameof(options));
+
 			_serializationManager = serializationManager;
-			_consumedMessages = new List<ConsumeResult<byte[], KafkaBatchContainer>>();
+			_consumedMessages = new List<ConsumeResult<byte[], byte[]>>();
 
 			_logger = loggerFactory.CreateLogger<KafkaAdapterReceiver>();
+
+			_streamNamespace = queueId.GetQueueNamespace();
 		}
 
 		public Task Initialize(TimeSpan timeout)
 		{
-			_consumer = new Consumer<byte[], KafkaBatchContainer>(
+			_consumer = new Consumer<byte[], byte[]>(
 				_options.ToConsumerProperties(),
 				new ByteArrayDeserializer(),
-				new BatchContainerDeserializer(_serializationManager)
+				new ByteArrayDeserializer()
 			);
 
-			_consumer.Assign(new TopicPartitionOffset(_queueId.GetStringNamePrefix(), (int)_queueId.GetNumericId(), Offset.Beginning));
+			_consumer.Assign(new TopicPartitionOffset(_streamNamespace, (int)_queueId.GetNumericId(), Offset.Stored));
+
 			return Task.CompletedTask;
 		}
 
@@ -59,33 +64,35 @@ namespace Orleans.Streams.Kafka.Core
 			try
 			{
 				var messagePromise = _consumer.Poll(TimeSpan.FromMilliseconds(_options.PollTimeout));
+
 				_outstandingPromise = messagePromise;
 
 				var consumeResult = await messagePromise;
-				_consumedMessages.Add(consumeResult);
+				if (consumeResult != null)
+				{
+					_logger.Info("Received batch: {@batch}", consumeResult.Value);
 
-				_logger.Info("Received batch: {@batch}", consumeResult.Value);
+					var batchContainer = consumeResult.ToBatchContainer(_serializationManager, _streamNamespace);
+					_consumedMessages.Add(consumeResult);
 
-				return new List<IBatchContainer> { consumeResult.Value };
+					return new List<IBatchContainer> { batchContainer };
+				}
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Failed to poll for messages.");
 				throw;
 			}
+
+			return new List<IBatchContainer>();
 		}
 
 		public async Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
 		{
 			try
 			{
-				var messagesCommitted = await _consumer.Commit(_consumedMessages);
-				foreach (var topicPartitionOffset in messagesCommitted)
-				{
-					_consumedMessages.Remove(_consumedMessages.First(msg =>
-						msg.TopicPartitionOffset == topicPartitionOffset)
-					);
-				}
+				await _consumer.Commit(_consumedMessages);
+				_consumedMessages.Clear();
 			}
 			catch (Exception ex)
 			{
