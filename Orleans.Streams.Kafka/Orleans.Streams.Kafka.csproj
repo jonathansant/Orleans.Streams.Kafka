@@ -2,7 +2,7 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Orleans streaming provider for Kafka.</Description>
-    <PackageTags>orleans kafka streams providers streamprovider</PackageTags>
+    <PackageTags>orleans kafka streams providers streamprovider confluent</PackageTags>
   </PropertyGroup>
   <!-- vendor packages -->
   <ItemGroup>
@@ -15,6 +15,7 @@
   </ItemGroup>
   <!-- packages -->
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
+    <PackageReference Include="Orleans.Streams.Utils" Version="$(StreamUtilsVersion)" />
   </ItemGroup>
   <!-- libraries -->
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
