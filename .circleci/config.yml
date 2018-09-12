@@ -22,7 +22,7 @@ jobs:
             SOLUTION=$(node -p "require('./package.json').solution")
 
             echo "restore packages"
-            dotnet restore $SOLUTIONN /p:Configuration=Release
+            dotnet restore $SOLUTION /p:Configuration=Release
 
             echo "dotnet publish"
             dotnet publish $SOLUTION -c Release
