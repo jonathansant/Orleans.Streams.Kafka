@@ -17,6 +17,14 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestClient", "Samples\TestC
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "TestGrains", "Samples\TestGrains\TestGrains.csproj", "{0F6BAC5B-7FDE-4B1A-B465-06D595CD74D5}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{9699A72C-BC03-411A-A748-8865FCA6EF87}"
+	ProjectSection(SolutionItems) = preProject
+		.editorconfig = .editorconfig
+		.circleci\config.yml = .circleci\config.yml
+		Directory.Build.props = Directory.Build.props
+		package.json = package.json
+	EndProjectSection
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU

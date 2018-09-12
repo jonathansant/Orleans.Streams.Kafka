@@ -1,0 +1,31 @@
+<Project>
+  <!-- Set the repository root into a variable -->
+  <PropertyGroup>
+    <SourceRoot>$(MSBuildThisFileDirectory)</SourceRoot>
+  </PropertyGroup>
+
+  <!-- Set common properties regarding assembly information and nuget packages -->
+  <PropertyGroup>
+    <Authors>Jonathan Sant</Authors>
+    <Company>Sucrose</Company>
+    <RepositoryUrl>https://github.com/jonathansant/Orleans.Streams.Kafka</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
+  </PropertyGroup>
+
+  <!-- Common compile parameters -->
+  <PropertyGroup>
+    <TreatWarningsAsErrors>false</TreatWarningsAsErrors>
+    <NoWarn>$(NoWarn);1701;1702;1705;1591</NoWarn>
+    <AutoGenerateBindingRedirects>true</AutoGenerateBindingRedirects>
+    <LangVersion>latest</LangVersion>
+  </PropertyGroup>
+
+  <PropertyGroup>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+
+  <!-- Shared Package Versions -->
+  <PropertyGroup>
+    <StreamUtilsVersion>0.1.0-beta-3</StreamUtilsVersion>
+  </PropertyGroup>
+</Project>
