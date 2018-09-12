@@ -15,7 +15,7 @@
   </ItemGroup>
   <!-- packages -->
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="Orleans.Stream.Utils" Version="$(StreamUtilsVersion)" />
+    <PackageReference Include="Orleans.Streams.Utils" Version="$(StreamUtilsVersion)" />
   </ItemGroup>
   <!-- libraries -->
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
