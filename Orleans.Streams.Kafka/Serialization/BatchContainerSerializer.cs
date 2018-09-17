@@ -1,9 +1,9 @@
-﻿using Confluent.Kafka.Serialization;
+﻿using System.Collections.Generic;
+using Confluent.Kafka.Serialization;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Core;
-using System.Collections.Generic;
 
-namespace Orleans.Streams.Kafka.Utils
+namespace Orleans.Streams.Kafka.Serialization
 {
 	public class BatchContainerSerializer : ISerializer<KafkaBatchContainer>
 	{

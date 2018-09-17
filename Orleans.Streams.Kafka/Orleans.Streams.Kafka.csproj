@@ -21,4 +21,9 @@
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <ProjectReference Include="..\..\Orleans.Streams.Utils\Orleans.Streams.Utils\Orleans.Streams.Utils.csproj" />
   </ItemGroup>
+  <ItemGroup>
+    <Reference Include="Microsoft.VisualStudio.TestPlatform.Common">
+      <HintPath>..\..\..\Users\jonathan.sant\.nuget\packages\microsoft.testplatform.testhost\15.8.0\lib\netstandard1.5\Microsoft.VisualStudio.TestPlatform.Common.dll</HintPath>
+    </Reference>
+  </ItemGroup>
 </Project>

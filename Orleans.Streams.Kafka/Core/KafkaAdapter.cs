@@ -3,21 +3,23 @@ using Confluent.Kafka.Serialization;
 using Microsoft.Extensions.Logging;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
-using Orleans.Streams.Kafka.Utils;
+using Orleans.Streams.Kafka.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
+using Orleans.Streams.Kafka.Extensions;
 
 namespace Orleans.Streams.Kafka.Core
 {
 	public class KafkaAdapter : IQueueAdapter, IDisposable
 	{
-		//		private readonly IStreamQueueMapper _streamQueueMapper;
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly Producer<byte[], KafkaBatchContainer> _producer;
+		private readonly ILogger<KafkaAdapter> _logger;
 
 		public string Name { get; }
 		public bool IsRewindable { get; } = true; // todo: provide way to pass sequence token (offset) so that we can rewind
@@ -25,16 +27,15 @@ namespace Orleans.Streams.Kafka.Core
 
 		public KafkaAdapter(
 			string providerName,
-			IStreamQueueMapper streamQueueMapper,
-			KafkaStreamOptions options, // todo: maybe pass producer properties immediately?
+			KafkaStreamOptions options,
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory
 		)
 		{
-			//			_streamQueueMapper = streamQueueMapper;
 			_options = options;
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
+			_logger = _loggerFactory.CreateLogger<KafkaAdapter>();
 
 			Name = providerName;
 
@@ -53,9 +54,6 @@ namespace Orleans.Streams.Kafka.Core
 			Dictionary<string, object> requestContext
 		)
 		{
-			//var queueId = _streamQueueMapper.GetQueueForStream(streamGuid, streamNamespace);
-			//var partitionId = (int)queueId.GetNumericId();
-
 			try
 			{
 				var batch = new KafkaBatchContainer(
@@ -66,20 +64,11 @@ namespace Orleans.Streams.Kafka.Core
 					false
 				);
 
-				var message = await _producer.ProduceAsync(
-					streamNamespace,
-					new Message<byte[], KafkaBatchContainer>
-					{
-						Value = batch,
-						Key = streamGuid.ToByteArray()
-					} // todo: consider adding a cancellation token 
-				);
-
-				// todo: log message sent
+				await _producer.Produce(batch, _options.ProducerTimeout);
 			}
 			catch (Exception ex)
 			{
-				// todo: log
+				_logger.LogError(ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}", streamNamespace, streamGuid);
 				throw;
 			}
 		}

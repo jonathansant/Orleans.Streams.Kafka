@@ -31,51 +31,74 @@ namespace ConfluentSample
 			var config = new Dictionary<string, object>
 			{
 				{ "bootstrap.servers", "localhost:9092" }
+//				{
+//					"metadata.broker.list",
+//					new List<string>{"ark-01.srvs.cloudkafka.com:9094","ark-02.srvs.cloudkafka.com:9094","ark-03.srvs.cloudkafka.com:9094"}
+//				},
+////				{ "security.protocol", "SASL_SSL" },
+//				{"sasl.mechanisms", "SCRAM-SHA-256"},
+//				{"security.protocol", "SASL_SSL"},
+//				{"group.id", "sr1kfqbd-consumer"},
+//				{"sasl.username", "sr1kfqbd"},
+//				{"sasl.password", "riYx_7oNZk6Atr3R0v7VXfZMDcuFEhQG"}
 			};
 
-			using (var producer = new Producer<string, string>(
+			//			using (var producer = new Producer<string, string>(
+			//					config,
+			//					new StringSerializer(Encoding.UTF8),
+			//					new StringSerializer(Encoding.UTF8))
+			//			)
+			//			{
+			//				var publishPromise3 = producer.ProduceAsync("my-topic", new Message<string, string>
+			//				{
+			//					Key = "jello",
+			//					Value = "jelo jello jelllo the world"
+			//				});
+			//
+			//				var publishPromise2 = producer.ProduceAsync("my-topic", new Message<string, string>
+			//				{
+			//					Key = "hello",
+			//					Value = "helloing the world"
+			//				});
+			//
+			//				var publishPromise = producer.ProduceAsync("my-topic", new Message<string, string>
+			//				{
+			//					Key = "jonny",
+			//					Value = "test message text"
+			//				});
+			//
+			//				var publishPromise4 = producer.ProduceAsync("my-topic", new Message<string, string>
+			//				{
+			//					Key = "dog-dragons",
+			//					Value = "dogzinskis"
+			//				});
+			//
+			//				var publishPromise5 = producer.ProduceAsync("gossip-testing", new Message<string, string>
+			//				{
+			//					Key = "streamId",
+			//					Value = "{ greeting: 'hello world' }",
+			//					Headers = new Headers { new Header("external", BitConverter.GetBytes(true)) }
+			//				});
+			//
+			//				await Task.WhenAll(publishPromise, publishPromise2, publishPromise3, publishPromise4, publishPromise5);
+			//
+			//				Console.WriteLine($@"Delivered '{publishPromise.Result.Value}' to: {publishPromise.Result.TopicPartitionOffset}");
+			//				Console.WriteLine($@"Delivered '{publishPromise2.Result.Value}' to: {publishPromise2.Result.TopicPartitionOffset}");
+			//				Console.WriteLine($@"Delivered '{publishPromise3.Result.Value}' to: {publishPromise3.Result.TopicPartitionOffset}");
+			//				Console.WriteLine($@"Delivered '{publishPromise4.Result.Value}' to: {publishPromise4.Result.TopicPartitionOffset}");
+			//			}
+			using (var producer = new Producer<byte[], string>(
 				config,
-				new StringSerializer(Encoding.UTF8),
+				new ByteArraySerializer(),
 				new StringSerializer(Encoding.UTF8))
 			)
 			{
-				var publishPromise3 = producer.ProduceAsync("my-topic", new Message<string, string>
+				var publishPromise5 = producer.ProduceAsync("gossip-testing", new Message<byte[], string>
 				{
-					Key = "jello",
-					Value = "jelo jello jelllo the world"
-				});
-
-				var publishPromise2 = producer.ProduceAsync("my-topic", new Message<string, string>
-				{
-					Key = "hello",
-					Value = "helloing the world"
-				});
-
-				var publishPromise = producer.ProduceAsync("my-topic", new Message<string, string>
-				{
-					Key = "jonny",
-					Value = "test message text"
-				});
-
-				var publishPromise4 = producer.ProduceAsync("my-topic", new Message<string, string>
-				{
-					Key = "dog-dragons",
-					Value = "dogzinskis"
-				});
-
-				var publishPromise5 = producer.ProduceAsync("gossip-testing", new Message<string, string>
-				{
-					Key = "streamId",
+					Key = Encoding.UTF8.GetBytes("streamId"),
 					Value = "{ greeting: 'hello world' }",
 					Headers = new Headers { new Header("external", BitConverter.GetBytes(true)) }
 				});
-
-				await Task.WhenAll(publishPromise, publishPromise2, publishPromise3, publishPromise4, publishPromise5);
-
-				Console.WriteLine($@"Delivered '{publishPromise.Result.Value}' to: {publishPromise.Result.TopicPartitionOffset}");
-				Console.WriteLine($@"Delivered '{publishPromise2.Result.Value}' to: {publishPromise2.Result.TopicPartitionOffset}");
-				Console.WriteLine($@"Delivered '{publishPromise3.Result.Value}' to: {publishPromise3.Result.TopicPartitionOffset}");
-				Console.WriteLine($@"Delivered '{publishPromise4.Result.Value}' to: {publishPromise4.Result.TopicPartitionOffset}");
 			}
 		}
 

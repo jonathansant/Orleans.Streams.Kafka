@@ -4,9 +4,11 @@ using Microsoft.Extensions.Logging;
 using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
-using Orleans.Streams.Kafka.Utils;
+using Orleans.Streams.Kafka.Extensions;
+using Orleans.Streams.Utils.Streams;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.Core
@@ -17,7 +19,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly QueueId _queueId;
-		private readonly List<ConsumeResult<byte[], byte[]>> _consumedMessages;
+		private readonly QueueProperties _queueProperties;
 		private readonly string _streamNamespace;
 
 		private Consumer<byte[], byte[]> _consumer;
@@ -25,16 +27,17 @@ namespace Orleans.Streams.Kafka.Core
 
 		public KafkaAdapterReceiver(
 			QueueId queueId,
+			QueueProperties queueProperties,
 			KafkaStreamOptions options,
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory
 		)
 		{
 			_queueId = queueId ?? throw new ArgumentNullException(nameof(queueId));
+			_queueProperties = queueProperties;
 			_options = options ?? throw new ArgumentNullException(nameof(options));
 
 			_serializationManager = serializationManager;
-			_consumedMessages = new List<ConsumeResult<byte[], byte[]>>();
 
 			_logger = loggerFactory.CreateLogger<KafkaAdapterReceiver>();
 
@@ -49,7 +52,21 @@ namespace Orleans.Streams.Kafka.Core
 				new ByteArrayDeserializer()
 			);
 
-			_consumer.Assign(new TopicPartitionOffset(_streamNamespace, (int)_queueId.GetNumericId(), Offset.Stored));
+			var offsetMode = Offset.Stored;
+			switch (_options.ConsumeMode)
+			{
+				case ConsumeMode.LastCommittedMessage:
+					offsetMode = Offset.Stored;
+					break;
+				case ConsumeMode.StreamEnd:
+					offsetMode = Offset.End;
+					break;
+				case ConsumeMode.StreamStart:
+					offsetMode = Offset.Beginning;
+					break;
+			}
+
+			_consumer.Assign(new TopicPartitionOffset(_streamNamespace, (int)_queueProperties.PartitionId, offsetMode));
 
 			return Task.CompletedTask;
 		}
@@ -63,41 +80,48 @@ namespace Orleans.Streams.Kafka.Core
 
 			try
 			{
-				var messagePromise = _consumer.Poll(TimeSpan.FromMilliseconds(_options.PollTimeout));
+				var messagePromise = _consumer.Poll(_options.PollTimeout);
 
 				_outstandingPromise = messagePromise;
 
 				var consumeResult = await messagePromise;
 				if (consumeResult != null)
 				{
-					_logger.Info("Received batch: {@batch}", consumeResult.Value);
+					var batchContainer = consumeResult.ToBatchContainer(_serializationManager, _options, _streamNamespace);
 
-					var batchContainer = consumeResult.ToBatchContainer(_serializationManager, _streamNamespace);
-					_consumedMessages.Add(consumeResult);
+					_logger.Info("Received batch: {@batch}", batchContainer);
 
 					return new List<IBatchContainer> { batchContainer };
 				}
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Failed to poll for messages.");
+				_logger.LogError(ex, "Failed to poll for messages queueId: {queueId}", _queueId);
 				throw;
 			}
 
 			return new List<IBatchContainer>();
 		}
 
-		public async Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
+		public Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
 		{
 			try
 			{
-				await _consumer.Commit(_consumedMessages);
-				_consumedMessages.Clear();
+				if (!messages.Any())
+					return Task.CompletedTask;
+
+				var highestOffset = messages
+					.Cast<KafkaBatchContainer>()
+					.Max();
+
+				_consumer.Commit(new[] { highestOffset.TopicPartitionOffSet });
+
+				return Task.CompletedTask;
 			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Failed to commit messages. {@messages}", messages);
-				throw;// todo: should we throw?
+				throw;
 			}
 		}
 

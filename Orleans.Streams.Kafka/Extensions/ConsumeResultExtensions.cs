@@ -1,24 +1,26 @@
 ﻿using Confluent.Kafka;
 using Orleans.Providers.Streams.Common;
 using Orleans.Serialization;
+using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Core;
-using Orleans.Streams.Utils;
+using Orleans.Streams.Utils.Streams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 
-namespace Orleans.Streams.Kafka.Utils
+namespace Orleans.Streams.Kafka.Extensions
 {
 	public static class ConsumeResultExtensions
 	{
 		public static KafkaBatchContainer ToBatchContainer(
 			this ConsumeResult<byte[], byte[]> result,
 			SerializationManager serializationManager,
+			KafkaStreamOptions options,
 			string streamNamespace
 		)
 		{
-			var externalHeader = result.Headers.FirstOrDefault(header => header.Key == StreamProviderConstants.ExternalMessageHeader);
+			var externalHeader = result.Headers.FirstOrDefault(header => header.Key == options.ExternalMessageIdentifier);
 			var sequence = new EventSequenceTokenV2(result.Offset.Value);
 
 			if (externalHeader != null)
@@ -33,13 +35,18 @@ namespace Orleans.Streams.Kafka.Utils
 						new List<object> { Encoding.UTF8.GetString(result.Value) },
 						null,
 						isExternalBatch: true,
-						streamSequenceToken: sequence
+						sequence,
+						result.TopicPartitionOffset
 					);
 				}
 			}
 
 			var batchContainer = serializationManager.DeserializeFromByteArray<KafkaBatchContainer>(result.Value);
-			batchContainer.SequenceToken = sequence;
+
+			if (batchContainer.SequenceToken == null)
+				batchContainer.SequenceToken = sequence;
+
+			batchContainer.TopicPartitionOffSet = result.TopicPartitionOffset;
 
 			return batchContainer;
 		}

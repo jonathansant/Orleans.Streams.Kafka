@@ -10,6 +10,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Orleans.Runtime;
+using Orleans.Streams.Utils.Streams;
 
 namespace Orleans.Streams.Kafka.Core
 {
@@ -21,6 +23,8 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IQueueAdapterCache _adapterCache;
 		private readonly IStreamQueueMapper _streamQueueMapper;
+		private readonly ILogger<KafkaAdapterFactory> _logger;
+		private IEnumerable<QueueProperties> _queueProperties;
 
 		public KafkaAdapterFactory(
 			string name,
@@ -35,11 +39,10 @@ namespace Orleans.Streams.Kafka.Core
 			_name = name;
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
+			_logger = loggerFactory.CreateLogger<KafkaAdapterFactory>();
 
 			if (!options.InternallyManagedQueuesOnly && options.Topics != null && options.Topics.Count == 0)
-			{
 				throw new ArgumentNullException(nameof(options.Topics));
-			}
 
 			_adapterCache = new SimpleQueueAdapterCache(
 				cacheOptions,
@@ -47,14 +50,23 @@ namespace Orleans.Streams.Kafka.Core
 				loggerFactory
 			);
 
+			_queueProperties = GetQueuesProperties();
+
 			_streamQueueMapper = _options.InternallyManagedQueuesOnly
 				? new HashRingBasedStreamQueueMapper(new HashRingStreamQueueMapperOptions(), name)
-				: (IConsistentRingStreamQueueMapper)new ExternalQueueMapper(GetQueuesProperties());
+				: (IConsistentRingStreamQueueMapper)new ExternalQueueMapper(_queueProperties);
 		}
 
 		public Task<IQueueAdapter> CreateAdapter()
 		{
-			var adapter = new KafkaAdapter(_name, _streamQueueMapper, _options, _serializationManager, _loggerFactory);
+			var adapter = new KafkaAdapter(
+				_name, 
+				_options, 
+				_queueProperties,
+				_serializationManager,
+				_loggerFactory
+			);
+
 			return Task.FromResult<IQueueAdapter>(adapter);
 		}
 
@@ -84,23 +96,23 @@ namespace Orleans.Streams.Kafka.Core
 
 		private IEnumerable<QueueProperties> GetQueuesProperties()
 		{
-			// a bit hacky but confluent doesn't seem to have a management API
-			// todo: use new management api
-			//			using (var producer = new Producer(_options.ToProducerProperties(), true, true))
-			//			{
-			//				return from kafkaTopic in producer.GetMetadata().Topics
-			//					   join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic
-			//					   from partition in kafkaTopic.Partitions
-			//					   select new QueueProperties(userTopic, (uint)partition.PartitionId);
-			//			}
+			var config = _options.ToAdminProperties();
 
-			using (var admin = new AdminClient(_options.ToProducerProperties()))
+			try
 			{
-				var meta = admin.GetMetadata(TimeSpan.FromSeconds(30)); // todo: add new option
-				return from kafkaTopic in meta.Topics
-					   join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic
-					   from partition in kafkaTopic.Partitions
-					   select new QueueProperties(userTopic, (uint)partition.PartitionId);
+				using (var admin = new AdminClient(config))
+				{
+					var meta = admin.GetMetadata(_options.AdminRequestTimeout); // todo: add new option
+					return from kafkaTopic in meta.Topics
+						join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic
+						from partition in kafkaTopic.Partitions
+						select new QueueProperties(userTopic, (uint) partition.PartitionId);
+				}
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Failed to retrieve Kafka meta data. {@config}", config);
+				throw;
 			}
 		}
 	}
