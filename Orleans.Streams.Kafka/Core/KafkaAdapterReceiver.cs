@@ -20,7 +20,6 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly SerializationManager _serializationManager;
 		private readonly QueueId _queueId;
 		private readonly QueueProperties _queueProperties;
-		private readonly string _streamNamespace;
 
 		private Consumer<byte[], byte[]> _consumer;
 		private Task _outstandingPromise;
@@ -34,14 +33,11 @@ namespace Orleans.Streams.Kafka.Core
 		)
 		{
 			_queueId = queueId ?? throw new ArgumentNullException(nameof(queueId));
-			_queueProperties = queueProperties;
 			_options = options ?? throw new ArgumentNullException(nameof(options));
 
+			_queueProperties = queueProperties;
 			_serializationManager = serializationManager;
-
 			_logger = loggerFactory.CreateLogger<KafkaAdapterReceiver>();
-
-			_streamNamespace = queueId.GetQueueNamespace();
 		}
 
 		public Task Initialize(TimeSpan timeout)
@@ -66,7 +62,7 @@ namespace Orleans.Streams.Kafka.Core
 					break;
 			}
 
-			_consumer.Assign(new TopicPartitionOffset(_streamNamespace, (int)_queueProperties.PartitionId, offsetMode));
+			_consumer.Assign(new TopicPartitionOffset(_queueProperties.Namespace, (int)_queueProperties.PartitionId, offsetMode));
 
 			return Task.CompletedTask;
 		}
@@ -87,7 +83,7 @@ namespace Orleans.Streams.Kafka.Core
 				var consumeResult = await messagePromise;
 				if (consumeResult != null)
 				{
-					var batchContainer = consumeResult.ToBatchContainer(_serializationManager, _options, _streamNamespace);
+					var batchContainer = consumeResult.ToBatchContainer(_serializationManager, _options, _queueProperties.Namespace);
 
 					_logger.Info("Received batch: {@batch}", batchContainer);
 

@@ -3,19 +3,20 @@ using Confluent.Kafka.Serialization;
 using Microsoft.Extensions.Logging;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
+using Orleans.Streams.Kafka.Extensions;
 using Orleans.Streams.Kafka.Serialization;
+using Orleans.Streams.Utils.Streams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading;
 using System.Threading.Tasks;
-using Orleans.Streams.Kafka.Extensions;
 
 namespace Orleans.Streams.Kafka.Core
 {
 	public class KafkaAdapter : IQueueAdapter, IDisposable
 	{
 		private readonly KafkaStreamOptions _options;
+		private readonly IDictionary<string, QueueProperties> _queueProperties;
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly Producer<byte[], KafkaBatchContainer> _producer;
@@ -25,14 +26,14 @@ namespace Orleans.Streams.Kafka.Core
 		public bool IsRewindable { get; } = true; // todo: provide way to pass sequence token (offset) so that we can rewind
 		public StreamProviderDirection Direction { get; } = StreamProviderDirection.ReadWrite;
 
-		public KafkaAdapter(
-			string providerName,
+		public KafkaAdapter(string providerName,
 			KafkaStreamOptions options,
+			IDictionary<string, QueueProperties> queueProperties,
 			SerializationManager serializationManager,
-			ILoggerFactory loggerFactory
-		)
+			ILoggerFactory loggerFactory)
 		{
 			_options = options;
+			_queueProperties = queueProperties;
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
 			_logger = _loggerFactory.CreateLogger<KafkaAdapter>();
@@ -74,7 +75,13 @@ namespace Orleans.Streams.Kafka.Core
 		}
 
 		public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
-			=> new KafkaAdapterReceiver(queueId, _options, _serializationManager, _loggerFactory);
+			=> new KafkaAdapterReceiver(
+				queueId, 
+				_queueProperties[queueId.GetStringNamePrefix()], 
+				_options, 
+				_serializationManager, 
+				_loggerFactory
+			);
 
 		public void Dispose()
 			=> _producer.Dispose();

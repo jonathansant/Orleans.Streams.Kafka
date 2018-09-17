@@ -24,7 +24,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly IQueueAdapterCache _adapterCache;
 		private readonly IStreamQueueMapper _streamQueueMapper;
 		private readonly ILogger<KafkaAdapterFactory> _logger;
-		private IEnumerable<QueueProperties> _queueProperties;
+		private readonly IDictionary<string, QueueProperties> _queueProperties;
 
 		public KafkaAdapterFactory(
 			string name,
@@ -54,14 +54,14 @@ namespace Orleans.Streams.Kafka.Core
 
 			_streamQueueMapper = _options.InternallyManagedQueuesOnly
 				? new HashRingBasedStreamQueueMapper(new HashRingStreamQueueMapperOptions(), name)
-				: (IConsistentRingStreamQueueMapper)new ExternalQueueMapper(_queueProperties);
+				: (IConsistentRingStreamQueueMapper)new ExternalQueueMapper(_queueProperties.Values);
 		}
 
 		public Task<IQueueAdapter> CreateAdapter()
 		{
 			var adapter = new KafkaAdapter(
-				_name, 
-				_options, 
+				_name,
+				_options,
 				_queueProperties,
 				_serializationManager,
 				_loggerFactory
@@ -94,7 +94,7 @@ namespace Orleans.Streams.Kafka.Core
 			return factory;
 		}
 
-		private IEnumerable<QueueProperties> GetQueuesProperties()
+		private IDictionary<string, QueueProperties> GetQueuesProperties()
 		{
 			var config = _options.ToAdminProperties();
 
@@ -103,10 +103,12 @@ namespace Orleans.Streams.Kafka.Core
 				using (var admin = new AdminClient(config))
 				{
 					var meta = admin.GetMetadata(_options.AdminRequestTimeout); // todo: add new option
-					return from kafkaTopic in meta.Topics
+					var props = from kafkaTopic in meta.Topics
 						join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic
 						from partition in kafkaTopic.Partitions
 						select new QueueProperties(userTopic, (uint) partition.PartitionId);
+
+					return props.ToDictionary(prop => prop.QueueName);
 				}
 			}
 			catch (Exception ex)
