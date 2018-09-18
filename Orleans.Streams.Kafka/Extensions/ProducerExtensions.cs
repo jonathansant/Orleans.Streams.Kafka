@@ -15,7 +15,7 @@ namespace Orleans.Streams.Kafka.Extensions
 				{
 					Key = batch.StreamGuid.ToByteArray(),
 					Value = batch,
-					Timestamp = new Timestamp(DateTime.Now)
+					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				},
 				new CancellationTokenSource(timeout).Token
 			);

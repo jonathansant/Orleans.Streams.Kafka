@@ -6,5 +6,6 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 	{
 		Task<string> SaySomething(string something);
 		Task<TestModel> WhatDidIGet();
+		Task<TestModel> WhatDidIGet2();
 	}
 }

@@ -1,5 +1,6 @@
 ﻿using Orleans.Streams.Utils.Streams;
 using System.Threading.Tasks;
+using Orleans.Streams.Kafka.E2E.Extensions;
 
 namespace Orleans.Streams.Kafka.E2E.Grains
 {
@@ -10,28 +11,18 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 	public class StreamRoundTripGrain : BaseTestGrain, IStreamRoundTripGrain
 	{
 		private IStreamProvider _kafkaProvider;
+		private IAsyncStream<TestModel> _responseStream;
 
 		public override async Task OnActivateAsync()
 		{
 			_kafkaProvider = GetStreamProvider(Consts.KafkaStreamProvider);
 			var testStream = _kafkaProvider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespace);
+			_responseStream = _kafkaProvider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
 
-			var subscriptionHandles = await testStream.GetAllSubscriptionHandles();
-			if (subscriptionHandles.Count > 0)
-			{
-				foreach (var subscriptionHandle in subscriptionHandles)
-				{
-					await subscriptionHandle.ResumeAsync(OnNextTestMessage);
-				}
-			}
-
-			await testStream.SubscribeAsync(OnNextTestMessage);
+			await testStream.QuickSubscribe(OnNextTestMessage);
 		}
 
-		private Task OnNextTestMessage(TestModel message, StreamSequenceToken sequenceToken)
-		{
-			var responseStream = _kafkaProvider.GetStream<TestModel>(Consts.ResponseStreamId, Consts.StreamNamespace);
-			return responseStream.OnNextAsync(message);
-		}
+		private async Task OnNextTestMessage(TestModel message, StreamSequenceToken sequenceToken) 
+			=> await _responseStream.OnNextAsync(message);
 	}
 }

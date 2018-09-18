@@ -26,11 +26,13 @@ namespace Orleans.Streams.Kafka.Core
 		public bool IsRewindable { get; } = true; // todo: provide way to pass sequence token (offset) so that we can rewind
 		public StreamProviderDirection Direction { get; } = StreamProviderDirection.ReadWrite;
 
-		public KafkaAdapter(string providerName,
+		public KafkaAdapter(
+			string providerName,
 			KafkaStreamOptions options,
 			IDictionary<string, QueueProperties> queueProperties,
 			SerializationManager serializationManager,
-			ILoggerFactory loggerFactory)
+			ILoggerFactory loggerFactory
+		)
 		{
 			_options = options;
 			_queueProperties = queueProperties;
@@ -76,7 +78,6 @@ namespace Orleans.Streams.Kafka.Core
 
 		public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
 			=> new KafkaAdapterReceiver(
-				queueId, 
 				_queueProperties[queueId.GetStringNamePrefix()], 
 				_options, 
 				_serializationManager, 

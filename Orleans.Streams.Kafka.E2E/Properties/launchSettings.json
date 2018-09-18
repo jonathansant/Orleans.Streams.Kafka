@@ -1,0 +1,7 @@
+{
+  "profiles": {
+    "Orleans.Streams.Kafka.E2E": {
+      "commandName": "Project"
+    }
+  }
+}

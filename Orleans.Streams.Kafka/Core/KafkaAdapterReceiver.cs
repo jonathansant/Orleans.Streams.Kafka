@@ -18,21 +18,19 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly ILogger<KafkaAdapterReceiver> _logger;
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
-		private readonly QueueId _queueId;
 		private readonly QueueProperties _queueProperties;
 
 		private Consumer<byte[], byte[]> _consumer;
-		private Task _outstandingPromise;
+		private Task _fetchPromise = Task.CompletedTask;
+		private Task _commitPromise = Task.CompletedTask;
 
 		public KafkaAdapterReceiver(
-			QueueId queueId,
 			QueueProperties queueProperties,
 			KafkaStreamOptions options,
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory
 		)
 		{
-			_queueId = queueId ?? throw new ArgumentNullException(nameof(queueId));
 			_options = options ?? throw new ArgumentNullException(nameof(options));
 
 			_queueProperties = queueProperties;
@@ -77,8 +75,7 @@ namespace Orleans.Streams.Kafka.Core
 			try
 			{
 				var messagePromise = _consumer.Poll(_options.PollTimeout);
-
-				_outstandingPromise = messagePromise;
+				_fetchPromise = messagePromise;
 
 				var consumeResult = await messagePromise;
 				if (consumeResult != null)
@@ -92,31 +89,34 @@ namespace Orleans.Streams.Kafka.Core
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Failed to poll for messages queueId: {queueId}", _queueId);
+				_logger.LogError(ex, "Failed to poll for messages queueId: {@queueProperties}", _queueProperties);
 				throw;
 			}
 
 			return new List<IBatchContainer>();
 		}
 
-		public Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
+		public async Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
 		{
+			KafkaBatchContainer batchWithHighestOffset = null;
+
 			try
 			{
 				if (!messages.Any())
-					return Task.CompletedTask;
+					return;
 
-				var highestOffset = messages
+				batchWithHighestOffset = messages
 					.Cast<KafkaBatchContainer>()
 					.Max();
 
-				_consumer.Commit(new[] { highestOffset.TopicPartitionOffSet });
+				var commitPromise = _consumer.Commit(new[] { batchWithHighestOffset });
+				_commitPromise = commitPromise;
 
-				return Task.CompletedTask;
+				await commitPromise;
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Failed to commit messages. {@messages}", messages);
+				_logger.LogError(ex, "Failed to commit message offset: {@offset}", batchWithHighestOffset?.TopicPartitionOffSet);
 				throw;
 			}
 		}
@@ -125,8 +125,7 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			try
 			{
-				if (_outstandingPromise != null)
-					await _outstandingPromise;
+				await Task.WhenAll(_fetchPromise, _commitPromise);
 			}
 			finally
 			{

@@ -1,9 +1,10 @@
-﻿using System;
-using System.Collections.Generic;
-using Microsoft.Extensions.Configuration;
+﻿using Microsoft.Extensions.Configuration;
 using Orleans.Hosting;
+using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Grains;
 using Orleans.TestingHost;
+using System;
+using System.Collections.Generic;
 
 namespace Orleans.Streams.Kafka.E2E.Tests
 {
@@ -35,9 +36,15 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			=> clientBuilder
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
-					options.BrokerList = new List<string> { "localhost:9092" };
+					options.BrokerList = new List<string> { "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092" };
 					options.ConsumerGroupId = "TestGroup";
-					options.Topics = new List<string> { Consts.StreamNamespace };
+					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
+					options.WithConfluentCloudOptions(new Credentials
+					{
+						SslCaLocation = Environment.GetEnvironmentVariable("sslCaLocation"),
+						UserName = Environment.GetEnvironmentVariable("userName"),
+						Password = Environment.GetEnvironmentVariable("password")
+					});
 				})
 				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(StreamGrain).Assembly).WithReferences());
 	}
@@ -49,9 +56,15 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.AddMemoryGrainStorage("PubSubStore")
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
-					options.BrokerList = new List<string> { "localhost:9092" };
+					options.BrokerList = new List<string> { "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092" };
 					options.ConsumerGroupId = "TestGroup";
-					options.Topics = new List<string> { Consts.StreamNamespace };
+					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
+					options.WithConfluentCloudOptions(new Credentials
+					{
+						SslCaLocation = Environment.GetEnvironmentVariable("sslCaLocation"),
+						UserName = Environment.GetEnvironmentVariable("userName"),
+						Password = Environment.GetEnvironmentVariable("password")
+					});
 				})
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(StreamGrain).Assembly).WithReferences());

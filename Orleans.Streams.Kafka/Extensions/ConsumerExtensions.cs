@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using Confluent.Kafka;
+using Orleans.Streams.Kafka.Core;
 
 namespace Orleans.Streams.Kafka.Extensions
 {
@@ -13,8 +14,8 @@ namespace Orleans.Streams.Kafka.Extensions
 
 		public static Task Commit<TKey, TValue>(
 			this Consumer<TKey, TValue> consumer,
-			IEnumerable<ConsumeResult<TKey, TValue>> consumeResults
+			IEnumerable<KafkaBatchContainer> batches
 		)
-			=> Task.Run(() => consumer.Commit(consumeResults.Select(msg => msg.TopicPartitionOffset)));
+			=> Task.Run(() => consumer.Commit(batches.Select(msg => msg.TopicPartitionOffSet)));
 	}
 }
