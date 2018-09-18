@@ -3,7 +3,9 @@ using Confluent.Kafka.Serialization;
 using Microsoft.Extensions.Logging;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
-using Orleans.Streams.Kafka.Utils;
+using Orleans.Streams.Kafka.Extensions;
+using Orleans.Streams.Kafka.Serialization;
+using Orleans.Streams.Utils.Streams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,11 +15,12 @@ namespace Orleans.Streams.Kafka.Core
 {
 	public class KafkaAdapter : IQueueAdapter, IDisposable
 	{
-		//		private readonly IStreamQueueMapper _streamQueueMapper;
 		private readonly KafkaStreamOptions _options;
+		private readonly IDictionary<string, QueueProperties> _queueProperties;
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly Producer<byte[], KafkaBatchContainer> _producer;
+		private readonly ILogger<KafkaAdapter> _logger;
 
 		public string Name { get; }
 		public bool IsRewindable { get; } = true; // todo: provide way to pass sequence token (offset) so that we can rewind
@@ -25,16 +28,17 @@ namespace Orleans.Streams.Kafka.Core
 
 		public KafkaAdapter(
 			string providerName,
-			IStreamQueueMapper streamQueueMapper,
-			KafkaStreamOptions options, // todo: maybe pass producer properties immediately?
+			KafkaStreamOptions options,
+			IDictionary<string, QueueProperties> queueProperties,
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory
 		)
 		{
-			//			_streamQueueMapper = streamQueueMapper;
 			_options = options;
+			_queueProperties = queueProperties;
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
+			_logger = _loggerFactory.CreateLogger<KafkaAdapter>();
 
 			Name = providerName;
 
@@ -53,9 +57,6 @@ namespace Orleans.Streams.Kafka.Core
 			Dictionary<string, object> requestContext
 		)
 		{
-			//var queueId = _streamQueueMapper.GetQueueForStream(streamGuid, streamNamespace);
-			//var partitionId = (int)queueId.GetNumericId();
-
 			try
 			{
 				var batch = new KafkaBatchContainer(
@@ -66,26 +67,22 @@ namespace Orleans.Streams.Kafka.Core
 					false
 				);
 
-				var message = await _producer.ProduceAsync(
-					streamNamespace,
-					new Message<byte[], KafkaBatchContainer>
-					{
-						Value = batch,
-						Key = streamGuid.ToByteArray()
-					} // todo: consider adding a cancellation token 
-				);
-
-				// todo: log message sent
+				await _producer.Produce(batch, _options.ProducerTimeout);
 			}
 			catch (Exception ex)
 			{
-				// todo: log
+				_logger.LogError(ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}", streamNamespace, streamGuid);
 				throw;
 			}
 		}
 
 		public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
-			=> new KafkaAdapterReceiver(queueId, _options, _serializationManager, _loggerFactory);
+			=> new KafkaAdapterReceiver(
+				_queueProperties[queueId.GetStringNamePrefix()], 
+				_options, 
+				_serializationManager, 
+				_loggerFactory
+			);
 
 		public void Dispose()
 			=> _producer.Dispose();

@@ -25,6 +25,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{9699A72C
 		package.json = package.json
 	EndProjectSection
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Streams.Kafka.E2E", "Orleans.Streams.Kafka.E2E\Orleans.Streams.Kafka.E2E.csproj", "{40241F81-5A3F-407E-BCF0-62952257B622}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{0B69EF45-6884-4AE3-9627-B91079A11164}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -55,6 +59,10 @@ Global
 		{0F6BAC5B-7FDE-4B1A-B465-06D595CD74D5}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{0F6BAC5B-7FDE-4B1A-B465-06D595CD74D5}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{0F6BAC5B-7FDE-4B1A-B465-06D595CD74D5}.Release|Any CPU.Build.0 = Release|Any CPU
+		{40241F81-5A3F-407E-BCF0-62952257B622}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{40241F81-5A3F-407E-BCF0-62952257B622}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{40241F81-5A3F-407E-BCF0-62952257B622}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{40241F81-5A3F-407E-BCF0-62952257B622}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -64,6 +72,7 @@ Global
 		{46A3FAD4-9868-4CBC-81D8-CE74B0AACE85} = {5366C489-8D00-4047-8BA8-348643ED8ADA}
 		{6D9C2534-57D3-4078-AE76-27FD9CDB0DF3} = {5366C489-8D00-4047-8BA8-348643ED8ADA}
 		{0F6BAC5B-7FDE-4B1A-B465-06D595CD74D5} = {5366C489-8D00-4047-8BA8-348643ED8ADA}
+		{40241F81-5A3F-407E-BCF0-62952257B622} = {0B69EF45-6884-4AE3-9627-B91079A11164}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A8C1AC8-BD20-483B-9B89-0AD321B5CF52}

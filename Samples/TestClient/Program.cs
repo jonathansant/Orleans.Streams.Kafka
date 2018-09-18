@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Orleans.Streams.Utils.Streams;
 using TestGrains;
 
 namespace TestClient
