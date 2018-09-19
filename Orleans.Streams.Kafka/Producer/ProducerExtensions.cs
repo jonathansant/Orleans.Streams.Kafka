@@ -1,10 +1,10 @@
-﻿using Confluent.Kafka;
-using Orleans.Streams.Kafka.Core;
-using System;
+﻿using System;
 using System.Threading;
 using System.Threading.Tasks;
+using Confluent.Kafka;
+using Orleans.Streams.Kafka.Core;
 
-namespace Orleans.Streams.Kafka.Extensions
+namespace Orleans.Streams.Kafka.Producer
 {
 	public static class ProducerExtensions
 	{

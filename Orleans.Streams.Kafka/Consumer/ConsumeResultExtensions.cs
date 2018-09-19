@@ -1,15 +1,15 @@
-﻿using Confluent.Kafka;
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using Confluent.Kafka;
 using Orleans.Providers.Streams.Common;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Core;
 using Orleans.Streams.Utils.Streams;
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
 
-namespace Orleans.Streams.Kafka.Extensions
+namespace Orleans.Streams.Kafka.Consumer
 {
 	public static class ConsumeResultExtensions
 	{

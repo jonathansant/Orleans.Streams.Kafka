@@ -5,7 +5,7 @@ using System.Threading.Tasks;
 using Confluent.Kafka;
 using Orleans.Streams.Kafka.Core;
 
-namespace Orleans.Streams.Kafka.Extensions
+namespace Orleans.Streams.Kafka.Consumer
 {
 	public static class ConsumerExtensions
 	{

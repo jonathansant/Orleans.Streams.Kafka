@@ -4,12 +4,12 @@ using Microsoft.Extensions.Logging;
 using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
-using Orleans.Streams.Kafka.Extensions;
 using Orleans.Streams.Utils.Streams;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using Orleans.Streams.Kafka.Consumer;
 
 namespace Orleans.Streams.Kafka.Core
 {
