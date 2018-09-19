@@ -43,7 +43,7 @@ namespace Orleans.Streams.Kafka.Core
 			Name = providerName;
 
 			_producer = new Producer<byte[], KafkaBatchContainer>(
-				options.ToProducerProperties(), // todo: investigate other constructor options
+				options.ToProducerProperties(),
 				new ByteArraySerializer(),
 				new BatchContainerSerializer(serializationManager)
 			);
