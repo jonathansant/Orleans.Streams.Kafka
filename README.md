@@ -68,7 +68,7 @@ await stream.OnNextAsync(new TestModel
 ### Consuming:
 ```CSharp
 var kafkaProvider = GetStreamProvider("KafkaStreamProvider");
-var testStream = kafkaProvider.GetStream<TestModel>("streamId", "topic2"); // todo: use stream utils
+var testStream = kafkaProvider.GetStream<TestModel>("streamId", "topic2");
 
 // To resume stream in case of stream deactivation
 var subscriptionHandles = await testStream.GetAllSubscriptionHandles();
