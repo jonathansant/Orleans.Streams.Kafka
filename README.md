@@ -46,6 +46,46 @@ public class ClientBuilderConfigurator : IClientBuilderConfigurator
 }
 ```
 
+## Usage
+
+### Producing:
+```CSharp
+var testGrain = clusterClient.GetGrain<ITestGrain>(grainId);
+
+var result = await testGrain.GetThePhrase();
+
+Console.BackgroundColor = ConsoleColor.DarkMagenta;
+Console.WriteLine(result);
+
+var streamProvider = clusterClient.GetStreamProvider("KafkaProvider");
+var stream = streamProvider.GetStream<TestModel>("streamId", "topic1");
+await stream.OnNextAsync(new TestModel
+{
+	Greeting = "hello world"
+});
+```
+
+### Consuming:
+```CSharp
+var kafkaProvider = GetStreamProvider("KafkaStreamProvider");
+var testStream = kafkaProvider.GetStream<TestModel>("streamId", "topic2"); // todo: use stream utils
+
+// To resume stream in case of stream deactivation
+var subscriptionHandles = await testStream.GetAllSubscriptionHandles();
+
+if (subscriptionHandles.Count > 0)
+{
+	foreach (var subscriptionHandle in subscriptionHandles)
+	{
+		await subscriptionHandle.ResumeAsync(OnNextTestMessage);
+	}
+}
+
+await testStream.SubscribeAsync(OnNextTestMessage);
+```
+
+*Note: The Stream Namespace identifies the **Kafka topic**.*
+
 ## <a name="configurableValues"></a>Configurable Values
 These are the configurable values that the `Orleans.Streams.Kafka`:
 
