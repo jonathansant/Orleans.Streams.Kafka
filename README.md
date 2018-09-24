@@ -12,7 +12,7 @@ Kafka persistent stream provider for Microsoft Orleans that uses the [Confluent 
 To start working with the `Orleans.Streams.Kafka` make sure you do the following steps:
 
 1. Install Kafka on a machine (or cluster) which you have access to use the [Confluent Platform](https://www.confluent.io/download/).
-2. Create a Topics in Kafka with as many partitions as need for each topic.
+2. Create a Topics in Kafka with as many partitions as needed for each topic.
 3. Install the `Orleans.Streams.Kafka` nuget from the nuget repository.
 4. Add to the Silo configuration the a new stream provider with the necessary parameters and the optional ones (if you wish). you can see what is configurable in KafkaStreamProvider under [Configurable Values](#configurableValues).
 
