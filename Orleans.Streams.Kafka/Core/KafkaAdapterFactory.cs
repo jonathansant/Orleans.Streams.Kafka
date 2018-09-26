@@ -5,13 +5,11 @@ using Orleans.Configuration;
 using Orleans.Providers.Streams.Common;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
-using Orleans.Streams.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Orleans.Runtime;
-using Orleans.Streams.Utils.Streams;
+using Orleans.Streams.Utils;
 
 namespace Orleans.Streams.Kafka.Core
 {
@@ -52,6 +50,7 @@ namespace Orleans.Streams.Kafka.Core
 
 			_queueProperties = GetQueuesProperties();
 
+			// todo: InternallyManagesQueuesOnly == true does not work as it is.
 			_streamQueueMapper = _options.InternallyManagedQueuesOnly
 				? new HashRingBasedStreamQueueMapper(new HashRingStreamQueueMapperOptions(), name)
 				: (IConsistentRingStreamQueueMapper)new ExternalQueueMapper(_queueProperties.Values);
@@ -102,11 +101,11 @@ namespace Orleans.Streams.Kafka.Core
 			{
 				using (var admin = new AdminClient(config))
 				{
-					var meta = admin.GetMetadata(_options.AdminRequestTimeout); // todo: add new option
+					var meta = admin.GetMetadata(_options.AdminRequestTimeout);
 					var props = from kafkaTopic in meta.Topics
-						join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic
-						from partition in kafkaTopic.Partitions
-						select new QueueProperties(userTopic, (uint) partition.PartitionId);
+								join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic
+								from partition in kafkaTopic.Partitions
+								select new QueueProperties(userTopic, (uint)partition.PartitionId);
 
 					return props.ToDictionary(prop => prop.QueueName);
 				}

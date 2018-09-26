@@ -4,7 +4,6 @@ using Orleans;
 using Orleans.Providers;
 using Orleans.Streams;
 using Orleans.Streams.Utils;
-using Orleans.Streams.Utils.Streams;
 
 namespace TestGrains
 {

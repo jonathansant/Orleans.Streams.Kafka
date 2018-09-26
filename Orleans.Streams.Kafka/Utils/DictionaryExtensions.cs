@@ -1,6 +1,6 @@
 ﻿using System.Collections.Generic;
 
-namespace Orleans.Streams.Kafka.Extensions
+namespace Orleans.Streams.Kafka.Utils
 {
 	internal static class DictionaryExtensions
 	{

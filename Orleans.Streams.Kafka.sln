@@ -23,9 +23,10 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{9699A72C
 		.circleci\config.yml = .circleci\config.yml
 		Directory.Build.props = Directory.Build.props
 		package.json = package.json
+		README.md = README.md
 	EndProjectSection
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Orleans.Streams.Kafka.E2E", "Orleans.Streams.Kafka.E2E\Orleans.Streams.Kafka.E2E.csproj", "{40241F81-5A3F-407E-BCF0-62952257B622}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Streams.Kafka.E2E", "Orleans.Streams.Kafka.E2E\Orleans.Streams.Kafka.E2E.csproj", "{40241F81-5A3F-407E-BCF0-62952257B622}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{0B69EF45-6884-4AE3-9627-B91079A11164}"
 EndProject

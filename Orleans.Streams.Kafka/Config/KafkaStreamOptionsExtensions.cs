@@ -1,5 +1,6 @@
 ﻿using System.Collections.Generic;
-using Orleans.Streams.Kafka.Extensions;
+using System.IO;
+using Orleans.Streams.Kafka.Utils;
 
 namespace Orleans.Streams.Kafka.Config
 {
@@ -52,7 +53,7 @@ namespace Orleans.Streams.Kafka.Config
 			options.SecurityProtocol = "SASL_SSL";
 			options.SaslUserName = credentials.UserName;
 			options.SaslPassword = credentials.Password;
-			options.SslCaLocation = credentials.SslCaLocation;
+			options.SslCaLocation = Path.Combine(".", "cacert.pem");
 
 			return options;
 		}

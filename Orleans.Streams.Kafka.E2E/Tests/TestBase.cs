@@ -5,29 +5,46 @@ using Orleans.Streams.Kafka.E2E.Grains;
 using Orleans.TestingHost;
 using System;
 using System.Collections.Generic;
+using System.IO;
+using System.Threading.Tasks;
+using Xunit;
 
 namespace Orleans.Streams.Kafka.E2E.Tests
 {
-	public class TestBase : IDisposable
+	public class TestBase : IAsyncLifetime
 	{
+		private short _noOfSilos;
 		protected TestCluster Cluster { get; private set; }
 
 		protected void Initialize(short noOfSilos)
 		{
-			var builder = new TestClusterBuilder(noOfSilos);
+			Environment.SetEnvironmentVariable("userName", "CC4ZKCWQZHAHJASA");
+			Environment.SetEnvironmentVariable("password", "OsacTSG5OtU+l6Da77MGZVqr3qrDcBlgGZZUd9Up8Vh+Z8jmhgZgOqyWrWTTHpQ/");
+
+			_noOfSilos = noOfSilos;
+		}
+
+		protected void ShutDown()
+			=> Cluster?.StopAllSilos();
+
+		public Task InitializeAsync()
+		{
+			var builder = new TestClusterBuilder(_noOfSilos);
 
 			builder.AddSiloBuilderConfigurator<SiloBuilderConfigurator>();
 			builder.AddClientBuilderConfigurator<ClientBuilderConfigurator>();
 
 			Cluster = builder.Build();
 			Cluster.Deploy();
+
+			return Task.CompletedTask;
 		}
 
-		protected void ShutDown()
-			=> Cluster?.StopAllSilos();
-
-		public void Dispose()
-			=> ShutDown();
+		public Task DisposeAsync()
+		{
+			ShutDown();
+			return Task.CompletedTask;
+		}
 	}
 
 	public class ClientBuilderConfigurator : IClientBuilderConfigurator
@@ -39,14 +56,16 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.BrokerList = new List<string> { "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092" };
 					options.ConsumerGroupId = "TestGroup";
 					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
+					options.PollTimeout = TimeSpan.FromMilliseconds(10);
+					options.ExternalMessageIdentifier = "x-external-message";
+					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.WithConfluentCloudOptions(new Credentials
 					{
-						SslCaLocation = Environment.GetEnvironmentVariable("sslCaLocation"),
 						UserName = Environment.GetEnvironmentVariable("userName"),
-						Password = Environment.GetEnvironmentVariable("password")
+						Password = Environment.GetEnvironmentVariable("password"),
 					});
 				})
-				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(StreamGrain).Assembly).WithReferences());
+				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 	}
 
 	public class SiloBuilderConfigurator : ISiloBuilderConfigurator
@@ -59,14 +78,16 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.BrokerList = new List<string> { "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092" };
 					options.ConsumerGroupId = "TestGroup";
 					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
+					options.PollTimeout = TimeSpan.FromMilliseconds(10);
+					options.ExternalMessageIdentifier = "x-external-message";
+					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.WithConfluentCloudOptions(new Credentials
 					{
-						SslCaLocation = Environment.GetEnvironmentVariable("sslCaLocation"),
 						UserName = Environment.GetEnvironmentVariable("userName"),
 						Password = Environment.GetEnvironmentVariable("password")
 					});
 				})
 				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(StreamGrain).Assembly).WithReferences());
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 	}
 }

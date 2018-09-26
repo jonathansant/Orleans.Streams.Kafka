@@ -2,12 +2,15 @@
 using Confluent.Kafka.Serialization;
 using Newtonsoft.Json;
 using Orleans.Streams.Kafka.E2E.Grains;
-using Orleans.Streams.Utils.Streams;
 using System;
 using System.Collections.Generic;
+using System.IO;
 using System.Text;
 using System.Threading.Tasks;
+using Orleans.Streams.Kafka.E2E.Extensions;
+using Orleans.Streams.Utils;
 using Xunit;
+using Xunit.Sdk;
 
 namespace Orleans.Streams.Kafka.E2E.Tests
 {
@@ -23,49 +26,30 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		[Fact]
 		public async Task ProduceConsumeTest()
 		{
-			var grain = await WakeUpGrain<IStreamGrain>();
+			var grain = await WakeUpGrain<IStreamGrainV2>();
+			var result = await grain.Fire();
 
-			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = streamProvider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
-
-			var testMessage = TestModel.Random();
-
-			await stream.OnNextAsync(testMessage);
-
-			await Task.Delay(ReceiveDelay);
-			var response = await grain.WhatDidIGet();
-
-			Assert.Equal(testMessage, response);
-		}
-
-
-		[Fact]
-		public async Task RoundTripTest()
-		{
-			await WakeUpGrain<IStreamRoundTripGrain>();
-			var grain = await WakeUpGrain<IStreamGrain>();
-
-			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = streamProvider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespace);
-
-			var testMessage = TestModel.Random();
-
-			await stream.OnNextAsync(testMessage);
-
-			await Task.Delay(ReceiveDelay);
-			var response = await grain.WhatDidIGet();
-
-			Assert.Equal(testMessage, response);
+			Assert.Equal(result.Expected, result.Actual);
 		}
 
 		[Fact]
 		public async Task ProduceConsumeExternalMessage()
 		{
-			var grain = await WakeUpGrain<IStreamGrain>();
-
 			var config = GetKafkaServerConfig();
 
 			var testMessage = TestModel.Random();
+
+			var completion = new TaskCompletionSource<bool>();
+
+			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
+			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespace2);
+
+			await stream.QuickSubscribe((message, seq) =>
+			{
+				Assert.Equal(testMessage, message);
+				completion.SetResult(true);
+				return Task.CompletedTask;
+			});
 
 			using (var producer = new Producer<byte[], string>(
 					config,
@@ -73,81 +57,31 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					new StringSerializer(Encoding.UTF8))
 			)
 			{
-				await producer.ProduceAsync(Consts.StreamNamespace, new Message<byte[], string>
+				await producer.ProduceAsync(Consts.StreamNamespace2, new Message<byte[], string>
 				{
-					Key = Encoding.UTF8.GetBytes(Consts.StreamId),
+					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
 					Value = JsonConvert.SerializeObject(testMessage),
-					Headers = new Headers { new Header("external", BitConverter.GetBytes(true)) },
+					Headers = new Headers { new Header("x-external-message", BitConverter.GetBytes(true)) },
 					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				});
 			}
 
-			await Task.Delay(ReceiveDelay);
-			var response = await grain.WhatDidIGet();
+			await Task.WhenAny(completion.Task, Task.Delay(ReceiveDelay));
 
-			Assert.Equal(testMessage, response);
-		}
-
-		[Fact]
-		public async Task ProduceConsumeExternalMessageWithStringKey()
-		{
-			var grain = await WakeUpGrain<IStreamGrain>();
-
-			var config = GetKafkaServerConfig();
-
-			var testMessage = TestModel.Random();
-
-			using (var producer = new Producer<string, string>(
-				config,
-				new StringSerializer(Encoding.UTF8),
-				new StringSerializer(Encoding.UTF8))
-			)
-			{
-				await producer.ProduceAsync(Consts.StreamNamespace, new Message<string, string>
-				{
-					Key = Consts.StreamId,
-					Value = JsonConvert.SerializeObject(testMessage),
-					Headers = new Headers { new Header("external", BitConverter.GetBytes(true)) },
-					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
-				});
-			}
-
-			await Task.Delay(ReceiveDelay);
-			var response = await grain.WhatDidIGet();
-
-			Assert.Equal(testMessage, response);
-		}
-
-		[Fact]
-		public async Task ConsumeInOrder()
-		{
-			var grain = await WakeUpGrain<IStreamGrain>();
-
-			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = streamProvider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
-
-			TestModel lastMessage = null;
-			for (var i = 0; i < 10; i++)
-			{
-				var testMessage = TestModel.Random();
-				await stream.OnNextAsync(testMessage);
-				lastMessage = testMessage;
-			}
-
-			await Task.Delay(ReceiveDelay);
-			var response = await grain.WhatDidIGet();
-
-			Assert.Equal(lastMessage, response);
+			if(!completion.Task.IsCompleted)
+				throw new XunitException("Message not received.");
 		}
 
 		[Fact]
 		public async Task ConsumeInOrderMultipleStreams()
 		{
-			var grain = await WakeUpGrain<IStreamGrain>();
+			var grain = await WakeUpGrain<IMultiStreamGrain>();
 
 			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
 			var stream = streamProvider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
-			var stream2 = streamProvider.GetStream<TestModel>(Consts.StreamId3, Consts.StreamNamespace);
+			var stream2 = streamProvider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespace2);
+
+			var result = grain.Fire();
 
 			TestModel lastMessage = null;
 			TestModel lastMessage2 = null;
@@ -155,47 +89,25 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			{
 				var testMessage = TestModel.Random();
 				var testMessage2 = TestModel.Random();
+
+				if (i == 9)
+				{
+					testMessage.IsLastMessage = true;
+					testMessage2.IsLastMessage = true;
+				}
+
 				await Task.WhenAll(stream.OnNextAsync(testMessage), stream2.OnNextAsync(testMessage2));
 				lastMessage = testMessage;
 				lastMessage2 = testMessage2;
 			}
 
-			await Task.Delay(ReceiveDelay);
-			var response = await grain.WhatDidIGet();
-			var response2 = await grain.WhatDidIGet2();
+			await Task.WhenAny(result, Task.Delay(ReceiveDelay * 4));
 
-			Assert.Equal(lastMessage, response);
-			Assert.Equal(lastMessage2, response2);
-		}
+			if (!result.IsCompleted)
+				throw new XunitException("Message not received.");
 
-		[Fact]
-		public async Task ConsumeInOrderMultipleStreamsWithDifferentNamespaces()
-		{
-			var grain = await WakeUpGrain<IStreamGrain>();
-			var customGrain = Cluster.Client.GetGrain<ICustomizableStreamGrain>($"{Consts.StreamNamespace2}-{Consts.StreamId}");
-			await customGrain.WakeUp();
-
-			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = streamProvider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
-			var stream2 = streamProvider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace2);
-
-			TestModel lastMessage = null;
-			TestModel lastMessage2 = null;
-			for (var i = 0; i < 10; i++)
-			{
-				var testMessage = TestModel.Random();
-				var testMessage2 = TestModel.Random();
-				await Task.WhenAll(stream.OnNextAsync(testMessage), stream2.OnNextAsync(testMessage2));
-				lastMessage = testMessage;
-				lastMessage2 = testMessage2;
-			}
-
-			await Task.Delay(ReceiveDelay + 4000);
-			var response = await grain.WhatDidIGet();
-			var response2 = await customGrain.WhatDidIGet();
-
-			Assert.Equal(lastMessage, response);
-			Assert.Equal(lastMessage2, response2);
+			Assert.Equal(lastMessage, result.Result.StreamResult1.Actual);
+			Assert.Equal(lastMessage2, result.Result.StreamResult2.Actual);
 		}
 
 		private async Task<TGrain> WakeUpGrain<TGrain>() where TGrain : IBaseTestGrain
@@ -215,7 +127,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				{"api.version.fallback.ms", 0},
 				{"sasl.mechanisms", "PLAIN"},
 				{"security.protocol", "SASL_SSL"},
-				{"ssl.ca.location", Environment.GetEnvironmentVariable("sslCaLocation")},
+				{"ssl.ca.location", Path.Combine(".", "cacert.pem")},
 				{"sasl.username", Environment.GetEnvironmentVariable("userName")},
 				{"sasl.password", Environment.GetEnvironmentVariable("password")},
 			};

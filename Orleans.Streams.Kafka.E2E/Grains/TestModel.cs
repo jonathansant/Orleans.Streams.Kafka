@@ -10,6 +10,8 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 
 		public int NumberOfHeads { get; set; }
 
+		public bool IsLastMessage { get; set; }
+
 		public override bool Equals(object obj)
 		{
 			var mod = (TestModel) obj;
@@ -22,5 +24,11 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 			NumberOfHeads = Rand.Next(1000),
 			NumberOfLegs = Rand.Next(1000)
 		};
+	}
+
+	public class TestResult
+	{
+		public TestModel Expected { get; set; }
+		public TestModel Actual { get; set; }
 	}
 }

@@ -4,14 +4,20 @@
     <Description>Orleans streaming provider for Kafka.</Description>
     <PackageTags>orleans kafka streams providers streamprovider confluent</PackageTags>
   </PropertyGroup>
+  <ItemGroup>
+    <None Remove="cacert.pem" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="cacert.pem">
+      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+    </Content>
+  </ItemGroup>
   <!-- vendor packages -->
   <ItemGroup>
-    <PackageReference Include="librdkafka.redist.win-x64" Version="0.11.1-TEST4" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="2.0.0" />
     <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.0.0" />
     <PackageReference Include="Confluent.Kafka" Version="1.0.0-experimental-12" />
-    <PackageReference Include="librdkafka.redist.osx-x64" Version="0.11.1-TEST4" />
   </ItemGroup>
   <!-- packages -->
   <ItemGroup Condition="'$(Configuration)' == 'Release'">

@@ -7,7 +7,7 @@ using Orleans.Providers.Streams.Common;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Core;
-using Orleans.Streams.Utils.Streams;
+using Orleans.Streams.Utils;
 
 namespace Orleans.Streams.Kafka.Consumer
 {

@@ -26,7 +26,6 @@ namespace Orleans.Streams.Kafka.Config
 
 	public class Credentials
 	{
-		public string SslCaLocation { get; set; }
 		public string UserName { get; set; }
 		public string Password { get; set; }
 	}

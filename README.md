@@ -1,12 +1,12 @@
 # Orleans.Stream.Kafka
 Kafka persistent stream provider for Microsoft Orleans that uses the [Confluent SDK](https://github.com/confluentinc/confluent-kafka-dotnet).
 
-## Version `0.1.0-beta-2`
+[![NuGet version](https://badge.fury.io/nu/orelans.streams.kafka.svg)](https://badge.fury.io/nu/orelans.streams.kafka)
 
 # Dependencies
 `Orleans.Streams.Kafka` has the following dependencies:
 * Confluent.Kafka: **1.0.0-experimental-12**
-* Orleans.Streams.Utils: **0.1.0**
+* Orleans.Streams.Utils: **1.0.0**
 
 ## Installation
 To start working with the `Orleans.Streams.Kafka` make sure you do the following steps:
