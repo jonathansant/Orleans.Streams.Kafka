@@ -1,7 +1,7 @@
 # Orleans.Stream.Kafka
 Kafka persistent stream provider for Microsoft Orleans that uses the [Confluent SDK](https://github.com/confluentinc/confluent-kafka-dotnet).
 
-[![NuGet version](https://badge.fury.io/nu/orelans.streams.kafka.svg)](https://badge.fury.io/nu/orelans.streams.kafka)
+[![NuGet version](https://badge.fury.io/nu/orleans.streams.kafka.svg)](https://badge.fury.io/nu/orleans.streams.kafka)
 
 # Dependencies
 `Orleans.Streams.Kafka` has the following dependencies:
