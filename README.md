@@ -6,7 +6,7 @@ Kafka persistent stream provider for Microsoft Orleans that uses the [Confluent 
 # Dependencies
 `Orleans.Streams.Kafka` has the following dependencies:
 * Confluent.Kafka: **1.0.0-experimental-12**
-* Orleans.Streams.Utils: **1.0.0**
+* Orleans.Streams.Utils: **2.0.1**
 
 ## Installation
 To start working with the `Orleans.Streams.Kafka` make sure you do the following steps:
@@ -68,7 +68,7 @@ await stream.OnNextAsync(new TestModel
 ### Consuming:
 ```CSharp
 var kafkaProvider = GetStreamProvider("KafkaStreamProvider");
-var testStream = kafkaProvider.GetStream<TestModel>("streamId", "topic2");
+var testStream = kafkaProvider.GetStream<TestModel>("streamId", "topic1");
 
 // To resume stream in case of stream deactivation
 var subscriptionHandles = await testStream.GetAllSubscriptionHandles();
