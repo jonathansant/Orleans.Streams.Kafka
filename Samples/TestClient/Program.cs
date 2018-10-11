@@ -3,7 +3,7 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Runtime;
-using Orleans.Streams.Utils;
+using Orleans.Streams;
 using System;
 using System.Collections.Generic;
 using System.Net;
