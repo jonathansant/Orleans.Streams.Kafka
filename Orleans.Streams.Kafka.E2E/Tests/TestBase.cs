@@ -18,9 +18,6 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		protected void Initialize(short noOfSilos)
 		{
-			Environment.SetEnvironmentVariable("userName", "CC4ZKCWQZHAHJASA");
-			Environment.SetEnvironmentVariable("password", "OsacTSG5OtU+l6Da77MGZVqr3qrDcBlgGZZUd9Up8Vh+Z8jmhgZgOqyWrWTTHpQ/");
-
 			_noOfSilos = noOfSilos;
 		}
 

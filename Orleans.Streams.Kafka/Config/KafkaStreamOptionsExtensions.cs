@@ -1,37 +1,37 @@
-﻿using System.Collections.Generic;
+﻿using Orleans.Streams.Kafka.Utils;
+using System.Collections.Generic;
 using System.IO;
-using Orleans.Streams.Kafka.Utils;
 
 namespace Orleans.Streams.Kafka.Config
 {
 	internal static class KafkaStreamOptionsExtensions
 	{
-		public static IDictionary<string, object> ToProducerProperties(this KafkaStreamOptions options)
+		public static IDictionary<string, string> ToProducerProperties(this KafkaStreamOptions options)
 			=> CreateCommonProperties(options);
 
-		public static IDictionary<string, object> ToConsumerProperties(this KafkaStreamOptions options)
+		public static IDictionary<string, string> ToConsumerProperties(this KafkaStreamOptions options)
 		{
 			var config = CreateCommonProperties(options);
 
 			config.TryAdd("group.id", options.ConsumerGroupId);
-			config.TryAdd("enable.auto.commit", false);
+			config.TryAdd("enable.auto.commit", "false");
 
 			return config;
 		}
 
-		public static IDictionary<string, object> ToAdminProperties(this KafkaStreamOptions options)
+		public static IDictionary<string, string> ToAdminProperties(this KafkaStreamOptions options)
 			=> CreateCommonProperties(options);
 
-		private static IDictionary<string, object> CreateCommonProperties(KafkaStreamOptions options)
+		private static IDictionary<string, string> CreateCommonProperties(KafkaStreamOptions options)
 		{
-			var config = new Dictionary<string, object>
+			var config = new Dictionary<string, string>
 			{
 				{ "bootstrap.servers", string.Join(",", options.BrokerList) }
 			};
 
-			config.TryAdd("api.version.request", options.ApiVersionRequest);
+			config.TryAdd("api.version.request", options.ApiVersionRequest.ToString());
 			config.TryAdd("broker.version.fallback", options.BrokerVersionFallback);
-			config.TryAdd("api.version.fallback.ms", options.ApiVersionFallbackMs);
+			config.TryAdd("api.version.fallback.ms", options.ApiVersionFallbackMs.ToString());
 			config.TryAdd("sasl.mechanisms", options.SaslMechanisms);
 			config.TryAdd("security.protocol", options.SecurityProtocol);
 			config.TryAdd("ssl.ca.location", options.SslCaLocation);

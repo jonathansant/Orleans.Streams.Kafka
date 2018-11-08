@@ -1,5 +1,4 @@
 ﻿using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -28,13 +27,13 @@ namespace ConfluentSample
 
 		private static async Task Produce()
 		{
-			var config = new Dictionary<string, object>
+			var config = new Dictionary<string, string>
 			{
 				//{ "bootstrap.servers", "localhost:9092" }
 				{"bootstrap.servers", "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092"},
-				{"api.version.request", true},
+				{"api.version.request", "true"},
 				{"broker.version.fallback", "0.10.0.0"},
-				{"api.version.fallback.ms", 0},
+				{"api.version.fallback.ms", "0"},
 				{"sasl.mechanisms", "PLAIN"},
 				{"security.protocol", "SASL_SSL"}
 //				{ "debug", "security,broker"}
@@ -42,11 +41,7 @@ namespace ConfluentSample
 
 			try
 			{
-				using (var producer = new Producer<byte[], string>(
-					config,
-					new ByteArraySerializer(),
-					new StringSerializer(Encoding.UTF8))
-				)
+				using (var producer = new Producer<byte[], string>(config))
 				{
 					var publishPromise5 = await producer.ProduceAsync("jonnyenglish", new Message<byte[], string>
 					{
@@ -67,16 +62,16 @@ namespace ConfluentSample
 
 		private static void Consume()
 		{
-			var conf = new Dictionary<string, object>
+			var conf = new Dictionary<string, string>
 			{
 				{ "group.id", "test-consumer-group" },
 				{ "bootstrap.servers", "localhost:9092" },
-				{ "enable.auto.commit", false },
+				{ "enable.auto.commit", "false" },
 				//{ "auto.commit.interval.ms", 5000 },
 //				{ "auto.offset.reset", "earliest" }
 			};
 
-			using (var consumer = new Consumer<string, string>(conf, new StringDeserializer(Encoding.UTF8), new StringDeserializer(Encoding.UTF8)))
+			using (var consumer = new Consumer<string, string>(conf))
 			using (var admin = new AdminClient(consumer.Handle))
 			{
 				Console.WriteLine($@"Partition IDs: {

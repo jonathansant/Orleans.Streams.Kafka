@@ -1,5 +1,4 @@
 ﻿using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 using Newtonsoft.Json;
 using Orleans.Streams.Kafka.E2E.Grains;
 using System;
@@ -8,7 +7,6 @@ using System.IO;
 using System.Text;
 using System.Threading.Tasks;
 using Orleans.Streams.Kafka.E2E.Extensions;
-using Orleans.Streams.Utils;
 using Xunit;
 using Xunit.Sdk;
 
@@ -50,12 +48,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				completion.SetResult(true);
 				return Task.CompletedTask;
 			});
-
-			using (var producer = new Producer<byte[], string>(
-					config,
-					new ByteArraySerializer(),
-					new StringSerializer(Encoding.UTF8))
-			)
+			
+			using (var producer = new Producer<byte[], string>(config))
 			{
 				await producer.ProduceAsync(Consts.StreamNamespace2, new Message<byte[], string>
 				{
@@ -118,13 +112,13 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			return grain;
 		}
 
-		private static IDictionary<string, object> GetKafkaServerConfig()
-			=> new Dictionary<string, object>
+		private static IDictionary<string, string> GetKafkaServerConfig()
+			=> new Dictionary<string, string>
 			{
 				{"bootstrap.servers", "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092"},
-				{"api.version.request", true},
+				{"api.version.request", "true"},
 				{"broker.version.fallback", "0.10.0.0"},
-				{"api.version.fallback.ms", 0},
+				{"api.version.fallback.ms", 0.ToString()},
 				{"sasl.mechanisms", "PLAIN"},
 				{"security.protocol", "SASL_SSL"},
 				{"ssl.ca.location", Path.Combine(".", "cacert.pem")},

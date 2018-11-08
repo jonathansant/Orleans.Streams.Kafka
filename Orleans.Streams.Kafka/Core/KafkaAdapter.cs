@@ -1,15 +1,13 @@
 ﻿using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 using Microsoft.Extensions.Logging;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
-using Orleans.Streams.Kafka.Serialization;
+using Orleans.Streams.Kafka.Producer;
+using Orleans.Streams.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Orleans.Streams.Kafka.Producer;
-using Orleans.Streams.Utils;
 
 namespace Orleans.Streams.Kafka.Core
 {
@@ -43,9 +41,8 @@ namespace Orleans.Streams.Kafka.Core
 			Name = providerName;
 
 			_producer = new Producer<byte[], KafkaBatchContainer>(
-				options.ToProducerProperties(),
-				new ByteArraySerializer(),
-				new BatchContainerSerializer(serializationManager)
+				options.ToProducerProperties(), 
+				valueSerializer: (topic, container) => container.ToByteArray(_serializationManager)
 			);
 		}
 

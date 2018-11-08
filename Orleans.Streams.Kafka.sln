@@ -20,6 +20,7 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{9699A72C-BC03-411A-A748-8865FCA6EF87}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		CHANGELOG.md = CHANGELOG.md
 		.circleci\config.yml = .circleci\config.yml
 		Directory.Build.props = Directory.Build.props
 		package.json = package.json

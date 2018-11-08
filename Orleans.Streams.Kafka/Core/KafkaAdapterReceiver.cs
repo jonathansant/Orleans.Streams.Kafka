@@ -1,15 +1,14 @@
 ﻿using Confluent.Kafka;
-using Confluent.Kafka.Serialization;
 using Microsoft.Extensions.Logging;
 using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
+using Orleans.Streams.Kafka.Consumer;
+using Orleans.Streams.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Orleans.Streams.Kafka.Consumer;
-using Orleans.Streams.Utils;
 
 namespace Orleans.Streams.Kafka.Core
 {
@@ -40,11 +39,7 @@ namespace Orleans.Streams.Kafka.Core
 
 		public Task Initialize(TimeSpan timeout)
 		{
-			_consumer = new Consumer<byte[], byte[]>(
-				_options.ToConsumerProperties(),
-				new ByteArrayDeserializer(),
-				new ByteArrayDeserializer()
-			);
+			_consumer = new Consumer<byte[], byte[]>(_options.ToConsumerProperties());
 
 			var offsetMode = Offset.Stored;
 			switch (_options.ConsumeMode)
