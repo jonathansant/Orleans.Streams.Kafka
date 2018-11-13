@@ -92,7 +92,6 @@ These are the configurable values that the `Orleans.Streams.Kafka`:
 - **ExternalMessageIdentifier**: The header key that will be read by the consumer to identify an external message (i.e. a message not produced by [KafkaAdpater](https://github.com/jonathansant/Orleans.Streams.Kafka/blob/master/Orleans.Streams.Kafka/Core/KafkaAdapter.cs)). *Default value is `external`*
 - **Topics**: The topics that will be used where messages will be Produced/Consumed.
 - **BrokerList**: List of Kafka brokers to connect to.
-- **InternallyManagedQueuesOnly**: Tells the provider whether there will be any messages coming from external sources. *Default value is `false`*
 - **ConsumerGroupId**: The ConsumerGroupId used by the Kafka Consumer. *Default value is `orleans-kafka`*
 - **PollTimeout**: Determines the duration that the Kafka consumer blocks for to wait for messages. *Default value is `100ms`*
 - **AdminRequestTimeout**: Timeout for admin requests. *Default value is `5s`*
