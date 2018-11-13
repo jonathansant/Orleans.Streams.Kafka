@@ -1,8 +1,6 @@
-﻿using System.Threading.Tasks;
-using Orleans.Concurrency;
+﻿using Orleans.Concurrency;
 using Orleans.Streams.Kafka.E2E.Extensions;
-using Orleans.Streams.Utils;
-using Xunit;
+using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.E2E.Grains
 {
@@ -41,7 +39,11 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 		public async Task<TestResult> Fire()
 		{
 			await _stream.OnNextAsync(_model);
-			return await _completion.Task;
+			await Task.WhenAny(_completion.Task, Task.Delay(500));
+
+			return _completion.Task.IsCompleted 
+				? _completion.Task.Result 
+				: null;
 		}
 	}
 }

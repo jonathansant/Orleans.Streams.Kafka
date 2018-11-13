@@ -13,8 +13,8 @@ namespace Orleans.Streams.Kafka.Config
 		public TimeSpan AdminRequestTimeout { get; set; } = TimeSpan.FromSeconds(5);
 		public ConsumeMode ConsumeMode { get; set; } = ConsumeMode.LastCommittedMessage;
 		public TimeSpan ProducerTimeout { get; set; } = TimeSpan.FromSeconds(5);
-		public bool ApiVersionRequest { get; set; }
-		public string BrokerVersionFallback { get; set; }
+		public bool ApiVersionRequest { get; set; } = true;
+		public string BrokerVersionFallback { get; set; } = "0.10.0.0";
 		public int ApiVersionFallbackMs { get; set; }
 		public string SecurityProtocol { get; set; }
 		public string SslCaLocation { get; set; }
