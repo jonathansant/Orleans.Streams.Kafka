@@ -56,7 +56,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
-					options.WithConfluentCloudOptions(new Credentials
+					options.WithSaslOptions(new Credentials
 					{
 						UserName = Environment.GetEnvironmentVariable("userName"),
 						Password = Environment.GetEnvironmentVariable("password"),
@@ -78,7 +78,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
-					options.WithConfluentCloudOptions(new Credentials
+					options.WithSaslOptions(new Credentials
 					{
 						UserName = Environment.GetEnvironmentVariable("userName"),
 						Password = Environment.GetEnvironmentVariable("password")

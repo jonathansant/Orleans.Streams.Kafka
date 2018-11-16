@@ -1,4 +1,11 @@
-﻿ ## [1.4.1](https://github.com/CerberusTech/odin.ngx.ui.core/compare/0.2.0...0.3.0) (2018-11-08)
+﻿## [0.4.0](https://github.com/CerberusTech/odin.ngx.ui.core/compare/0.3.1...0.4.0) (2018-11-16)
+
+### BREAKING CHANGES
+
+ - `KafkaStreamOptions`
+	- `WithConfluentCloudOptions` was changed to `WithSaslOptions`.
+
+## [0.3.0](https://github.com/CerberusTech/odin.ngx.ui.core/compare/0.2.0...0.3.0) (2018-11-08)
 
 ### Features
 

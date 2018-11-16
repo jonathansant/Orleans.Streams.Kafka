@@ -44,12 +44,13 @@ namespace Orleans.Streams.Kafka.Config
 
 	public static class KafkaStreamOptionsPublicExtensions
 	{
-		public static KafkaStreamOptions WithConfluentCloudOptions(this KafkaStreamOptions options, Credentials credentials)
+		public static KafkaStreamOptions WithSaslOptions(
+			this KafkaStreamOptions options, 
+			Credentials credentials, 
+			string saslMechanisim = "PLAIN"
+		)
 		{
-			options.ApiVersionRequest = true;
-			options.BrokerVersionFallback = "0.10.0.0";
-			options.ApiVersionFallbackMs = 0;
-			options.SaslMechanisms = "PLAIN";
+			options.SaslMechanisms = saslMechanisim;
 			options.SecurityProtocol = "SASL_SSL";
 			options.SaslUserName = credentials.UserName;
 			options.SaslPassword = credentials.Password;
