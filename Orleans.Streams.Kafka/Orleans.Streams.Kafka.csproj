@@ -8,9 +8,9 @@
     <None Remove="cacert.pem" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="cacert.pem">
-      <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-    </Content>
+    <EmbeddedResource Include="cacert.pem">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
   <!-- vendor packages -->
   <ItemGroup>
