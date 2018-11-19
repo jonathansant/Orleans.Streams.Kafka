@@ -60,6 +60,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					{
 						UserName = Environment.GetEnvironmentVariable("userName"),
 						Password = Environment.GetEnvironmentVariable("password"),
+						SslCaLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cacert.pem")
 					});
 				})
 				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
@@ -81,7 +82,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.WithSaslOptions(new Credentials
 					{
 						UserName = Environment.GetEnvironmentVariable("userName"),
-						Password = Environment.GetEnvironmentVariable("password")
+						Password = Environment.GetEnvironmentVariable("password"),
+						SslCaLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cacert.pem")
 					});
 				})
 				.ConfigureApplicationParts(parts =>

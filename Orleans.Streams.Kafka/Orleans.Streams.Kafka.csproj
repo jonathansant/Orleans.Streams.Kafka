@@ -4,14 +4,6 @@
     <Description>Orleans streaming provider for Kafka.</Description>
     <PackageTags>orleans kafka streams providers streamprovider confluent</PackageTags>
   </PropertyGroup>
-  <ItemGroup>
-    <None Remove="cacert.pem" />
-  </ItemGroup>
-  <ItemGroup>
-    <EmbeddedResource Include="cacert.pem">
-      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
-    </EmbeddedResource>
-  </ItemGroup>
   <!-- vendor packages -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.1.1" />

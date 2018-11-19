@@ -27,6 +27,7 @@ namespace Orleans.Streams.Kafka.Config
 	{
 		public string UserName { get; set; }
 		public string Password { get; set; }
+		public string SslCaLocation { get; set; }
 	}
 
 	public enum ConsumeMode

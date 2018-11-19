@@ -1,4 +1,5 @@
-﻿using Orleans.Streams.Kafka.Utils;
+﻿using System;
+using Orleans.Streams.Kafka.Utils;
 using System.Collections.Generic;
 using System.IO;
 
@@ -47,14 +48,14 @@ namespace Orleans.Streams.Kafka.Config
 		public static KafkaStreamOptions WithSaslOptions(
 			this KafkaStreamOptions options, 
 			Credentials credentials, 
-			string saslMechanisim = "PLAIN"
+			string saslMechanism = "PLAIN"
 		)
 		{
-			options.SaslMechanisms = saslMechanisim;
+			options.SaslMechanisms = saslMechanism;
 			options.SecurityProtocol = "SASL_SSL";
 			options.SaslUserName = credentials.UserName;
 			options.SaslPassword = credentials.Password;
-			options.SslCaLocation = Path.Combine(".", "cacert.pem");
+			options.SslCaLocation = credentials.SslCaLocation;
 
 			return options;
 		}
