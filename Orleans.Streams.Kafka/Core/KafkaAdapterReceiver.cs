@@ -124,6 +124,8 @@ namespace Orleans.Streams.Kafka.Core
 			}
 			finally
 			{
+				_consumer.Unassign();
+				_consumer.Unsubscribe();
 				_consumer.Dispose();
 				_consumer = null;
 			}
