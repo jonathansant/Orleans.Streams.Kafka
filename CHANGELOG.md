@@ -1,4 +1,10 @@
-﻿## [0.6.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.4.0...0.6.0) (2018-11-19)
+﻿## [0.6.2](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.0...0.6.2) (2018-11-22)
+
+### Features
+
+- removed `timeout` from the `Produce` extensions method. Producer timeout is now set via the `message.timeout.ms` Producer config.
+
+## [0.6.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.4.0...0.6.0) (2018-11-19)
 
 ### Features
 

@@ -1,14 +1,18 @@
-﻿using System;
-using Orleans.Streams.Kafka.Utils;
+﻿using Orleans.Streams.Kafka.Utils;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 
 namespace Orleans.Streams.Kafka.Config
 {
 	internal static class KafkaStreamOptionsExtensions
 	{
 		public static IDictionary<string, string> ToProducerProperties(this KafkaStreamOptions options)
-			=> CreateCommonProperties(options);
+		{
+			var config =  CreateCommonProperties(options);
+			config.TryAdd("message.timeout.ms", options.ProducerTimeout.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+
+			return config;
+		}
 
 		public static IDictionary<string, string> ToConsumerProperties(this KafkaStreamOptions options)
 		{

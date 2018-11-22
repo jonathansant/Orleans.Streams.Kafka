@@ -64,7 +64,7 @@ namespace Orleans.Streams.Kafka.Core
 					false
 				);
 
-				await _producer.Produce(batch, _options.ProducerTimeout);
+				await _producer.Produce(batch);
 			}
 			catch (Exception ex)
 			{
