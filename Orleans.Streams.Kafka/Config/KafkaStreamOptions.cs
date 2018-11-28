@@ -21,6 +21,7 @@ namespace Orleans.Streams.Kafka.Config
 		public string SaslUserName { get; set; }
 		public string SaslPassword { get; set; }
 		public string SaslMechanisms { get; set; }
+		public TimeSpan PollBufferTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 	}
 
 	public class Credentials

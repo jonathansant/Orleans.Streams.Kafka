@@ -82,6 +82,9 @@ namespace Orleans.Streams.Kafka.Core
 			);
 
 		public void Dispose()
-			=> _producer.Dispose();
+		{
+			_producer.Flush(TimeSpan.FromSeconds(2));
+			_producer.Dispose();
+		}
 	}
 }
