@@ -94,6 +94,7 @@ These are the configurable values that the `Orleans.Streams.Kafka`:
 - **BrokerList**: List of Kafka brokers to connect to.
 - **ConsumerGroupId**: The ConsumerGroupId used by the Kafka Consumer. *Default value is `orleans-kafka`*
 - **PollTimeout**: Determines the duration that the Kafka consumer blocks for to wait for messages. *Default value is `100ms`*
+- **PollBufferTimeout**: Determines the duration the `KafkaAdapterReceiver` will continue to poll for messages (for the same batch) *Default value is `500ms`*
 - **AdminRequestTimeout**: Timeout for admin requests. *Default value is `5s`*
 - **ConsumeMode**: Determines the offset to start consuming from. *Default value is `ConsumeMode.LastCommittedMessage`*
 - **ProducerTimeout**: Timeout for produce requests. *Default value is `5s`*
