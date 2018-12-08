@@ -8,8 +8,8 @@ using Orleans.Streams.Utils;
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
 using System.Threading.Tasks;
-using System.Timers;
 
 namespace Orleans.Streams.Kafka.Core
 {
@@ -19,11 +19,9 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly QueueProperties _queueProperties;
-		private readonly Timer _bufferTimer;
 
 		private Consumer<byte[], byte[]> _consumer;
 		private Task _commitPromise = Task.CompletedTask;
-		private bool _timerElapsed;
 
 		public KafkaAdapterReceiver(
 			QueueProperties queueProperties,
@@ -37,9 +35,6 @@ namespace Orleans.Streams.Kafka.Core
 			_queueProperties = queueProperties;
 			_serializationManager = serializationManager;
 			_logger = loggerFactory.CreateLogger<KafkaAdapterReceiver>();
-			
-			_bufferTimer = new Timer(_options.PollBufferTimeout.TotalMilliseconds);
-			_bufferTimer.Elapsed += (sender, args) => _timerElapsed = true;
 		}
 
 		public Task Initialize(TimeSpan timeout)
@@ -76,44 +71,42 @@ namespace Orleans.Streams.Kafka.Core
 		public Task<IList<IBatchContainer>> GetQueueMessagesAsync(int maxCount)
 		{
 			var consumerRef = _consumer; // store direct ref, in case we are somehow asked to shutdown while we are receiving.
-			_timerElapsed = false;
 			
 			if (consumerRef == null)
 				return Task.FromResult<IList<IBatchContainer>>(new List<IBatchContainer>());
 
-			try
+			using (var cancellationSource = new CancellationTokenSource())
 			{
-				_bufferTimer.Start();
+				cancellationSource.CancelAfter(_options.PollBufferTimeout);
 
-				var batches = new List<IBatchContainer>();
-				for (var i = 0; i < maxCount && !_timerElapsed; i++)
+				try
 				{
-					var consumeResult = _consumer.Consume(_options.PollTimeout);
-					if (consumeResult == null)
-						break;
+					var batches = new List<IBatchContainer>();
+					for (var i = 0; i < maxCount && !cancellationSource.IsCancellationRequested; i++)
+					{
+						var consumeResult = _consumer.Consume(_options.PollTimeout);
+						if (consumeResult == null)
+							break;
 
-					var batchContainer = consumeResult.ToBatchContainer(
-						_serializationManager,
-						_options,
-						_queueProperties.Namespace
-					);
+						var batchContainer = consumeResult.ToBatchContainer(
+							_serializationManager,
+							_options,
+							_queueProperties.Namespace
+						);
 
-					// todo: remove this log when we introduce tracing
-					_logger.Info("Received batch: {@batch}", batchContainer); 
+						// todo: remove this log when we introduce tracing
+						_logger.Info("Received batch: {@batch}", batchContainer);
 
-					batches.Add(batchContainer);
+						batches.Add(batchContainer);
+					}
+
+					return Task.FromResult<IList<IBatchContainer>>(batches);
 				}
-
-				return Task.FromResult<IList<IBatchContainer>>(batches);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(ex, "Failed to poll for messages queueId: {@queueProperties}", _queueProperties);
-				throw;
-			}
-			finally
-			{
-				_bufferTimer.Stop();
+				catch (Exception ex)
+				{
+					_logger.LogError(ex, "Failed to poll for messages queueId: {@queueProperties}", _queueProperties);
+					throw;
+				}
 			}
 		}
 
@@ -154,9 +147,6 @@ namespace Orleans.Streams.Kafka.Core
 				_consumer.Unsubscribe();
 				_consumer.Dispose();
 				_consumer = null;
-				
-				_bufferTimer.Stop();
-				_bufferTimer.Dispose();
 			}
 		}
 	}

@@ -78,10 +78,10 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				{
 					options.BrokerList = new List<string> { "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092" };
 					options.ConsumerGroupId = "TestGroup";
-					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
-					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
+					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
+					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.WithSaslOptions(new Credentials
 					{
 						UserName = Environment.GetEnvironmentVariable("userName"),
