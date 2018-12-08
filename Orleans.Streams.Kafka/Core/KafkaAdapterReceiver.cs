@@ -139,7 +139,7 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			try
 			{
-				await Task.WhenAll(_commitPromise);
+				await _commitPromise;
 			}
 			finally
 			{
