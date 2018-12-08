@@ -26,9 +26,6 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		public Task InitializeAsync()
 		{
-			Environment.SetEnvironmentVariable("userName", "CC4ZKCWQZHAHJASA");
-			Environment.SetEnvironmentVariable("password", "OsacTSG5OtU+l6Da77MGZVqr3qrDcBlgGZZUd9Up8Vh+Z8jmhgZgOqyWrWTTHpQ/");
-			
 			var builder = new TestClusterBuilder(_noOfSilos);
 
 			builder.AddSiloBuilderConfigurator<SiloBuilderConfigurator>();
