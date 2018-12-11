@@ -1,4 +1,10 @@
-﻿## [0.6.2](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.0...0.6.2) (2018-11-22)
+﻿## [0.6.3](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.2...0.6.3) (2018-12-08)
+
+### Features
+
+- added batching to `KafkaAdapterReceiver`.
+
+## [0.6.2](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.0...0.6.2) (2018-11-22)
 
 ### Features
 
