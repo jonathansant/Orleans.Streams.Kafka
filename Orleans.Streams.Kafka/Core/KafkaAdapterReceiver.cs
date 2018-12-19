@@ -89,9 +89,7 @@ namespace Orleans.Streams.Kafka.Core
 			try
 			{
 				if (!messages.Any())
-				{
 					return;
-				}
 
 				batchWithHighestOffset = messages
 					.Cast<KafkaBatchContainer>()
