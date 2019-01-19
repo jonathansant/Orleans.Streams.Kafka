@@ -50,18 +50,12 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			=> clientBuilder
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
-					options.BrokerList = new List<string> { "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092" };
+					options.BrokerList = new List<string> { "localhost:9092" };
 					options.ConsumerGroupId = "TestGroup";
 					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
-					options.WithSaslOptions(new Credentials
-					{
-						UserName = Environment.GetEnvironmentVariable("userName"),
-						Password = Environment.GetEnvironmentVariable("password"),
-						SslCaLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cacert.pem")
-					});
 				})
 				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 	}
@@ -73,18 +67,12 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.AddMemoryGrainStorage("PubSubStore")
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
-					options.BrokerList = new List<string> { "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092" };
+					options.BrokerList = new List<string> { "localhost:9092" };
 					options.ConsumerGroupId = "TestGroup";
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
-					options.WithSaslOptions(new Credentials
-					{
-						UserName = Environment.GetEnvironmentVariable("userName"),
-						Password = Environment.GetEnvironmentVariable("password"),
-						SslCaLocation = Path.Combine(AppDomain.CurrentDomain.BaseDirectory, "cacert.pem")
-					});
 				})
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());

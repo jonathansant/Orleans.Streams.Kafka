@@ -48,21 +48,21 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				completion.SetResult(true);
 				return Task.CompletedTask;
 			});
-			
+
 			using (var producer = new Producer<byte[], string>(config))
 			{
 				await producer.ProduceAsync(Consts.StreamNamespace2, new Message<byte[], string>
 				{
 					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
 					Value = JsonConvert.SerializeObject(testMessage),
-					Headers = new Headers { new Header("x-external-message", BitConverter.GetBytes(true)) },
+					Headers = new Headers {new Header("x-external-message", BitConverter.GetBytes(true))},
 					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				});
 			}
 
-			await Task.WhenAny(completion.Task, Task.Delay(ReceiveDelay));
+			await Task.WhenAny(completion.Task, Task.Delay(ReceiveDelay * 4));
 
-			if(!completion.Task.IsCompleted)
+			if (!completion.Task.IsCompleted)
 				throw new XunitException("Message not received.");
 		}
 
@@ -115,15 +115,10 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		private static IDictionary<string, string> GetKafkaServerConfig()
 			=> new Dictionary<string, string>
 			{
-				{"bootstrap.servers", "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092"},
+				{"bootstrap.servers", "localhost:9092"},
 				{"api.version.request", "true"},
 				{"broker.version.fallback", "0.10.0.0"},
-				{"api.version.fallback.ms", 0.ToString()},
-				{"sasl.mechanisms", "PLAIN"},
-				{"security.protocol", "SASL_SSL"},
-				{"ssl.ca.location", Path.Combine(".", "cacert.pem")},
-				{"sasl.username", Environment.GetEnvironmentVariable("userName")},
-				{"sasl.password", Environment.GetEnvironmentVariable("password")},
+				{"api.version.fallback.ms", 0.ToString()}
 			};
 	}
 }

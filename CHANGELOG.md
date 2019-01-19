@@ -1,4 +1,10 @@
-﻿## [0.6.3](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.2...0.6.3) (2018-12-08)
+﻿## [0.6.4](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.3...0.6.4) (2019-01-19)
+
+### Bug Fixes
+
+- update `Orleans.Streams.Utils` to 2.1.1 which fixes Topics with one partition. 
+
+## [0.6.3](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.2...0.6.3) (2018-12-08)
 
 ### Features
 
