@@ -7,6 +7,7 @@ using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Threading.Tasks;
+using Orleans.Streams.Utils.MessageTracking;
 using Xunit;
 
 namespace Orleans.Streams.Kafka.E2E.Tests
@@ -51,7 +52,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = new List<string> { "localhost:9092" };
-					options.ConsumerGroupId = "TestGroup";
+					options.ConsumerGroupId = "E2EGroup";
 					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ExternalMessageIdentifier = "x-external-message";
@@ -65,14 +66,16 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
 				.AddMemoryGrainStorage("PubSubStore")
+				.UseLoggingTracker()
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = new List<string> { "localhost:9092" };
-					options.ConsumerGroupId = "TestGroup";
+					options.ConsumerGroupId = "E2EGroup";
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
+					options.MessageTrackingEnabled = true;
 				})
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());

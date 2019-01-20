@@ -17,6 +17,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly IDictionary<string, QueueProperties> _queueProperties;
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
+		private readonly IGrainFactory _grainFactory;
 		private readonly Producer<byte[], KafkaBatchContainer> _producer;
 		private readonly ILogger<KafkaAdapter> _logger;
 
@@ -29,13 +30,15 @@ namespace Orleans.Streams.Kafka.Core
 			KafkaStreamOptions options,
 			IDictionary<string, QueueProperties> queueProperties,
 			SerializationManager serializationManager,
-			ILoggerFactory loggerFactory
+			ILoggerFactory loggerFactory,
+			IGrainFactory grainFactory
 		)
 		{
 			_options = options;
 			_queueProperties = queueProperties;
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
+			_grainFactory = grainFactory;
 			_logger = _loggerFactory.CreateLogger<KafkaAdapter>();
 
 			Name = providerName;
@@ -68,7 +71,12 @@ namespace Orleans.Streams.Kafka.Core
 			}
 			catch (Exception ex)
 			{
-				_logger.LogError(ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}", streamNamespace, streamGuid);
+				_logger.LogError(
+					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}", 
+					streamNamespace, 
+					streamGuid.ToString()
+				);
+				
 				throw;
 			}
 		}
@@ -78,7 +86,8 @@ namespace Orleans.Streams.Kafka.Core
 				_queueProperties[queueId.GetStringNamePrefix()], 
 				_options, 
 				_serializationManager, 
-				_loggerFactory
+				_loggerFactory,
+				_grainFactory
 			);
 
 		public void Dispose()

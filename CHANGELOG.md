@@ -1,4 +1,15 @@
-﻿## [0.6.4](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.3...0.6.4) (2019-01-19)
+﻿## [0.7.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.4...0.7.0) (2019-01-20)
+
+### Features
+
+- `KafkaAdapterReceiver` now can track a message using the new `MessageTrackerAPI` see: [`UseLoggingTracker`](www.gooogle.com). 
+
+### BREAKING CHANGES
+
+ - `Orleans`
+	- updated to orleans 2.2.3.
+
+## [0.6.4](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.3...0.6.4) (2019-01-19)
 
 ### Bug Fixes
 
