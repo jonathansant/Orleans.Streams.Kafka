@@ -19,6 +19,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
+		private readonly IGrainFactory _grainFactory;
 		private readonly IQueueAdapterCache _adapterCache;
 		private readonly IStreamQueueMapper _streamQueueMapper;
 		private readonly ILogger<KafkaAdapterFactory> _logger;
@@ -29,7 +30,8 @@ namespace Orleans.Streams.Kafka.Core
 			KafkaStreamOptions options,
 			SimpleQueueCacheOptions cacheOptions,
 			SerializationManager serializationManager,
-			ILoggerFactory loggerFactory
+			ILoggerFactory loggerFactory,
+			IGrainFactory grainFactory
 		)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
@@ -37,6 +39,7 @@ namespace Orleans.Streams.Kafka.Core
 			_name = name;
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
+			_grainFactory = grainFactory;
 			_logger = loggerFactory.CreateLogger<KafkaAdapterFactory>();
 
 			if (options.Topics != null && options.Topics.Count == 0)
@@ -59,7 +62,8 @@ namespace Orleans.Streams.Kafka.Core
 				_options,
 				_queueProperties,
 				_serializationManager,
-				_loggerFactory
+				_loggerFactory,
+				_grainFactory
 			);
 
 			return Task.FromResult<IQueueAdapter>(adapter);

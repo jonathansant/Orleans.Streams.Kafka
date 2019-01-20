@@ -18,6 +18,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly ILogger<KafkaAdapterReceiver> _logger;
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
+		private readonly IGrainFactory _grainFactory;
 		private readonly QueueProperties _queueProperties;
 
 		private Consumer<byte[], byte[]> _consumer;
@@ -27,13 +28,15 @@ namespace Orleans.Streams.Kafka.Core
 			QueueProperties queueProperties,
 			KafkaStreamOptions options,
 			SerializationManager serializationManager,
-			ILoggerFactory loggerFactory
+			ILoggerFactory loggerFactory,
+			IGrainFactory grainFactory
 		)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
 
 			_queueProperties = queueProperties;
 			_serializationManager = serializationManager;
+			_grainFactory = grainFactory;
 			_logger = loggerFactory.CreateLogger<KafkaAdapterReceiver>();
 		}
 
@@ -124,7 +127,7 @@ namespace Orleans.Streams.Kafka.Core
 
 		private Task<IList<IBatchContainer>> PollForMessages(int maxCount, CancellationToken cancellation)
 		{
-			var pollPromise = Task.Run<IList<IBatchContainer>>(() =>
+			var pollPromise = Task.Run<IList<IBatchContainer>>(async () =>
 			{
 				try
 				{
@@ -141,9 +144,8 @@ namespace Orleans.Streams.Kafka.Core
 							_queueProperties.Namespace
 						);
 
-						// todo: remove this log when we introduce tracing
-						_logger.Info("Received batch: {@batch}", batchContainer);
-
+						await TrackMessage(batchContainer);
+						
 						batches.Add(batchContainer);
 					}
 
@@ -157,6 +159,15 @@ namespace Orleans.Streams.Kafka.Core
 			}, cancellation);
 
 			return pollPromise;
+		}
+
+		private Task TrackMessage(IBatchContainer container)
+		{
+			if (!_options.MessageTrackingEnabled) 
+				return Task.CompletedTask;
+			
+			var trackingGrain = _grainFactory.GetMessageTrackerGrain(_queueProperties.QueueName);
+			return trackingGrain.Track(container);
 		}
 	}
 }

@@ -7,6 +7,8 @@ using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
+using Microsoft.Extensions.DependencyInjection;
+using Orleans.Streams.Utils.MessageTracking;
 
 namespace TestSilo
 {
@@ -33,12 +35,14 @@ namespace TestSilo
 				.ConfigureLogging(logging => logging.AddConsole())
 				.AddMemoryGrainStorageAsDefault()
 				.AddMemoryGrainStorage("PubSubStore")
+				.UseLoggingTracker()
 				.AddKafkaStreamProvider("KafkaProvider", options =>
 				{
 					options.BrokerList = new List<string> { "localhost:9092" };
 					options.ConsumerGroupId = "TestGroup";
 					options.ExternalMessageIdentifier = "external";
 					options.Topics = new List<string> { "gossip-testing" };
+					options.MessageTrackingEnabled = true;
 				});
 
 			var host = builder.Build();
