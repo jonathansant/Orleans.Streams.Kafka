@@ -1,6 +1,5 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
-using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Consumer;
@@ -78,11 +77,16 @@ namespace Orleans.Streams.Kafka.Core
 			if (consumerRef == null)
 				return Task.FromResult<IList<IBatchContainer>>(new List<IBatchContainer>());
 
-			using (var cancellationSource = new CancellationTokenSource())
-			{
-				cancellationSource.CancelAfter(_options.PollBufferTimeout);
-				return PollForMessages(maxCount, cancellationSource.Token);
-			}
+			var cancellationSource = new CancellationTokenSource();
+			cancellationSource.CancelAfter(_options.PollBufferTimeout);
+
+			return Task.Run(
+				() => PollForMessages(
+					maxCount,
+					cancellationSource
+				),
+				cancellationSource.Token
+			);
 		}
 
 		public async Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
@@ -125,47 +129,46 @@ namespace Orleans.Streams.Kafka.Core
 			}
 		}
 
-		private Task<IList<IBatchContainer>> PollForMessages(int maxCount, CancellationToken cancellation)
+		private async Task<IList<IBatchContainer>> PollForMessages(int maxCount, CancellationTokenSource cancellation)
 		{
-			var pollPromise = Task.Run<IList<IBatchContainer>>(async () =>
+			try
 			{
-				try
+				var batches = new List<IBatchContainer>();
+				for (var i = 0; i < maxCount && !cancellation.IsCancellationRequested; i++)
 				{
-					var batches = new List<IBatchContainer>();
-					for (var i = 0; i < maxCount && !cancellation.IsCancellationRequested; i++)
-					{
-						var consumeResult = _consumer.Consume(_options.PollTimeout);
-						if (consumeResult == null)
-							break;
+					var consumeResult = _consumer.Consume(_options.PollTimeout);
+					if (consumeResult == null)
+						break;
 
-						var batchContainer = consumeResult.ToBatchContainer(
-							_serializationManager,
-							_options,
-							_queueProperties.Namespace
-						);
+					var batchContainer = consumeResult.ToBatchContainer(
+						_serializationManager,
+						_options,
+						_queueProperties.Namespace
+					);
 
-						await TrackMessage(batchContainer);
-						
-						batches.Add(batchContainer);
-					}
+					await TrackMessage(batchContainer);
 
-					return batches;
+					batches.Add(batchContainer);
 				}
-				catch (Exception ex)
-				{
-					_logger.LogError(ex, "Failed to poll for messages queueId: {@queueProperties}", _queueProperties);
-					throw;
-				}
-			}, cancellation);
 
-			return pollPromise;
+				return batches;
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(ex, "Failed to poll for messages queueId: {@queueProperties}", _queueProperties);
+				throw;
+			}
+			finally
+			{
+				cancellation.Dispose();
+			}
 		}
 
 		private Task TrackMessage(IBatchContainer container)
 		{
-			if (!_options.MessageTrackingEnabled) 
+			if (!_options.MessageTrackingEnabled)
 				return Task.CompletedTask;
-			
+
 			var trackingGrain = _grainFactory.GetMessageTrackerGrain(_queueProperties.QueueName);
 			return trackingGrain.Track(container);
 		}
