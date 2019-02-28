@@ -41,7 +41,7 @@ namespace ConfluentSample
 
 			try
 			{
-				using (var producer = new Producer<byte[], string>(config))
+				using (var producer = new ProducerBuilder<byte[], string>(config).Build())
 				{
 					var publishPromise5 = await producer.ProduceAsync("jonnyenglish", new Message<byte[], string>
 					{
@@ -70,8 +70,8 @@ namespace ConfluentSample
 				//{ "auto.commit.interval.ms", 5000 },
 //				{ "auto.offset.reset", "earliest" }
 			};
-
-			using (var consumer = new Consumer<string, string>(conf))
+			
+			using (var consumer = new ConsumerBuilder<string, string>(conf).Build())
 			using (var admin = new AdminClient(consumer.Handle))
 			{
 				Console.WriteLine($@"Partition IDs: {
@@ -84,9 +84,6 @@ namespace ConfluentSample
 						.Select(x => x.PartitionId))
 					}"
 				);
-
-				consumer.OnPartitionEOF += (_, end)
-					=> Console.WriteLine($"Reached end of topic {end.Topic} partition {end.Partition}, next message will be at offset {end.Offset}");
 
 
 				consumer.Assign(new TopicPartitionOffset("my-topic", 1, Offset.Beginning));

@@ -2,7 +2,6 @@
 using Newtonsoft.Json;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
-using Orleans.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -92,19 +91,11 @@ namespace Orleans.Streams.Kafka.Core
 			return true;
 		}
 
-		public byte[] ToByteArray(SerializationManager serializationManager)
-			=> serializationManager.SerializeToByteArray(this);
-
 		public int CompareTo(KafkaBatchContainer other) 
 			=> TopicPartitionOffSet.Offset.Value.CompareTo(other.TopicPartitionOffSet.Offset.Value);
 
 		public override string ToString()
 			=> $"[KafkaBatchContainer:Stream={StreamGuid},#Items={_events.Count}]";
-
-		public int CompareTo(object obj) => throw new NotImplementedException();
-
-		internal static IBatchContainer ToBatchContainer(Message message, SerializationManager serializationManager)
-			=> serializationManager.DeserializeFromByteArray<KafkaBatchContainer>(message.Value);
 
 		private IEnumerable<Tuple<T, StreamSequenceToken>> SerializeExternalEvents<T>(EventSequenceTokenV2 sequenceToken)
 		{

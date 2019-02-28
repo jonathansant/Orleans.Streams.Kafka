@@ -42,11 +42,10 @@ namespace Orleans.Streams.Kafka.Core
 			_logger = _loggerFactory.CreateLogger<KafkaAdapter>();
 
 			Name = providerName;
-
-			_producer = new Producer<byte[], KafkaBatchContainer>(
-				options.ToProducerProperties(), 
-				valueSerializer: (topic, container) => container.ToByteArray(_serializationManager)
-			);
+			
+			_producer = new ProducerBuilder<byte[], KafkaBatchContainer>(options.ToProducerProperties())
+				.SetValueSerializer(new KafkaBatchContainerSerializer(serializationManager))
+				.Build();
 		}
 
 		public async Task QueueMessageBatchAsync<T>(
@@ -72,20 +71,20 @@ namespace Orleans.Streams.Kafka.Core
 			catch (Exception ex)
 			{
 				_logger.LogError(
-					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}", 
-					streamNamespace, 
+					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}",
+					streamNamespace,
 					streamGuid.ToString()
 				);
-				
+
 				throw;
 			}
 		}
 
 		public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
 			=> new KafkaAdapterReceiver(
-				_queueProperties[queueId.GetStringNamePrefix()], 
-				_options, 
-				_serializationManager, 
+				_queueProperties[queueId.GetStringNamePrefix()],
+				_options,
+				_serializationManager,
 				_loggerFactory,
 				_grainFactory
 			);

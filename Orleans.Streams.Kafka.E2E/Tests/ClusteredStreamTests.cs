@@ -1,12 +1,11 @@
 ﻿using Confluent.Kafka;
 using Newtonsoft.Json;
+using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Orleans.Streams.Kafka.E2E.Extensions;
 using Xunit;
 using Xunit.Sdk;
 
@@ -14,7 +13,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 {
 	public class ClusteredStreamTests : TestBase
 	{
-		private const int ReceiveDelay = 500;
+		private const int ReceiveDelay = 1000;
 
 		public ClusteredStreamTests()
 		{
@@ -49,7 +48,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				return Task.CompletedTask;
 			});
 
-			using (var producer = new Producer<byte[], string>(config))
+			using (var producer = new ProducerBuilder<byte[], string>(config).Build())
 			{
 				await producer.ProduceAsync(Consts.StreamNamespace2, new Message<byte[], string>
 				{
@@ -95,7 +94,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				lastMessage2 = testMessage2;
 			}
 
-			await Task.WhenAny(result, Task.Delay(ReceiveDelay * 4));
+			await Task.WhenAny(result, Task.Delay(ReceiveDelay * 6));
 
 			if (!result.IsCompleted)
 				throw new XunitException("Message not received.");
