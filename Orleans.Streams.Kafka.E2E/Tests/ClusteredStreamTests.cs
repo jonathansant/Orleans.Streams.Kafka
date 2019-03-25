@@ -13,7 +13,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 {
 	public class ClusteredStreamTests : TestBase
 	{
-		private const int ReceiveDelay = 1000;
+		private const int ReceiveDelay = 500;
 
 		public ClusteredStreamTests()
 		{
@@ -94,7 +94,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				lastMessage2 = testMessage2;
 			}
 
-			await Task.WhenAny(result, Task.Delay(ReceiveDelay * 6));
+			await Task.WhenAny(result, Task.Delay(ReceiveDelay * 4));
 
 			if (!result.IsCompleted)
 				throw new XunitException("Message not received.");

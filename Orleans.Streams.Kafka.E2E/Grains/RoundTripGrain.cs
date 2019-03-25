@@ -39,7 +39,7 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 		public async Task<TestResult> Fire()
 		{
 			await _stream.OnNextAsync(_model);
-			await Task.WhenAny(_completion.Task, Task.Delay(10000));
+			await Task.WhenAny(_completion.Task, Task.Delay(1000));
 
 			return _completion.Task.IsCompleted 
 				? _completion.Task.Result 
