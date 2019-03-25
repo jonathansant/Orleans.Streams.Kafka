@@ -7,8 +7,8 @@ namespace Orleans.Streams.Kafka.Producer
 {
 	public static class ProducerExtensions
 	{
-		public static Task Produce(this Producer<byte[], KafkaBatchContainer> producer, KafkaBatchContainer batch)
-			=> producer.ProduceAsync(
+		public static Task Produce(this IProducer<byte[], KafkaBatchContainer> producer, KafkaBatchContainer batch)
+			=> Task.Run(() => producer.ProduceAsync(
 				batch.StreamNamespace,
 				new Message<byte[], KafkaBatchContainer>
 				{
@@ -16,6 +16,6 @@ namespace Orleans.Streams.Kafka.Producer
 					Value = batch,
 					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				}
-			);
+			));
 	}
 }

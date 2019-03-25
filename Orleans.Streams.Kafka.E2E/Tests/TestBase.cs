@@ -18,9 +18,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		protected TestCluster Cluster { get; private set; }
 
 		protected void Initialize(short noOfSilos)
-		{
-			_noOfSilos = noOfSilos;
-		}
+			=> _noOfSilos = noOfSilos;
 
 		protected void ShutDown()
 			=> Cluster?.StopAllSilos();

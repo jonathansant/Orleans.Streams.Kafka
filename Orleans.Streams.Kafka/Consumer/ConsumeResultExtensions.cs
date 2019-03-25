@@ -25,7 +25,7 @@ namespace Orleans.Streams.Kafka.Consumer
 
 			if (externalHeader != null)
 			{
-				var isExternal = BitConverter.ToBoolean(externalHeader.Value, 0);
+				var isExternal = BitConverter.ToBoolean(externalHeader.GetValueBytes(), 0);
 				if (isExternal)
 				{
 					var key = Encoding.UTF8.GetString(result.Key);

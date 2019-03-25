@@ -1,12 +1,11 @@
 ﻿using Confluent.Kafka;
 using Newtonsoft.Json;
+using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Text;
 using System.Threading.Tasks;
-using Orleans.Streams.Kafka.E2E.Extensions;
 using Xunit;
 using Xunit.Sdk;
 
@@ -49,13 +48,13 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				return Task.CompletedTask;
 			});
 
-			using (var producer = new Producer<byte[], string>(config))
+			using (var producer = new ProducerBuilder<byte[], string>(config).Build())
 			{
 				await producer.ProduceAsync(Consts.StreamNamespace2, new Message<byte[], string>
 				{
 					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
 					Value = JsonConvert.SerializeObject(testMessage),
-					Headers = new Headers {new Header("x-external-message", BitConverter.GetBytes(true))},
+					Headers = new Headers { new Header("x-external-message", BitConverter.GetBytes(true)) },
 					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				});
 			}

@@ -20,8 +20,9 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly IGrainFactory _grainFactory;
 		private readonly QueueProperties _queueProperties;
 
-		private Consumer<byte[], byte[]> _consumer;
+		private IConsumer<byte[], byte[]> _consumer;
 		private Task _commitPromise = Task.CompletedTask;
+		private Task<IList<IBatchContainer>> _consumePromise;
 
 		public KafkaAdapterReceiver(
 			QueueProperties queueProperties,
@@ -41,7 +42,15 @@ namespace Orleans.Streams.Kafka.Core
 
 		public Task Initialize(TimeSpan timeout)
 		{
-			_consumer = new Consumer<byte[], byte[]>(_options.ToConsumerProperties());
+			_consumer = new ConsumerBuilder<byte[], byte[]>(_options.ToConsumerProperties())
+				.SetErrorHandler((sender, errorEvent) =>
+					_logger.LogError(
+						"Consume error reason: {reason}, code: {code}, is broker error: {errorType}",
+						errorEvent.Reason,
+						errorEvent.Code,
+						errorEvent.IsBrokerError
+					))
+				.Build();
 
 			var offsetMode = Offset.Stored;
 			switch (_options.ConsumeMode)
@@ -56,14 +65,6 @@ namespace Orleans.Streams.Kafka.Core
 					offsetMode = Offset.Beginning;
 					break;
 			}
-
-			_consumer.OnError += (sender, errorEvent) =>
-				_logger.LogError(
-					"Consume error reason: {reason}, code: {code}, is broker error: {errorType}",
-					errorEvent.Reason,
-					errorEvent.Code,
-					errorEvent.IsBrokerError
-				);
 
 			_consumer.Assign(new TopicPartitionOffset(_queueProperties.Namespace, (int)_queueProperties.PartitionId, offsetMode));
 
@@ -80,13 +81,15 @@ namespace Orleans.Streams.Kafka.Core
 			var cancellationSource = new CancellationTokenSource();
 			cancellationSource.CancelAfter(_options.PollBufferTimeout);
 
-			return Task.Run(
+			_consumePromise = Task.Run(
 				() => PollForMessages(
 					maxCount,
 					cancellationSource
 				),
 				cancellationSource.Token
 			);
+
+			return _consumePromise;
 		}
 
 		public async Task MessagesDeliveredAsync(IList<IBatchContainer> messages)
@@ -118,12 +121,13 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			try
 			{
-				await _commitPromise;
+				await Task.WhenAll(_commitPromise, _consumePromise);
 			}
 			finally
 			{
 				_consumer.Unassign();
 				_consumer.Unsubscribe();
+				_consumer.Close();
 				_consumer.Dispose();
 				_consumer = null;
 			}

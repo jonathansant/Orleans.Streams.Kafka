@@ -18,7 +18,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
-		private readonly Producer<byte[], KafkaBatchContainer> _producer;
+		private readonly IProducer<byte[], KafkaBatchContainer> _producer;
 		private readonly ILogger<KafkaAdapter> _logger;
 
 		public string Name { get; }
@@ -43,10 +43,9 @@ namespace Orleans.Streams.Kafka.Core
 
 			Name = providerName;
 
-			_producer = new Producer<byte[], KafkaBatchContainer>(
-				options.ToProducerProperties(), 
-				valueSerializer: (topic, container) => container.ToByteArray(_serializationManager)
-			);
+			_producer = new ProducerBuilder<byte[], KafkaBatchContainer>(options.ToProducerProperties())
+				.SetValueSerializer(new KafkaBatchContainerSerializer(serializationManager))
+				.Build();
 		}
 
 		public async Task QueueMessageBatchAsync<T>(
@@ -59,10 +58,14 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			try
 			{
+				var eventList = events.Cast<object>().ToList();
+				if (eventList.Count == 0)
+					return;
+
 				var batch = new KafkaBatchContainer(
 					streamGuid,
 					streamNamespace,
-					events.Cast<object>().ToList(),
+					eventList,
 					requestContext,
 					false
 				);
@@ -72,20 +75,20 @@ namespace Orleans.Streams.Kafka.Core
 			catch (Exception ex)
 			{
 				_logger.LogError(
-					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}", 
-					streamNamespace, 
+					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}",
+					streamNamespace,
 					streamGuid.ToString()
 				);
-				
+
 				throw;
 			}
 		}
 
 		public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
 			=> new KafkaAdapterReceiver(
-				_queueProperties[queueId.GetStringNamePrefix()], 
-				_options, 
-				_serializationManager, 
+				_queueProperties[queueId.GetStringNamePrefix()],
+				_options,
+				_serializationManager,
 				_loggerFactory,
 				_grainFactory
 			);

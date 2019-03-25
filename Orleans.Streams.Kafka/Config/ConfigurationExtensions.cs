@@ -1,7 +1,8 @@
-﻿using System;
+﻿using Microsoft.Extensions.Options;
 using Orleans.Configuration;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Core;
+using System;
 
 // ReSharper disable once CheckNamespace
 namespace Orleans.Hosting
@@ -29,7 +30,8 @@ namespace Orleans.Hosting
 				{
 					services
 						.ConfigureNamedOptionForLogging<KafkaStreamOptions>(providerName)
-						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName);
+						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName)
+					;
 				})
 				.AddPersistentStreams(providerName, KafkaAdapterFactory.Create, stream => stream.Configure(configureOptions))
 				.Configure<SimpleQueueCacheOptions>(ob => ob.CacheSize = DefaultCacheSize)
@@ -57,7 +59,8 @@ namespace Orleans.Hosting
 				{
 					services
 						.ConfigureNamedOptionForLogging<KafkaStreamOptions>(providerName)
-						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName);
+						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName)
+					;
 				})
 				.AddPersistentStreams(providerName, KafkaAdapterFactory.Create,
 					stream => stream.Configure(configureOptions))

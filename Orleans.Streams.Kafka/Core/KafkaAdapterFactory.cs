@@ -99,7 +99,7 @@ namespace Orleans.Streams.Kafka.Core
 
 			try
 			{
-				using (var admin = new AdminClient(config))
+				using (var admin = new AdminClientBuilder(config).Build())
 				{
 					var meta = admin.GetMetadata(_options.AdminRequestTimeout);
 					var props = from kafkaTopic in meta.Topics
