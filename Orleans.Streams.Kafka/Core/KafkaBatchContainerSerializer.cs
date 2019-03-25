@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Orleans.Serialization;
+using SerializationContext = Confluent.Kafka.SerializationContext;
 
 namespace Orleans.Streams.Kafka.Core
 {
@@ -12,12 +13,7 @@ namespace Orleans.Streams.Kafka.Core
 			_serializationManager = serializationManager;
 		}
 
-		public byte[] Serialize(
-			KafkaBatchContainer data,
-			bool isKey,
-			MessageMetadata messageMetadata,
-			TopicPartition destination
-		)
+		public byte[] Serialize(KafkaBatchContainer data, SerializationContext context)
 			=> _serializationManager.SerializeToByteArray(data);
 	}
 }

@@ -20,7 +20,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly IGrainFactory _grainFactory;
 		private readonly QueueProperties _queueProperties;
 
-		private Consumer<byte[], byte[]> _consumer;
+		private IConsumer<byte[], byte[]> _consumer;
 		private Task _commitPromise = Task.CompletedTask;
 		private Task<IList<IBatchContainer>> _consumePromise;
 

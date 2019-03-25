@@ -17,7 +17,6 @@ namespace Orleans.Streams.Kafka.E2E.Extensions
 			}
 
 			await stream.SubscribeAsync(onNextAsync);
-			await Task.Delay(2000);
 		}
 	}
 }

@@ -54,7 +54,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				{
 					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
 					Value = JsonConvert.SerializeObject(testMessage),
-					Headers = new Headers {new Header("x-external-message", BitConverter.GetBytes(true))},
+					Headers = new Headers { new Header("x-external-message", BitConverter.GetBytes(true)) },
 					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				});
 			}

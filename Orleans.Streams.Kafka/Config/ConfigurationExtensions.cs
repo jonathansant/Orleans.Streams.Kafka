@@ -1,4 +1,5 @@
-﻿using Orleans.Configuration;
+﻿using Microsoft.Extensions.Options;
+using Orleans.Configuration;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Core;
 using System;

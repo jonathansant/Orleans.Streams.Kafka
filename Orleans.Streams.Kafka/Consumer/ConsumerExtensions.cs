@@ -13,7 +13,7 @@ namespace Orleans.Streams.Kafka.Consumer
 			=> Task.Run(() => consumer.Consume(timeout));
 
 		public static Task Commit<TKey, TValue>(
-			this Consumer<TKey, TValue> consumer,
+			this IConsumer<TKey, TValue> consumer,
 			IEnumerable<KafkaBatchContainer> batches
 		)
 			=> Task.Run(() => consumer.Commit(batches.Select(msg => msg.TopicPartitionOffSet)));

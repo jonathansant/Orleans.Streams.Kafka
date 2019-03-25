@@ -18,7 +18,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
-		private readonly Producer<byte[], KafkaBatchContainer> _producer;
+		private readonly IProducer<byte[], KafkaBatchContainer> _producer;
 		private readonly ILogger<KafkaAdapter> _logger;
 
 		public string Name { get; }
@@ -42,7 +42,7 @@ namespace Orleans.Streams.Kafka.Core
 			_logger = _loggerFactory.CreateLogger<KafkaAdapter>();
 
 			Name = providerName;
-			
+
 			_producer = new ProducerBuilder<byte[], KafkaBatchContainer>(options.ToProducerProperties())
 				.SetValueSerializer(new KafkaBatchContainerSerializer(serializationManager))
 				.Build();
@@ -58,10 +58,14 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			try
 			{
+				var eventList = events.Cast<object>().ToList();
+				if (eventList.Count == 0)
+					return;
+
 				var batch = new KafkaBatchContainer(
 					streamGuid,
 					streamNamespace,
-					events.Cast<object>().ToList(),
+					eventList,
 					requestContext,
 					false
 				);
