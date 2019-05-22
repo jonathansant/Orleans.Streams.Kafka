@@ -1,6 +1,6 @@
 ﻿using Confluent.Kafka;
+using Confluent.Kafka.Admin;
 using System;
-using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -13,41 +13,48 @@ namespace ConfluentSample
 		{
 			//Task.Run(() => Consume());
 
-			Task.Run(async () =>
-			{
-				while (true)
-				{
-					await Produce();
-					await Task.Delay(100);
-				}
-			});
+			//			Task.Run(async () =>
+			//			{
+			//				while (true)
+			//				{
+			//					await Produce();
+			//					await Task.Delay(100);
+			//				}
+			//			});
+
+			await CreateTopic();
+			//await Produce();
+//			Consume();
 
 			Console.ReadKey();
 		}
 
 		private static async Task Produce()
 		{
-			var config = new Dictionary<string, string>
-			{
-				//{ "bootstrap.servers", "localhost:9092" }
-				{"bootstrap.servers", "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092"},
-				{"api.version.request", "true"},
-				{"broker.version.fallback", "0.10.0.0"},
-				{"api.version.fallback.ms", "0"},
-				{"sasl.mechanisms", "PLAIN"},
-				{"security.protocol", "SASL_SSL"}
-//				{ "debug", "security,broker"}
-			};
+			//			var config = new Dictionary<string, string>
+			//					{
+			//						{ "bootstrap.servers", "services.rivertech.dev:6800" },
+			//		//				{"bootstrap.servers", "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092"},
+			//						{"api.version.request", "true"},
+			//						{"broker.version.fallback", "0.10.0.0"},
+			//						{"api.version.fallback.ms", "0"},
+			//		//				{"sasl.mechanisms", "PLAIN"},
+			//		//				{"security.protocol", "SASL_SSL"}
+			//		//				{ "debug", "security,broker"}
+			//					};
 
 			try
 			{
-				using (var producer = new ProducerBuilder<byte[], string>(config).Build())
+				using (var producer = new ProducerBuilder<byte[], string>(new ProducerConfig
 				{
-					var publishPromise5 = await producer.ProduceAsync("jonnyenglish", new Message<byte[], string>
+					BootstrapServers = "services.rivertech.dev:6800",
+				}).Build())
+				{
+					var publishPromise5 = await producer.ProduceAsync("meraxesdog", new Message<byte[], string>
 					{
 						Key = Encoding.UTF8.GetBytes("streamId"),
 						Value = "{ greeting: 'hello world' }",
-						Headers = new Headers {new Header("external", BitConverter.GetBytes(true))}
+						Headers = new Headers { new Header("external", BitConverter.GetBytes(true)) }
 					});
 
 					Console.WriteLine(
@@ -62,31 +69,29 @@ namespace ConfluentSample
 
 		private static void Consume()
 		{
-			var conf = new Dictionary<string, string>
+			var conf = new ConsumerConfig
 			{
-				{ "group.id", "test-consumer-group" },
-				{ "bootstrap.servers", "localhost:9092" },
-				{ "enable.auto.commit", "false" },
-				//{ "auto.commit.interval.ms", 5000 },
-//				{ "auto.offset.reset", "earliest" }
+				BootstrapServers = "services.rivertech.dev:6800",
+				//				BootstrapServers = "52.31.41.250:6800",
+				GroupId = "jonny-king-better-than-michael",
 			};
 			
 			using (var consumer = new ConsumerBuilder<string, string>(conf).Build())
-			using (var admin = new AdminClient(consumer.Handle))
+			using (var admin = new AdminClientBuilder(conf).Build())
 			{
 				Console.WriteLine($@"Partition IDs: {
 						string.Join(',',
 						admin
 						.GetMetadata(TimeSpan.FromMilliseconds(1000))
 						.Topics
-						.First(t => t.Topic.Contains("my-topic"))
+						.First(t => t.Topic.Contains("meraxesdog"))
 						.Partitions
 						.Select(x => x.PartitionId))
 					}"
 				);
 
 
-				consumer.Assign(new TopicPartitionOffset("my-topic", 1, Offset.Beginning));
+				consumer.Assign(new TopicPartitionOffset("meraxesdog", 1, Offset.Beginning));
 				//consumer.Subscribe("my-topic");
 
 				while (true)
@@ -97,6 +102,38 @@ namespace ConfluentSample
 						Console.WriteLine(message.Value);
 					}
 				}
+			}
+		}
+
+		private static async Task CreateTopic()
+		{
+			try
+			{
+				using (var admin = new AdminClientBuilder(new AdminClientConfig
+				{
+					BootstrapServers = "services.rivertech.dev:6800"
+				}).Build())
+				{
+					admin.GetMetadata(TimeSpan.FromSeconds(10)).Topics.ForEach(t =>
+					{
+						Console.WriteLine(t.Topic);
+						t.Partitions.ForEach(p => Console.WriteLine("              " + p.PartitionId));
+					});
+
+					await admin.CreateTopicsAsync(new[]
+					{
+						new TopicSpecification
+						{
+							Name = "meraxesdog",
+							NumPartitions = 3,
+							ReplicationFactor = 3
+						}
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
 			}
 		}
 	}

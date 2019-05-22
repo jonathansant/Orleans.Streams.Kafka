@@ -1,62 +1,56 @@
-﻿using Orleans.Streams.Kafka.Utils;
-using System.Collections.Generic;
-using System.Globalization;
+﻿using Confluent.Kafka;
 
 namespace Orleans.Streams.Kafka.Config
 {
 	internal static class KafkaStreamOptionsExtensions
 	{
-		public static IDictionary<string, string> ToProducerProperties(this KafkaStreamOptions options)
+		public static ProducerConfig ToProducerProperties(this KafkaStreamOptions options)
 		{
-			var config =  CreateCommonProperties(options);
-			config.TryAdd("message.timeout.ms", options.ProducerTimeout.TotalMilliseconds.ToString(CultureInfo.InvariantCulture));
+			var config = CreateCommonProperties<ProducerConfig>(options);
+			config.MessageTimeoutMs = (int)options.ProducerTimeout.TotalMilliseconds;
 
 			return config;
 		}
 
-		public static IDictionary<string, string> ToConsumerProperties(this KafkaStreamOptions options)
+		public static ConsumerConfig ToConsumerProperties(this KafkaStreamOptions options)
 		{
-			var config = CreateCommonProperties(options);
+			var config = CreateCommonProperties<ConsumerConfig>(options);
 
-			config.TryAdd("group.id", options.ConsumerGroupId);
-			config.TryAdd("enable.auto.commit", "false");
+			config.GroupId = options.ConsumerGroupId;
+			config.EnableAutoCommit = false;
 
 			return config;
 		}
 
-		public static IDictionary<string, string> ToAdminProperties(this KafkaStreamOptions options)
-			=> CreateCommonProperties(options);
+		public static AdminClientConfig ToAdminProperties(this KafkaStreamOptions options)
+			=> CreateCommonProperties<AdminClientConfig>(options);
 
-		private static IDictionary<string, string> CreateCommonProperties(KafkaStreamOptions options)
-		{
-			var config = new Dictionary<string, string>
+		private static TClientConfig CreateCommonProperties<TClientConfig>(KafkaStreamOptions options)
+			where TClientConfig : ClientConfig, new()
+			=> new TClientConfig
 			{
-				{ "bootstrap.servers", string.Join(",", options.BrokerList) }
+				BootstrapServers = string.Join(",", options.BrokerList),
+				BrokerVersionFallback = options.BrokerVersionFallback,
+				ApiVersionRequest = options.ApiVersionRequest,
+				ApiVersionRequestTimeoutMs = options.ApiVersionFallbackMs,
+				SaslMechanism = (Confluent.Kafka.SaslMechanism)(int)options.SaslMechanism,
+				SecurityProtocol = (Confluent.Kafka.SecurityProtocol)(int)options.SecurityProtocol,
+				SslCaLocation = options.SslCaLocation,
+				SaslUsername = options.SaslUserName,
+				SaslPassword = options.SaslPassword
 			};
-
-			config.TryAdd("api.version.request", options.ApiVersionRequest.ToString());
-			config.TryAdd("broker.version.fallback", options.BrokerVersionFallback);
-			config.TryAdd("api.version.fallback.ms", options.ApiVersionFallbackMs.ToString());
-			config.TryAdd("sasl.mechanisms", options.SaslMechanisms);
-			config.TryAdd("security.protocol", options.SecurityProtocol);
-			config.TryAdd("ssl.ca.location", options.SslCaLocation);
-			config.TryAdd("sasl.username", options.SaslUserName);
-			config.TryAdd("sasl.password", options.SaslPassword);
-
-			return config;
-		}
 	}
 
 	public static class KafkaStreamOptionsPublicExtensions
 	{
 		public static KafkaStreamOptions WithSaslOptions(
-			this KafkaStreamOptions options, 
-			Credentials credentials, 
-			string saslMechanism = "PLAIN"
+			this KafkaStreamOptions options,
+			Credentials credentials,
+			SaslMechanism saslMechanism = SaslMechanism.Plain
 		)
 		{
-			options.SaslMechanisms = saslMechanism;
-			options.SecurityProtocol = "SASL_SSL";
+			options.SaslMechanism = saslMechanism;
+			options.SecurityProtocol = SecurityProtocol.SaslSsl;
 			options.SaslUserName = credentials.UserName;
 			options.SaslPassword = credentials.Password;
 			options.SslCaLocation = credentials.SslCaLocation;

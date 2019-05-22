@@ -16,11 +16,11 @@ namespace Orleans.Streams.Kafka.Config
 		public bool ApiVersionRequest { get; set; } = true;
 		public string BrokerVersionFallback { get; set; } = "0.10.0.0";
 		public int ApiVersionFallbackMs { get; set; }
-		public string SecurityProtocol { get; set; }
+		public SecurityProtocol SecurityProtocol { get; set; }
 		public string SslCaLocation { get; set; }
 		public string SaslUserName { get; set; }
 		public string SaslPassword { get; set; }
-		public string SaslMechanisms { get; set; }
+		public SaslMechanism SaslMechanism { get; set; }
 		public TimeSpan PollBufferTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 		public bool MessageTrackingEnabled { get; set; }
 	}
@@ -37,5 +37,21 @@ namespace Orleans.Streams.Kafka.Config
 		StreamStart = 0,
 		LastCommittedMessage = 1,
 		StreamEnd = 2
+	}
+
+	public enum SaslMechanism
+	{
+		Gssapi,
+		Plain,
+		ScramSha256,
+		ScramSha512,
+	}
+
+	public enum SecurityProtocol
+	{
+		Plaintext,
+		Ssl,
+		SaslPlaintext,
+		SaslSsl,
 	}
 }

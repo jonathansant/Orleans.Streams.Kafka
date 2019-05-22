@@ -2,12 +2,11 @@
 using Orleans.Hosting;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Grains;
+using Orleans.Streams.Utils.MessageTracking;
 using Orleans.TestingHost;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
-using Orleans.Streams.Utils.MessageTracking;
 using Xunit;
 
 namespace Orleans.Streams.Kafka.E2E.Tests
@@ -56,7 +55,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 				})
-				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
+		;
 	}
 
 	public class SiloBuilderConfigurator : ISiloBuilderConfigurator
@@ -76,6 +76,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.MessageTrackingEnabled = true;
 				})
 				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
+				.UseLoggingTracker()
+		;
 	}
 }

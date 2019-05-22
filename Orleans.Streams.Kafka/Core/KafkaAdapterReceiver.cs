@@ -105,10 +105,8 @@ namespace Orleans.Streams.Kafka.Core
 					.Cast<KafkaBatchContainer>()
 					.Max();
 
-				var commitPromise = _consumer.Commit(new[] { batchWithHighestOffset });
-				_commitPromise = commitPromise;
-
-				await commitPromise;
+				_commitPromise = _consumer.Commit(batchWithHighestOffset);
+				await _commitPromise;
 			}
 			catch (Exception ex)
 			{
@@ -128,7 +126,6 @@ namespace Orleans.Streams.Kafka.Core
 				_consumer.Unassign();
 				_consumer.Unsubscribe();
 				_consumer.Close();
-				_consumer.Dispose();
 				_consumer = null;
 			}
 		}
