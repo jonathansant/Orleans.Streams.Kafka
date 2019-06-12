@@ -2,12 +2,11 @@
 using Orleans.Hosting;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Grains;
+using Orleans.Streams.Utils.MessageTracking;
 using Orleans.TestingHost;
 using System;
 using System.Collections.Generic;
-using System.IO;
 using System.Threading.Tasks;
-using Orleans.Streams.Utils.MessageTracking;
 using Xunit;
 
 namespace Orleans.Streams.Kafka.E2E.Tests
@@ -51,7 +50,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				{
 					options.BrokerList = new List<string> { "localhost:9092" };
 					options.ConsumerGroupId = "E2EGroup";
-					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
+					options.Topics = new List<Topic> { new Topic { Name = Consts.StreamNamespace, IsExternal = true }, new Topic { Name = Consts.StreamNamespace2, IsExternal = true } };
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
@@ -71,7 +70,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.ConsumerGroupId = "E2EGroup";
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
-					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
+					options.Topics = new List<Topic> { new Topic { Name = Consts.StreamNamespace, IsExternal = true }, new Topic { Name = Consts.StreamNamespace2, IsExternal = true } };
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.MessageTrackingEnabled = true;
 				})

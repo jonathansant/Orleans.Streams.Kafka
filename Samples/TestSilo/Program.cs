@@ -1,14 +1,15 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Orleans.Streams.Kafka.Config;
+using Orleans.Streams.Utils.MessageTracking;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using System.Threading.Tasks;
-using Microsoft.Extensions.DependencyInjection;
-using Orleans.Streams.Utils.MessageTracking;
 
 namespace TestSilo
 {
@@ -41,7 +42,7 @@ namespace TestSilo
 					options.BrokerList = new List<string> { "localhost:9092" };
 					options.ConsumerGroupId = "TestGroup";
 					options.ExternalMessageIdentifier = "external";
-					options.Topics = new List<string> { "gossip-testing" };
+					options.Topics = new List<Topic> { new Topic { Name = "gossip-testing" } };
 					options.MessageTrackingEnabled = true;
 				});
 

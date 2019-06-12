@@ -1,4 +1,30 @@
-﻿## [0.7.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.4...0.7.0) (2019-01-20)
+﻿## [0.9.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.8.0...0.9.0) (2018-06-12)
+
+### Features
+
+- `Topic` added to `KafkaStreamOptions`.
+
+### BREAKING CHANGES
+
+ - `KafkaStreamOptions`
+	- `Topics` property now is of type `IList<Topic>` instead of `IList<string`.
+
+## [0.8.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.7.1...0.8.0) (2019-03-25)
+
+### BREAKING CHANGES
+
+ - `Orleans`
+	- updated to orleans 2.3.0.
+ - `Orleans.Streams.Utils`
+	- updated to `5.*`
+
+## [0.7.1](https://github.com/jonathansant/orleans.streams.kafka/compare/0.7.0...0.7.1) (2019-02-7)
+
+### Features
+
+- update `Microsoft.Extensions.Logging` to 2.2.0
+
+## [0.7.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.6.4...0.7.0) (2019-01-20)
 
 ### Features
 
