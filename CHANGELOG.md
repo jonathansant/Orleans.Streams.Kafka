@@ -17,6 +17,8 @@
 	- updated to orleans 2.3.0.
  - `Orleans.Streams.Utils`
 	- updated to `5.*`
+ - `Confluent`
+	- updated to `1.0.0`
 
 ## [0.7.1](https://github.com/jonathansant/orleans.streams.kafka/compare/0.7.0...0.7.1) (2019-02-7)
 
