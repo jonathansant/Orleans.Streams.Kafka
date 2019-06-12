@@ -1,9 +1,8 @@
-﻿using System;
-using System.Threading.Tasks;
-using Orleans;
+﻿using Orleans;
 using Orleans.Providers;
 using Orleans.Streams;
-using Orleans.Streams.Utils;
+using System;
+using System.Threading.Tasks;
 
 namespace TestGrains
 {
@@ -19,9 +18,6 @@ namespace TestGrains
 		public override async Task OnActivateAsync()
 		{
 			var kafkaProvider = GetStreamProvider("KafkaProvider");
-
-			var streamId = this.GetPrimaryKeyString();
-
 			var testStream = kafkaProvider.GetStream<TestModel>("streamId", "gossip-testing"); // todo: use stream utils
 
 			// To resume stream in case of stream deactivation

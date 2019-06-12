@@ -1,6 +1,5 @@
 ﻿using Orleans.Concurrency;
 using Orleans.Streams.Kafka.E2E.Extensions;
-using Orleans.Streams.Utils;
 using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.E2E.Grains

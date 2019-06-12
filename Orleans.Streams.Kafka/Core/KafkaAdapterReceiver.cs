@@ -146,8 +146,7 @@ namespace Orleans.Streams.Kafka.Core
 
 					var batchContainer = consumeResult.ToBatchContainer(
 						_serializationManager,
-						_options,
-						_queueProperties.Namespace
+						_queueProperties
 					);
 
 					await TrackMessage(batchContainer);

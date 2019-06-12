@@ -1,9 +1,9 @@
-﻿using System;
+﻿using Confluent.Kafka;
+using Orleans.Streams.Kafka.Core;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Confluent.Kafka;
-using Orleans.Streams.Kafka.Core;
 
 namespace Orleans.Streams.Kafka.Consumer
 {

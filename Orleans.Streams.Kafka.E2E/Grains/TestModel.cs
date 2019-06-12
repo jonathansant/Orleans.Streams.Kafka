@@ -14,16 +14,16 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 
 		public override bool Equals(object obj)
 		{
-			var mod = (TestModel) obj;
+			var mod = (TestModel)obj;
 			return mod.NumberOfHeads == NumberOfHeads && mod.NumberOfLegs == NumberOfLegs;
 		}
 
-		public static TestModel Random() 
+		public static TestModel Random()
 			=> new TestModel
-		{
-			NumberOfHeads = Rand.Next(1000),
-			NumberOfLegs = Rand.Next(1000)
-		};
+			{
+				NumberOfHeads = Rand.Next(1000),
+				NumberOfLegs = Rand.Next(1000)
+			};
 	}
 
 	public class TestResult

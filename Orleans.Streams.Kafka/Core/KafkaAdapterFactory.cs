@@ -103,9 +103,9 @@ namespace Orleans.Streams.Kafka.Core
 				{
 					var meta = admin.GetMetadata(_options.AdminRequestTimeout);
 					var props = from kafkaTopic in meta.Topics
-								join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic
+								join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic.Name
 								from partition in kafkaTopic.Partitions
-								select new QueueProperties(userTopic, (uint)partition.PartitionId);
+								select new QueueProperties(userTopic.Name, (uint)partition.PartitionId, userTopic.IsExternal);
 
 					return props.ToDictionary(prop => prop.QueueName);
 				}

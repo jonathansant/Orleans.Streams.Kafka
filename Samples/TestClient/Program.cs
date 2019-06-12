@@ -10,6 +10,7 @@ using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
+using Orleans.Streams.Kafka.Config;
 using TestGrains;
 
 namespace TestClient
@@ -71,7 +72,7 @@ namespace TestClient
 							options.BrokerList = new List<string> { "localhost:9092" };
 							options.ConsumerGroupId = "TestGroup";
 							options.ExternalMessageIdentifier = "external";
-							options.Topics = new List<string> { "gossip-testing" };
+							options.Topics = new List<Topic> { new Topic { Name = "gossip-testing" } };
 						})
 						.Build();
 
