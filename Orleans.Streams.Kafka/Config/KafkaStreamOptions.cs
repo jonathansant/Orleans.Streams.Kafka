@@ -5,8 +5,7 @@ namespace Orleans.Streams.Kafka.Config
 {
 	public class KafkaStreamOptions
 	{
-		public string ExternalMessageIdentifier { get; set; } = "external";
-		public IList<string> Topics { get; set; }
+		public IList<TopicConfig> Topics { get; set; } = new List<TopicConfig>();
 		public IList<string> BrokerList { get; set; }
 		public string ConsumerGroupId { get; set; } = "orleans-kafka";
 		public TimeSpan PollTimeout { get; set; } = TimeSpan.FromMilliseconds(100);
@@ -23,6 +22,17 @@ namespace Orleans.Streams.Kafka.Config
 		public SaslMechanism SaslMechanism { get; set; }
 		public TimeSpan PollBufferTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 		public bool MessageTrackingEnabled { get; set; }
+
+		public KafkaStreamOptions AddTopic(string name, bool isExternal = false)
+		{
+			Topics.Add(new TopicConfig
+			{
+				IsExternal = isExternal,
+				Name = name
+			});
+
+			return this;
+		}
 	}
 
 	public class Credentials
@@ -30,6 +40,12 @@ namespace Orleans.Streams.Kafka.Config
 		public string UserName { get; set; }
 		public string Password { get; set; }
 		public string SslCaLocation { get; set; }
+	}
+
+	public class TopicConfig
+	{
+		public string Name { get; set; }
+		public bool IsExternal { get; set; }
 	}
 
 	public enum ConsumeMode

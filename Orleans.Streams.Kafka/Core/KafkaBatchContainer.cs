@@ -87,9 +87,7 @@ namespace Orleans.Streams.Kafka.Core
 				return false;
 
 			foreach (var contextProperties in _requestContext)
-			{
 				RequestContext.Set(contextProperties.Key, contextProperties.Value);
-			}
 
 			return true;
 		}
