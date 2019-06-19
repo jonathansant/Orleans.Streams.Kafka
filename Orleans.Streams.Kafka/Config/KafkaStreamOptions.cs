@@ -15,7 +15,7 @@ namespace Orleans.Streams.Kafka.Config
 		public TimeSpan ProducerTimeout { get; set; } = TimeSpan.FromSeconds(5);
 		public bool ApiVersionRequest { get; set; } = true;
 		public string BrokerVersionFallback { get; set; } = "0.10.0.0";
-		public int ApiVersionFallbackMs { get; set; }
+		public int? ApiVersionFallbackMs { get; set; }
 		public SecurityProtocol SecurityProtocol { get; set; }
 		public string SslCaLocation { get; set; }
 		public string SaslUserName { get; set; }

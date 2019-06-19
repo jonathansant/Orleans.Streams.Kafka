@@ -3,7 +3,6 @@ using Newtonsoft.Json;
 using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -111,13 +110,10 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			return grain;
 		}
 
-		private static IDictionary<string, string> GetKafkaServerConfig()
-			=> new Dictionary<string, string>
+		private static ClientConfig GetKafkaServerConfig()
+			=> new ClientConfig
 			{
-				{"bootstrap.servers", "localhost:9092"},
-				{"api.version.request", "true"},
-				{"broker.version.fallback", "0.10.0.0"},
-				{"api.version.fallback.ms", 0.ToString()}
+				BootstrapServers = BrokerEndpoint
 			};
 	}
 }

@@ -16,6 +16,9 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		private short _noOfSilos;
 		protected TestCluster Cluster { get; private set; }
 
+		//		public static string BrokerEndpoint = "kafka-dev-mw-0.rivertech.dev:19092";
+		public static string BrokerEndpoint = "localhost:9092";
+
 		protected void Initialize(short noOfSilos)
 			=> _noOfSilos = noOfSilos;
 
@@ -48,7 +51,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			=> clientBuilder
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
-					options.BrokerList = new List<string> { "localhost:9092" };
+					options.BrokerList = new List<string> { TestBase.BrokerEndpoint };
 					options.ConsumerGroupId = "E2EGroup";
 					options.Topics = new List<string> { Consts.StreamNamespace, Consts.StreamNamespace2 };
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
@@ -67,7 +70,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.UseLoggingTracker()
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
-					options.BrokerList = new List<string> { "localhost:9092" };
+					options.BrokerList = new List<string> { TestBase.BrokerEndpoint };
 					options.ConsumerGroupId = "E2EGroup";
 					options.ExternalMessageIdentifier = "x-external-message";
 					options.ConsumeMode = ConsumeMode.StreamEnd;

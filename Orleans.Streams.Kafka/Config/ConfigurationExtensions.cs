@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Options;
 using Orleans.Configuration;
+using Orleans.Runtime;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Core;
+using Orleans.Streams.Utils.Serialization;
 using System;
 
 // ReSharper disable once CheckNamespace
@@ -31,6 +33,7 @@ namespace Orleans.Hosting
 					services
 						.ConfigureNamedOptionForLogging<KafkaStreamOptions>(providerName)
 						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName)
+						.AddSingletonNamedService<IExternalStreamSerializer, JsonExternalStreamSerializer>(providerName)
 					;
 				})
 				.AddPersistentStreams(providerName, KafkaAdapterFactory.Create, stream => stream.Configure(configureOptions))
@@ -60,6 +63,7 @@ namespace Orleans.Hosting
 					services
 						.ConfigureNamedOptionForLogging<KafkaStreamOptions>(providerName)
 						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName)
+						.AddSingletonNamedService<IExternalStreamSerializer, JsonExternalStreamSerializer>(providerName)
 					;
 				})
 				.AddPersistentStreams(providerName, KafkaAdapterFactory.Create,

@@ -1,13 +1,14 @@
-﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
 using Orleans.Providers.Streams.Common;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Core;
 using Orleans.Streams.Utils;
+using Orleans.Streams.Utils.Serialization;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
 
 namespace Orleans.Streams.Kafka.Consumer
 {
@@ -17,6 +18,7 @@ namespace Orleans.Streams.Kafka.Consumer
 			this ConsumeResult<byte[], byte[]> result,
 			SerializationManager serializationManager,
 			KafkaStreamOptions options,
+			IExternalStreamSerializer serializer,
 			string streamNamespace
 		)
 		{
@@ -36,7 +38,8 @@ namespace Orleans.Streams.Kafka.Consumer
 						null,
 						isExternalBatch: true,
 						sequence,
-						result.TopicPartitionOffset
+						result.TopicPartitionOffset,
+						serializer
 					);
 				}
 			}

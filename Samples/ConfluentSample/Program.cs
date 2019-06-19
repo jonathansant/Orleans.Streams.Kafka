@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Confluent.Kafka.Admin;
 using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -9,22 +10,13 @@ namespace ConfluentSample
 {
 	internal class Program
 	{
+		private const string Broker = "kafka-dev-mw-0.rivertech.dev:19092";
+
 		private static async Task Main(string[] args)
 		{
-			//Task.Run(() => Consume());
-
-			//			Task.Run(async () =>
-			//			{
-			//				while (true)
-			//				{
-			//					await Produce();
-			//					await Task.Delay(100);
-			//				}
-			//			});
-
+			//			await Produce();
+			//			Consume();
 			await CreateTopic();
-			//await Produce();
-//			Consume();
 
 			Console.ReadKey();
 		}
@@ -47,7 +39,7 @@ namespace ConfluentSample
 			{
 				using (var producer = new ProducerBuilder<byte[], string>(new ProducerConfig
 				{
-					BootstrapServers = "services.rivertech.dev:6800",
+					BootstrapServers = Broker
 				}).Build())
 				{
 					var publishPromise5 = await producer.ProduceAsync("meraxesdog", new Message<byte[], string>
@@ -71,11 +63,10 @@ namespace ConfluentSample
 		{
 			var conf = new ConsumerConfig
 			{
-				BootstrapServers = "services.rivertech.dev:6800",
-				//				BootstrapServers = "52.31.41.250:6800",
+				BootstrapServers = Broker,
 				GroupId = "jonny-king-better-than-michael",
 			};
-			
+
 			using (var consumer = new ConsumerBuilder<string, string>(conf).Build())
 			using (var admin = new AdminClientBuilder(conf).Build())
 			{
@@ -111,7 +102,7 @@ namespace ConfluentSample
 			{
 				using (var admin = new AdminClientBuilder(new AdminClientConfig
 				{
-					BootstrapServers = "services.rivertech.dev:6800"
+					BootstrapServers = Broker
 				}).Build())
 				{
 					admin.GetMetadata(TimeSpan.FromSeconds(10)).Topics.ForEach(t =>
@@ -124,9 +115,15 @@ namespace ConfluentSample
 					{
 						new TopicSpecification
 						{
-							Name = "meraxesdog",
+							Name = "TestTopicName",
 							NumPartitions = 3,
-							ReplicationFactor = 3
+							ReplicationFactor = 1
+						},
+						new TopicSpecification
+						{
+							Name = "TestTopicName3",
+							NumPartitions = 3,
+							ReplicationFactor = 1
 						}
 					});
 				}

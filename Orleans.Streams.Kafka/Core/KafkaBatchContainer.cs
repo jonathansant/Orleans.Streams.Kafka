@@ -1,7 +1,7 @@
 ﻿using Confluent.Kafka;
-using Newtonsoft.Json;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
+using Orleans.Streams.Utils.Serialization;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -14,6 +14,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly List<object> _events;
 		private readonly Dictionary<string, object> _requestContext;
 		private readonly bool _isExternalBatch;
+		private readonly IExternalStreamSerializer _serializer;
 
 		public Guid StreamGuid { get; }
 
@@ -30,11 +31,13 @@ namespace Orleans.Streams.Kafka.Core
 			Dictionary<string, object> requestContext,
 			bool isExternalBatch,
 			EventSequenceTokenV2 streamSequenceToken,
-			TopicPartitionOffset offset
+			TopicPartitionOffset offset,
+			IExternalStreamSerializer serializer
 		) : this(streamGuid, streamNamespace, events, requestContext, isExternalBatch)
 		{
 			SequenceToken = streamSequenceToken;
 			TopicPartitionOffSet = offset;
+			_serializer = serializer;
 		}
 
 		public KafkaBatchContainer(
@@ -91,7 +94,7 @@ namespace Orleans.Streams.Kafka.Core
 			return true;
 		}
 
-		public int CompareTo(KafkaBatchContainer other) 
+		public int CompareTo(KafkaBatchContainer other)
 			=> TopicPartitionOffSet.Offset.Value.CompareTo(other.TopicPartitionOffSet.Offset.Value);
 
 		public override string ToString()
@@ -108,10 +111,9 @@ namespace Orleans.Streams.Kafka.Core
 						var messageType = typeof(T);
 
 						if (messageType.IsPrimitive || messageType == typeof(string) || messageType == typeof(decimal))
-							message = (T) Convert.ChangeType(@event, typeof(T));
+							message = (T)Convert.ChangeType(@event, typeof(T));
 						else
-							message = JsonConvert
-								.DeserializeObject<T>((string) @event); // todo: support for multiple serializer
+							message = _serializer.Deserialize<T>(@event);
 
 						return Tuple.Create<T, StreamSequenceToken>(message, sequenceToken.CreateSequenceTokenForEvent(iteration));
 					}
