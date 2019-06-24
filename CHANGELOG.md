@@ -1,4 +1,10 @@
-﻿## [0.9.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.8.0...0.9.0) (2018-06-12)
+﻿## [0.9.1](https://github.com/jonathansant/orleans.persistence.redis/compare/0.9.0...0.9.1) (2019-06-24)
+
+### Features
+
+- **builder:** add generic host support
+
+## [0.9.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.8.0...0.9.0) (2018-06-12)
 
 ### Features
 
