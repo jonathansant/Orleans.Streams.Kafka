@@ -16,8 +16,15 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		private short _noOfSilos;
 		protected TestCluster Cluster { get; private set; }
 
-		//		public static string BrokerEndpoint = "kafka-dev-mw-0.rivertech.dev:19092";
-		public static string BrokerEndpoint = "localhost:9092";
+		public static string BrokerEndpoint = "dev-data.rivertech.dev:39000";
+		//		public static string BrokerEndpoint = "localhost:9092";
+
+		public static List<string> Brokers = new List<string>
+		{
+			BrokerEndpoint,
+			"dev-data.rivertech.dev:39001",
+			"dev-data.rivertech.dev:39002"
+		};
 
 		protected void Initialize(short noOfSilos)
 			=> _noOfSilos = noOfSilos;
@@ -51,12 +58,14 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			=> clientBuilder
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
-					options.BrokerList = new List<string> { TestBase.BrokerEndpoint };
+					options.BrokerList = TestBase.Brokers;
 					options.ConsumerGroupId = "E2EGroup";
 
 					options
 						.AddTopic(Consts.StreamNamespace)
-						.AddTopic(Consts.StreamNamespace2);
+						.AddTopic(Consts.StreamNamespace2)
+						.AddTopic(Consts.StreamNamespaceExternal, isExternal: true)
+						;
 
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ConsumeMode = ConsumeMode.StreamEnd;
@@ -73,7 +82,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.UseLoggingTracker()
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
-					options.BrokerList = new List<string> { TestBase.BrokerEndpoint };
+					options.BrokerList = TestBase.Brokers;
 					options.ConsumerGroupId = "E2EGroup";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
@@ -81,7 +90,9 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 					options
 						.AddTopic(Consts.StreamNamespace)
-						.AddTopic(Consts.StreamNamespace2);
+						.AddTopic(Consts.StreamNamespace2)
+						.AddTopic(Consts.StreamNamespaceExternal, isExternal: true)
+						;
 				})
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())

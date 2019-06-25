@@ -34,6 +34,8 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 
 				return Task.CompletedTask;
 			});
+
+			await Task.Delay(5000);
 		}
 
 		public async Task<TestResult> Fire()

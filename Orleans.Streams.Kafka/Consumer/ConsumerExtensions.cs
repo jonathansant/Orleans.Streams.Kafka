@@ -10,7 +10,6 @@ namespace Orleans.Streams.Kafka.Consumer
 		public static Task Commit<TKey, TValue>(
 			this IConsumer<TKey, TValue> consumer,
 			params KafkaBatchContainer[] batches
-		)
-			=> Task.Run(() => consumer.Commit(batches.Select(msg => msg.TopicPartitionOffSet)));
+		) => Task.Run(() => consumer.Commit(batches.Select(msg => msg.TopicPartitionOffSet)));
 	}
 }

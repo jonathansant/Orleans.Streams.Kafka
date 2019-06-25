@@ -38,7 +38,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			var completion = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespace2);
+			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespaceExternal);
 
 			await stream.QuickSubscribe((message, seq) =>
 			{
@@ -47,13 +47,14 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				return Task.CompletedTask;
 			});
 
+			await Task.Delay(5000);
+
 			using (var producer = new ProducerBuilder<byte[], string>(config).Build())
 			{
-				await producer.ProduceAsync(Consts.StreamNamespace2, new Message<byte[], string>
+				await producer.ProduceAsync(Consts.StreamNamespaceExternal, new Message<byte[], string>
 				{
 					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
 					Value = JsonConvert.SerializeObject(testMessage),
-					Headers = new Headers { new Header("x-external-message", BitConverter.GetBytes(true)) },
 					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				});
 			}
@@ -113,7 +114,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		private static ClientConfig GetKafkaServerConfig()
 			=> new ClientConfig
 			{
-				BootstrapServers = BrokerEndpoint
+				BootstrapServers = string.Join(',', Brokers)
 			};
 	}
 }

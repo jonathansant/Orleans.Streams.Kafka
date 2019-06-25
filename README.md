@@ -89,7 +89,6 @@ await testStream.SubscribeAsync(OnNextTestMessage);
 ## <a name="configurableValues"></a>Configurable Values
 These are the configurable values that the `Orleans.Streams.Kafka`:
 
-- **ExternalMessageIdentifier**: The header key that will be read by the consumer to identify an external message (i.e. a message not produced by [KafkaAdpater](https://github.com/jonathansant/Orleans.Streams.Kafka/blob/master/Orleans.Streams.Kafka/Core/KafkaAdapter.cs)). *Default value is `external`*
 - **Topics**: The topics that will be used where messages will be Produced/Consumed.
 - **BrokerList**: List of Kafka brokers to connect to.
 - **ConsumerGroupId**: The ConsumerGroupId used by the Kafka Consumer. *Default value is `orleans-kafka`*

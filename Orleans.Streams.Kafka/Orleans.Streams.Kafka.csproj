@@ -9,7 +9,7 @@
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="2.3.2" />
     <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.3.2" />
-    <PackageReference Include="Confluent.Kafka" Version="1.0.0" />
+    <PackageReference Include="Confluent.Kafka" Version="1.0.1.1" />
   </ItemGroup>
   <!-- packages -->
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
