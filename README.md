@@ -27,8 +27,11 @@ public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 			{
 				options.BrokerList = new List<string> { "localhost:9092" };
 				options.ConsumerGroupId = "TestGroup";
-				options.Topics = new List<string> { "topic1", "topic2" };
 				options.PollTimeout = TimeSpan.FromMilliseconds(10);
+
+				options
+						.AddTopic("topic1")
+						.AddTopic("topic2");
 			});
 }
 
@@ -40,8 +43,11 @@ public class ClientBuilderConfigurator : IClientBuilderConfigurator
 			{
 				options.BrokerList = new List<string> { "localhost:9092" };
 				options.ConsumerGroupId = "TestGroup";
-				options.Topics = new List<string> { "topic1", "topic2" };
 				options.PollTimeout = TimeSpan.FromMilliseconds(10);
+
+        options
+						.AddTopic("topic1")
+						.AddTopic("topic2");
 			});
 }
 ```

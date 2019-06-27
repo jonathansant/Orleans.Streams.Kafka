@@ -1,12 +1,12 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
+
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <Description>Orleans streaming provider for Kafka.</Description>
-    <PackageTags>orleans kafka streams providers streamprovider confluent</PackageTags>
+    <Description>avroooo</Description>
+    <PackageTags>avro!!!!!</PackageTags>
   </PropertyGroup>
   <!-- vendor packages -->
   <ItemGroup>
-    <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.0.1.1" />
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="2.3.2" />
     <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.3.2" />
@@ -20,4 +20,5 @@
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
     <ProjectReference Include="..\..\Orleans.Streams.Utils\Orleans.Streams.Utils\Orleans.Streams.Utils.csproj" />
   </ItemGroup>
+
 </Project>

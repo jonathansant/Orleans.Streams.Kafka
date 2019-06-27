@@ -1,5 +1,8 @@
 ﻿using Confluent.Kafka;
 using Confluent.Kafka.Admin;
+using Confluent.Kafka.SyncOverAsync;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -10,47 +13,49 @@ namespace ConfluentSample
 {
 	internal class Program
 	{
-		private const string Broker = "kafka-dev-mw-0.rivertech.dev:19092";
+		private static List<string> Brokers = new List<string>
+		{
+			"dev-data.rivertech.dev:39000",
+			"dev-data.rivertech.dev:39001",
+			"dev-data.rivertech.dev:39002"
+		};
+
+		private const string Topic = "sucrose-external";
+		private const string RegistryUrl = "https://dev-data.rivertech.dev/schema-registry/";
 
 		private static async Task Main(string[] args)
 		{
-			//			await Produce();
-			//			Consume();
-			await CreateTopic();
+			//			Task.Run(() => Consume());
+			await Produce();
+			//			await CreateTopic();
 
 			Console.ReadKey();
 		}
 
 		private static async Task Produce()
 		{
-			//			var config = new Dictionary<string, string>
-			//					{
-			//						{ "bootstrap.servers", "services.rivertech.dev:6800" },
-			//		//				{"bootstrap.servers", "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092"},
-			//						{"api.version.request", "true"},
-			//						{"broker.version.fallback", "0.10.0.0"},
-			//						{"api.version.fallback.ms", "0"},
-			//		//				{"sasl.mechanisms", "PLAIN"},
-			//		//				{"security.protocol", "SASL_SSL"}
-			//		//				{ "debug", "security,broker"}
-			//					};
-
 			try
 			{
-				using (var producer = new ProducerBuilder<byte[], string>(new ProducerConfig
+				var r = new Random();
+
+				using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = RegistryUrl }))
+				using (var producer = new ProducerBuilder<byte[], AMessage>(new ProducerConfig
 				{
-					BootstrapServers = Broker
-				}).Build())
+					BootstrapServers = string.Join(',', Brokers)
+				}).SetValueSerializer(new AvroSerializer<AMessage>(schema).AsSyncOverAsync()).Build())
 				{
-					var publishPromise5 = await producer.ProduceAsync("meraxesdog", new Message<byte[], string>
+					var result = await producer.ProduceAsync(Topic, new Message<byte[], AMessage>
 					{
 						Key = Encoding.UTF8.GetBytes("streamId"),
-						Value = "{ greeting: 'hello world' }",
-						Headers = new Headers { new Header("external", BitConverter.GetBytes(true)) }
+						Value = new AMessage
+						{
+							id = 1,
+							noOfHeads = r.Next(100)
+						}
 					});
 
 					Console.WriteLine(
-						$@"Delivered '{publishPromise5.Value}' to: {publishPromise5.TopicPartitionOffset}");
+						$@"Delivered '{result.Value}' to: {result.TopicPartitionOffset}");
 				}
 			}
 			catch (Exception ex)
@@ -63,11 +68,12 @@ namespace ConfluentSample
 		{
 			var conf = new ConsumerConfig
 			{
-				BootstrapServers = Broker,
+				BootstrapServers = string.Join(',', Brokers),
 				GroupId = "jonny-king-better-than-michael",
 			};
 
-			using (var consumer = new ConsumerBuilder<string, string>(conf).Build())
+			using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = RegistryUrl }))
+			using (var consumer = new ConsumerBuilder<string, AMessage>(conf).SetValueDeserializer(new AvroDeserializer<AMessage>(schema).AsSyncOverAsync()).Build())
 			using (var admin = new AdminClientBuilder(conf).Build())
 			{
 				Console.WriteLine($@"Partition IDs: {
@@ -75,15 +81,19 @@ namespace ConfluentSample
 						admin
 						.GetMetadata(TimeSpan.FromMilliseconds(1000))
 						.Topics
-						.First(t => t.Topic.Contains("meraxesdog"))
+						.First(t => t.Topic.Contains(Topic))
 						.Partitions
 						.Select(x => x.PartitionId))
 					}"
 				);
 
-
-				consumer.Assign(new TopicPartitionOffset("meraxesdog", 1, Offset.Beginning));
-				//consumer.Subscribe("my-topic");
+				consumer.Assign(new[]
+				{
+					new TopicPartitionOffset(Topic, 1, Offset.Beginning),
+					new TopicPartitionOffset(Topic, 2, Offset.Beginning),
+					new TopicPartitionOffset(Topic, 3, Offset.Beginning)
+				});
+				//consumer.Subscribe(Topic);
 
 				while (true)
 				{
@@ -102,7 +112,7 @@ namespace ConfluentSample
 			{
 				using (var admin = new AdminClientBuilder(new AdminClientConfig
 				{
-					BootstrapServers = Broker
+					BootstrapServers = string.Join(',', Brokers)
 				}).Build())
 				{
 					admin.GetMetadata(TimeSpan.FromSeconds(10)).Topics.ForEach(t =>

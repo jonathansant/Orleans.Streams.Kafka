@@ -19,7 +19,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
-		private readonly IExternalStreamSerializer _serializer;
+		private readonly IExternalStreamDeserializer _deserializer;
 		private readonly IProducer<byte[], KafkaBatchContainer> _producer;
 		private readonly ILogger<KafkaAdapter> _logger;
 
@@ -34,7 +34,7 @@ namespace Orleans.Streams.Kafka.Core
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
-			IExternalStreamSerializer serializer
+			IExternalStreamDeserializer deserializer
 		)
 		{
 			_options = options;
@@ -42,7 +42,7 @@ namespace Orleans.Streams.Kafka.Core
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
 			_grainFactory = grainFactory;
-			_serializer = serializer;
+			_deserializer = deserializer;
 			_logger = _loggerFactory.CreateLogger<KafkaAdapter>();
 
 			Name = providerName;
@@ -95,7 +95,7 @@ namespace Orleans.Streams.Kafka.Core
 				_serializationManager,
 				_loggerFactory,
 				_grainFactory,
-				_serializer
+				_deserializer
 			);
 
 		public void Dispose()

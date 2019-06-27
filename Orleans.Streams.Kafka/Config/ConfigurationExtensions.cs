@@ -33,7 +33,7 @@ namespace Orleans.Hosting
 					services
 						.ConfigureNamedOptionForLogging<KafkaStreamOptions>(providerName)
 						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName)
-						.AddSingletonNamedService<IExternalStreamSerializer, JsonExternalStreamSerializer>(providerName)
+						.AddSingletonNamedService<IExternalStreamDeserializer, JsonExternalStreamDeserializer>(providerName)
 					;
 				})
 				.AddPersistentStreams(providerName, KafkaAdapterFactory.Create, stream => stream.Configure(configureOptions))
@@ -90,7 +90,7 @@ namespace Orleans.Hosting
 					services
 						.ConfigureNamedOptionForLogging<KafkaStreamOptions>(providerName)
 						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName)
-						.AddSingletonNamedService<IExternalStreamSerializer, JsonExternalStreamSerializer>(providerName)
+						.AddSingletonNamedService<IExternalStreamDeserializer, JsonExternalStreamDeserializer>(providerName)
 					;
 				})
 				.AddPersistentStreams(providerName, KafkaAdapterFactory.Create,

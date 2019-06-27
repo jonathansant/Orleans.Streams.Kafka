@@ -22,7 +22,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
-		private readonly IExternalStreamSerializer _serializer;
+		private readonly IExternalStreamDeserializer _deserializer;
 		private readonly IQueueAdapterCache _adapterCache;
 		private readonly IStreamQueueMapper _streamQueueMapper;
 		private readonly ILogger<KafkaAdapterFactory> _logger;
@@ -35,7 +35,7 @@ namespace Orleans.Streams.Kafka.Core
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
-			IExternalStreamSerializer serializer
+			IExternalStreamDeserializer deserializer
 		)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
@@ -44,7 +44,7 @@ namespace Orleans.Streams.Kafka.Core
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
 			_grainFactory = grainFactory;
-			_serializer = serializer;
+			_deserializer = deserializer;
 			_logger = loggerFactory.CreateLogger<KafkaAdapterFactory>();
 
 			if (options.Topics != null && options.Topics.Count == 0)
@@ -69,7 +69,7 @@ namespace Orleans.Streams.Kafka.Core
 				_serializationManager,
 				_loggerFactory,
 				_grainFactory,
-				_serializer
+				_deserializer
 			);
 
 			return Task.FromResult<IQueueAdapter>(adapter);
@@ -88,7 +88,7 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			var streamsConfig = services.GetOptionsByName<KafkaStreamOptions>(name);
 			var cacheOptions = services.GetOptionsByName<SimpleQueueCacheOptions>(name);
-			var externalSerializer = services.GetRequiredServiceByName<IExternalStreamSerializer>(name);
+			var externalSerializer = services.GetRequiredServiceByName<IExternalStreamDeserializer>(name);
 
 			var factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
 				services,

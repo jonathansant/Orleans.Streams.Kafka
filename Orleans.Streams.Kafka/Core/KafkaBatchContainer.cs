@@ -14,7 +14,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly List<object> _events;
 		private readonly Dictionary<string, object> _requestContext;
 		private readonly bool _isExternalBatch;
-		private readonly IExternalStreamSerializer _serializer;
+		private readonly IExternalStreamDeserializer _deserializer;
 
 		public Guid StreamGuid { get; }
 
@@ -32,12 +32,12 @@ namespace Orleans.Streams.Kafka.Core
 			bool isExternalBatch,
 			EventSequenceTokenV2 streamSequenceToken,
 			TopicPartitionOffset offset,
-			IExternalStreamSerializer serializer
+			IExternalStreamDeserializer deserializer
 		) : this(streamGuid, streamNamespace, events, requestContext, isExternalBatch)
 		{
 			SequenceToken = streamSequenceToken;
 			TopicPartitionOffSet = offset;
-			_serializer = serializer;
+			_deserializer = deserializer;
 		}
 
 		public KafkaBatchContainer(
@@ -111,7 +111,7 @@ namespace Orleans.Streams.Kafka.Core
 						if (messageType.IsPrimitive || messageType == typeof(string) || messageType == typeof(decimal))
 							message = (T)Convert.ChangeType(@event, typeof(T));
 						else
-							message = _serializer.Deserialize<T>(@event);
+							message = _deserializer.Deserialize<T>(@event);
 
 						return Tuple.Create<T, StreamSequenceToken>(message, sequenceToken.CreateSequenceTokenForEvent(iteration));
 					}

@@ -15,7 +15,7 @@ namespace Orleans.Streams.Kafka.Consumer
 			this ConsumeResult<byte[], byte[]> result,
 			SerializationManager serializationManager,
 			QueueProperties queueProperties,
-			IExternalStreamSerializer serializer
+			IExternalStreamDeserializer deserializer
 		)
 		{
 			var sequence = new EventSequenceTokenV2(result.Offset.Value);
@@ -31,7 +31,7 @@ namespace Orleans.Streams.Kafka.Consumer
 					isExternalBatch: true,
 					sequence,
 					result.TopicPartitionOffset,
-					serializer
+					deserializer
 				);
 			}
 

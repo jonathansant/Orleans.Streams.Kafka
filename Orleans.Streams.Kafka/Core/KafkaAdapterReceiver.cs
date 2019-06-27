@@ -10,6 +10,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
+using Confluent.SchemaRegistry.Serdes;
 
 namespace Orleans.Streams.Kafka.Core
 {
@@ -19,7 +20,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly IGrainFactory _grainFactory;
-		private readonly IExternalStreamSerializer _serializer;
+		private readonly IExternalStreamDeserializer _deserializer;
 		private readonly QueueProperties _queueProperties;
 
 		private IConsumer<byte[], byte[]> _consumer;
@@ -32,7 +33,7 @@ namespace Orleans.Streams.Kafka.Core
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
-			IExternalStreamSerializer serializer
+			IExternalStreamDeserializer deserializer
 		)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
@@ -40,12 +41,13 @@ namespace Orleans.Streams.Kafka.Core
 			_queueProperties = queueProperties;
 			_serializationManager = serializationManager;
 			_grainFactory = grainFactory;
-			_serializer = serializer;
+			_deserializer = deserializer;
 			_logger = loggerFactory.CreateLogger<KafkaAdapterReceiver>();
 		}
 
 		public Task Initialize(TimeSpan timeout)
 		{
+
 			_consumer = new ConsumerBuilder<byte[], byte[]>(_options.ToConsumerProperties())
 				.SetErrorHandler((sender, errorEvent) =>
 					_logger.LogError(
@@ -148,7 +150,7 @@ namespace Orleans.Streams.Kafka.Core
 					var batchContainer = consumeResult.ToBatchContainer(
 						_serializationManager,
 						_queueProperties,
-						_serializer
+						_deserializer
 					);
 
 					await TrackMessage(batchContainer);

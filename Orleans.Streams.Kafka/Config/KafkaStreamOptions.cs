@@ -23,6 +23,11 @@ namespace Orleans.Streams.Kafka.Config
 		public TimeSpan PollBufferTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 		public bool MessageTrackingEnabled { get; set; }
 
+		/// <summary>
+		/// Add a new topic.
+		/// </summary>
+		/// <param name="name">Topic Name</param>
+		/// <param name="isExternal">Specifies whether the topic will be produced by producers external to the silo</param>
 		public KafkaStreamOptions AddTopic(string name, bool isExternal = false)
 		{
 			Topics.Add(new TopicConfig
@@ -45,6 +50,10 @@ namespace Orleans.Streams.Kafka.Config
 	public class TopicConfig
 	{
 		public string Name { get; set; }
+
+		/// <summary>
+		/// Specifies whether the topic will be produced by producers external to the silo
+		/// </summary>
 		public bool IsExternal { get; set; }
 	}
 
