@@ -1,7 +1,7 @@
 ﻿using Confluent.Kafka;
-using Newtonsoft.Json;
 using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
+using Orleans.Streams.Kafka.E2E.Serialization;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -49,12 +49,15 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 			await Task.Delay(5000);
 
-			using (var producer = new ProducerBuilder<byte[], string>(config).Build())
+			using (var producer = new ProducerBuilder<byte[], TestModel>(config)
+				.SetValueSerializer(new LowercaseJsonSerializer<TestModel>())
+				.Build()
+			)
 			{
-				await producer.ProduceAsync(Consts.StreamNamespaceExternal, new Message<byte[], string>
+				await producer.ProduceAsync(Consts.StreamNamespaceExternal, new Message<byte[], TestModel>
 				{
 					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
-					Value = JsonConvert.SerializeObject(testMessage),
+					Value = testMessage,
 					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				});
 			}

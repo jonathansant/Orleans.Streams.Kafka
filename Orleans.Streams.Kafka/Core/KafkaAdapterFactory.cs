@@ -22,7 +22,6 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
-		private readonly IExternalStreamDeserializer _deserializer;
 		private readonly IQueueAdapterCache _adapterCache;
 		private readonly IStreamQueueMapper _streamQueueMapper;
 		private readonly ILogger<KafkaAdapterFactory> _logger;
@@ -34,8 +33,7 @@ namespace Orleans.Streams.Kafka.Core
 			SimpleQueueCacheOptions cacheOptions,
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
-			IGrainFactory grainFactory,
-			IExternalStreamDeserializer deserializer
+			IGrainFactory grainFactory
 		)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
@@ -44,7 +42,6 @@ namespace Orleans.Streams.Kafka.Core
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
 			_grainFactory = grainFactory;
-			_deserializer = deserializer;
 			_logger = loggerFactory.CreateLogger<KafkaAdapterFactory>();
 
 			if (options.Topics != null && options.Topics.Count == 0)
@@ -68,8 +65,7 @@ namespace Orleans.Streams.Kafka.Core
 				_queueProperties,
 				_serializationManager,
 				_loggerFactory,
-				_grainFactory,
-				_deserializer
+				_grainFactory
 			);
 
 			return Task.FromResult<IQueueAdapter>(adapter);
@@ -88,14 +84,12 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			var streamsConfig = services.GetOptionsByName<KafkaStreamOptions>(name);
 			var cacheOptions = services.GetOptionsByName<SimpleQueueCacheOptions>(name);
-			var externalSerializer = services.GetRequiredServiceByName<IExternalStreamDeserializer>(name);
 
 			var factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
 				services,
 				name,
 				streamsConfig,
-				cacheOptions,
-				externalSerializer
+				cacheOptions
 			);
 
 			return factory;
@@ -113,7 +107,12 @@ namespace Orleans.Streams.Kafka.Core
 					var props = from kafkaTopic in meta.Topics
 								join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic.Name
 								from partition in kafkaTopic.Partitions
-								select new QueueProperties(userTopic.Name, (uint)partition.PartitionId, userTopic.IsExternal);
+								select new QueueProperties(
+									userTopic.Name, 
+									(uint)partition.PartitionId,
+									userTopic.IsExternal,
+									userTopic.Deserializer
+								);
 
 					return props.ToDictionary(prop => prop.QueueName);
 				}

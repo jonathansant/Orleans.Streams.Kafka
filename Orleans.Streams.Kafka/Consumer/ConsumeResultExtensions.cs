@@ -5,7 +5,6 @@ using Orleans.Streams.Kafka.Core;
 using Orleans.Streams.Utils;
 using System.Collections.Generic;
 using System.Text;
-using Orleans.Streams.Utils.Serialization;
 
 namespace Orleans.Streams.Kafka.Consumer
 {
@@ -14,8 +13,7 @@ namespace Orleans.Streams.Kafka.Consumer
 		public static KafkaBatchContainer ToBatchContainer(
 			this ConsumeResult<byte[], byte[]> result,
 			SerializationManager serializationManager,
-			QueueProperties queueProperties,
-			IExternalStreamDeserializer deserializer
+			QueueProperties queueProperties
 		)
 		{
 			var sequence = new EventSequenceTokenV2(result.Offset.Value);
@@ -23,15 +21,13 @@ namespace Orleans.Streams.Kafka.Consumer
 			if (queueProperties.IsExternal)
 			{
 				var key = Encoding.UTF8.GetString(result.Key);
-				return new KafkaBatchContainer(
+				return new KafkaExternalBatchContainer(
 					StreamProviderUtils.GenerateStreamGuid(key),
 					queueProperties.Namespace,
-					new List<object> { Encoding.UTF8.GetString(result.Value) },
-					null,
-					isExternalBatch: true,
+					new List<byte[]> { result.Value },
 					sequence,
 					result.TopicPartitionOffset,
-					deserializer
+					queueProperties.ExternalStreamDeserializer
 				);
 			}
 

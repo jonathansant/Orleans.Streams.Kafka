@@ -64,7 +64,11 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options
 						.AddTopic(Consts.StreamNamespace)
 						.AddTopic(Consts.StreamNamespace2)
-						.AddTopic(Consts.StreamNamespaceExternal, isExternal: true)
+						.AddJsonTopic<TestModel>(Consts.StreamNamespaceExternal)
+						.AddAvroTopic<TestModelAvro>(
+							Consts.StreamNamespaceExternalAvro,
+							"https://dev-data.rivertech.dev/schema-registry"
+						)
 						;
 
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
@@ -86,12 +90,16 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.ConsumerGroupId = "E2EGroup";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
-					options.MessageTrackingEnabled = true;
+					options.MessageTrackingEnabled = false;
 
 					options
 						.AddTopic(Consts.StreamNamespace)
 						.AddTopic(Consts.StreamNamespace2)
-						.AddTopic(Consts.StreamNamespaceExternal, isExternal: true)
+						.AddJsonTopic<TestModel>(Consts.StreamNamespaceExternal)
+						.AddAvroTopic<TestModelAvro>(
+							Consts.StreamNamespaceExternalAvro,
+							"https://dev-data.rivertech.dev/schema-registry"
+						)
 						;
 				})
 				.ConfigureApplicationParts(parts =>

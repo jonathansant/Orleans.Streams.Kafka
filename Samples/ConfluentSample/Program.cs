@@ -21,12 +21,12 @@ namespace ConfluentSample
 		};
 
 		private const string Topic = "sucrose-external";
-		private const string RegistryUrl = "https://dev-data.rivertech.dev/schema-registry/";
+		private const string RegistryUrl = "https://dev-data.rivertech.dev/schema-registry";
 
 		private static async Task Main(string[] args)
 		{
-			//			Task.Run(() => Consume());
-			await Produce();
+						Task.Run(() => Consume());
+			//await Produce();
 			//			await CreateTopic();
 
 			Console.ReadKey();
@@ -100,7 +100,7 @@ namespace ConfluentSample
 					var message = consumer.Consume(TimeSpan.FromMilliseconds(100));
 					if (message != null)
 					{
-						Console.WriteLine(message.Value);
+						Console.WriteLine(message.Value.noOfHeads);
 					}
 				}
 			}

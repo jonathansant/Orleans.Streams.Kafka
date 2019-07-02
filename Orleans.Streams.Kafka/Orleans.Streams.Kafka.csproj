@@ -6,11 +6,12 @@
   </PropertyGroup>
   <!-- vendor packages -->
   <ItemGroup>
-    <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.0.1.1" />
+    <!-- <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.0.1.1" /> -->
     <PackageReference Include="Microsoft.Extensions.Logging" Version="2.2.0" />
     <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="2.3.2" />
     <PackageReference Include="Microsoft.Orleans.OrleansProviders" Version="2.3.2" />
-    <PackageReference Include="Confluent.Kafka" Version="1.0.1.1" />
+    <PackageReference Include="Confluent.Kafka" Version="1.1.0" />
+    <ProjectReference Include="..\..\confluent-kafka-dotnet-jonny\src\Confluent.SchemaRegistry.Serdes\Confluent.SchemaRegistry.Serdes.csproj" />
   </ItemGroup>
   <!-- packages -->
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
