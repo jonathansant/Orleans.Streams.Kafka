@@ -22,33 +22,39 @@ public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 {
 	public void Configure(ISiloHostBuilder hostBuilder)
 		=> hostBuilder
-			.AddMemoryGrainStorage("PubSubStore")
-			.AddKafkaStreamProvider("KafkaStreamProvider", options =>
-			{
-				options.BrokerList = new List<string> { "localhost:9092" };
-				options.ConsumerGroupId = "TestGroup";
-				options.PollTimeout = TimeSpan.FromMilliseconds(10);
+				.AddMemoryGrainStorage("PubSubStore")
+				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				{
+					options.BrokerList = new [] {"localhost:8080"};
+					options.ConsumerGroupId = "E2EGroup";
+					options.ConsumeMode = ConsumeMode.StreamEnd;
 
-				options
-						.AddTopic("topic1")
-						.AddTopic("topic2");
-			});
+					options
+						.AddTopic(Consts.StreamNamespace)
+						.AddTopic(Consts.StreamNamespace2)
+						.AddExternalTopic(Consts.StreamNamespaceExternal)
+						;
+				})
+				.AddJson(Consts.KafkaStreamProvider)
+				.UseLoggingTracker();
 }
 
 public class ClientBuilderConfigurator : IClientBuilderConfigurator
 {
 	public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 		=> clientBuilder
-			.AddKafkaStreamProvider("KafkaStreamProvider", options =>
-			{
-				options.BrokerList = new List<string> { "localhost:9092" };
-				options.ConsumerGroupId = "TestGroup";
-				options.PollTimeout = TimeSpan.FromMilliseconds(10);
+				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				{
+					options.BrokerList =  new [] {"localhost:8080"};
+					options.ConsumerGroupId = "E2EGroup";
 
-        options
-						.AddTopic("topic1")
-						.AddTopic("topic2");
-			});
+					options
+						.AddTopic(Consts.StreamNamespace)
+						.AddTopic(Consts.StreamNamespace2)
+						.AddExternalTopic(Consts.StreamNamespaceExternal)
+						;
+				})
+				.AddJson(Consts.KafkaStreamProvider);
 }
 ```
 
