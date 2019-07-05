@@ -1,7 +1,12 @@
-﻿using Microsoft.Extensions.Options;
+﻿using Confluent.SchemaRegistry;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Orleans.Configuration;
+using Orleans.Runtime;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Core;
+using Orleans.Streams.Kafka.Serialization;
+using Orleans.Streams.Utils.Serialization;
 using System;
 
 // ReSharper disable once CheckNamespace
@@ -31,6 +36,7 @@ namespace Orleans.Hosting
 					services
 						.ConfigureNamedOptionForLogging<KafkaStreamOptions>(providerName)
 						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName)
+						.AddJson(providerName)
 					;
 				})
 				.AddPersistentStreams(providerName, KafkaAdapterFactory.Create, stream => stream.Configure(configureOptions))
@@ -95,5 +101,61 @@ namespace Orleans.Hosting
 
 			return builder;
 		}
+
+		public static ISiloBuilder AddAvro(
+			this ISiloBuilder builder,
+			string providerName,
+			string registryUrl
+		) => builder.ConfigureServices(services => services.AddAvro(providerName, registryUrl));
+
+		public static IClientBuilder AddAvro(
+			this IClientBuilder builder,
+			string providerName,
+			string registryUrl
+		) => builder.ConfigureServices(services => services.AddAvro(providerName, registryUrl));
+
+		public static ISiloHostBuilder AddAvro(
+			this ISiloHostBuilder builder,
+			string providerName,
+			string registryUrl
+		) => builder.ConfigureServices(services => services.AddAvro(providerName, registryUrl));
+
+		public static ISiloBuilder AddJson(
+			this ISiloBuilder builder,
+			string providerName
+		) => builder.ConfigureServices(services => services.AddJson(providerName));
+
+		public static IClientBuilder AddJson(
+			this IClientBuilder builder,
+			string providerName
+		) => builder.ConfigureServices(services => services.AddJson(providerName));
+
+		public static ISiloHostBuilder AddJson(
+			this ISiloHostBuilder builder,
+			string providerName
+		) => builder.ConfigureServices(services => services.AddJson(providerName));
+
+		private static void AddAvro(this IServiceCollection services, string providerName, string registryUrl)
+			=> services
+				.AddSingletonNamedService<ISchemaRegistryClient>(
+					providerName,
+					(provider, name) => ActivatorUtilities.CreateInstance<CachedSchemaRegistryClient>(
+						provider,
+						new SchemaRegistryConfig
+						{
+							SchemaRegistryUrl = registryUrl
+						})
+				)
+				.AddSingletonNamedService<IExternalStreamDeserializer>(
+					providerName,
+					(provider, name)
+						=> ActivatorUtilities.CreateInstance<AvroExternalStreamDeserializer>(
+							provider,
+							provider.GetRequiredServiceByName<ISchemaRegistryClient>(providerName))
+						);
+
+		private static void AddJson(this IServiceCollection services, string providerName)
+			=> services
+				.AddSingletonNamedService<IExternalStreamDeserializer, JsonExternalStreamDeserializer>(providerName);
 	}
 }

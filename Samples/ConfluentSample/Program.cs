@@ -15,18 +15,18 @@ namespace ConfluentSample
 	{
 		private static List<string> Brokers = new List<string>
 		{
-			"dev-data.rivertech.dev:39000",
-			"dev-data.rivertech.dev:39001",
-			"dev-data.rivertech.dev:39002"
+			"[host name]:39000",
+			"[host name]:39001",
+			"[host name]:39002"
 		};
 
 		private const string Topic = "sucrose-external";
-		private const string RegistryUrl = "https://dev-data.rivertech.dev/schema-registry";
+		private const string RegistryUrl = "https://[host name]/schema-registry";
 
 		private static async Task Main(string[] args)
 		{
-						Task.Run(() => Consume());
-			//await Produce();
+			Task.Run(() => Consume());
+			await Produce();
 			//			await CreateTopic();
 
 			Console.ReadKey();

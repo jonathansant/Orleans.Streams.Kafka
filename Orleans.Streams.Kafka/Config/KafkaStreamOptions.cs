@@ -1,6 +1,4 @@
-﻿using Orleans.Streams.Kafka.Serialization;
-using Orleans.Streams.Utils.Serialization;
-using System;
+﻿using System;
 using System.Collections.Generic;
 
 namespace Orleans.Streams.Kafka.Config
@@ -44,37 +42,14 @@ namespace Orleans.Streams.Kafka.Config
 		/// Add a new external topic.
 		/// </summary>
 		/// <param name="name">Topic Name</param>
-		/// <param name="deserializer">Deserializer that will deserialize messages</param>
-		public KafkaStreamOptions AddTopic<T>(string name, IExternalStreamDeserializer<T> deserializer)
+		public KafkaStreamOptions AddExternalTopic(string name)
 		{
 			Topics.Add(new TopicConfig
 			{
 				IsExternal = true,
 				Name = name,
-				Deserializer = deserializer
 			});
 
-			return this;
-		}
-
-		/// <summary>
-		/// Add a new external topic with Avro serialization.
-		/// </summary>
-		/// <param name="name">Topic Name</param>
-		/// <param name="schemaRegistryUrl">The Schema Registry Url</param>
-		public KafkaStreamOptions AddAvroTopic<T>(string name, string schemaRegistryUrl)
-		{
-			AddTopic(name, new AvroExternalStreamDeserializer<T>(schemaRegistryUrl, name));
-			return this;
-		}
-
-		/// <summary>
-		/// Add a new external topic with Json serialization.
-		/// </summary>
-		/// <param name="name">Topic Name</param>
-		public KafkaStreamOptions AddJsonTopic<T>(string name)
-		{
-			AddTopic(name, new JsonExternalStreamDeserializer<T>());
 			return this;
 		}
 	}
@@ -94,11 +69,6 @@ namespace Orleans.Streams.Kafka.Config
 		/// Specifies whether the topic will be produced by producers external to the silo
 		/// </summary>
 		public bool IsExternal { get; set; }
-
-		/// <summary>
-		/// If the topic accepts external this deserializer will be used
-		/// </summary>
-		public IExternalStreamDeserializer Deserializer { get; set; }
 	}
 
 	public enum ConsumeMode

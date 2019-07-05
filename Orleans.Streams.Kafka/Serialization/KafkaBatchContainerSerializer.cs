@@ -1,7 +1,6 @@
 ﻿using Confluent.Kafka;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Core;
-using SerializationContext = Confluent.Kafka.SerializationContext;
 
 namespace Orleans.Streams.Kafka.Serialization
 {
@@ -14,7 +13,7 @@ namespace Orleans.Streams.Kafka.Serialization
 			_serializationManager = serializationManager;
 		}
 
-		public byte[] Serialize(KafkaBatchContainer data, SerializationContext context)
+		public byte[] Serialize(KafkaBatchContainer data, Confluent.Kafka.SerializationContext context)
 			=> _serializationManager.SerializeToByteArray(data);
 	}
 }

@@ -1,10 +1,10 @@
 ﻿using Confluent.Kafka;
 using Orleans.Providers.Streams.Common;
-using Orleans.Serialization;
 using Orleans.Streams.Kafka.Core;
 using Orleans.Streams.Utils;
 using System.Collections.Generic;
 using System.Text;
+using SerializationContext = Orleans.Streams.Kafka.Serialization.SerializationContext;
 
 namespace Orleans.Streams.Kafka.Consumer
 {
@@ -12,7 +12,7 @@ namespace Orleans.Streams.Kafka.Consumer
 	{
 		public static KafkaBatchContainer ToBatchContainer(
 			this ConsumeResult<byte[], byte[]> result,
-			SerializationManager serializationManager,
+			SerializationContext serializationContext,
 			QueueProperties queueProperties
 		)
 		{
@@ -23,14 +23,15 @@ namespace Orleans.Streams.Kafka.Consumer
 				var key = Encoding.UTF8.GetString(result.Key);
 				return new KafkaExternalBatchContainer(
 					StreamProviderUtils.GenerateStreamGuid(key),
-					queueProperties.Namespace,
+					queueProperties,
 					new List<byte[]> { result.Value },
 					sequence,
 					result.TopicPartitionOffset,
-					queueProperties.ExternalStreamDeserializer
+					serializationContext.ExternalStreamDeserializer
 				);
 			}
 
+			var serializationManager = serializationContext.SerializationManager;
 			var batchContainer = serializationManager.DeserializeFromByteArray<KafkaBatchContainer>(result.Value);
 
 			if (batchContainer.SequenceToken == null)

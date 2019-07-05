@@ -5,6 +5,9 @@
 //    is regenerated
 // </auto-generated>
 // ------------------------------------------------------------------------------
+
+using Confluent.SchemaRegistry;
+
 namespace ConfluentSample
 {
 	using global::Avro;

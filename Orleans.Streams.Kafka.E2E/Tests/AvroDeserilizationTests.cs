@@ -2,8 +2,13 @@
 using Confluent.Kafka.SyncOverAsync;
 using Confluent.SchemaRegistry;
 using Confluent.SchemaRegistry.Serdes;
+using Microsoft.Extensions.Configuration;
+using Orleans.Hosting;
+using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
+using Orleans.Streams.Utils.MessageTracking;
+using Orleans.TestingHost;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -18,7 +23,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		public AvroDeserilizationTests()
 		{
-			Initialize(1); // Initialize with three silos so that queues will be load-balanced on different silos.
+			Initialize<AvroClientBuilderConfigurator, AvroSiloBuilderConfigurator>(3);
 		}
 
 		[Fact]
@@ -44,7 +49,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 			using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig
 			{
-				SchemaRegistryUrl = "https://dev-data.rivertech.dev/schema-registry"
+				SchemaRegistryUrl = "https://[host name]/schema-registry"
 			}))
 			using (var producer = new ProducerBuilder<byte[], TestModelAvro>(config)
 				.SetValueSerializer(new AvroSerializer<TestModelAvro>(schema).AsSyncOverAsync())
@@ -70,5 +75,51 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			{
 				BootstrapServers = string.Join(',', Brokers)
 			};
+	}
+
+	public class AvroClientBuilderConfigurator : IClientBuilderConfigurator
+	{
+		public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
+			=> clientBuilder
+				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				{
+					options.BrokerList = TestBase.Brokers;
+					options.ConsumerGroupId = "E2EGroup";
+
+					options
+						.AddExternalTopic(Consts.StreamNamespaceExternalAvro)
+						;
+
+					options.PollTimeout = TimeSpan.FromMilliseconds(10);
+					options.ConsumeMode = ConsumeMode.StreamEnd;
+				})
+				.AddAvro(Consts.KafkaStreamProvider, "https://[host name]/schema-registry")
+				.ConfigureApplicationParts(parts =>
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+	}
+
+	public class AvroSiloBuilderConfigurator : ISiloBuilderConfigurator
+	{
+		public void Configure(ISiloHostBuilder hostBuilder)
+			=> hostBuilder
+				.AddMemoryGrainStorage("PubSubStore")
+				.UseLoggingTracker()
+				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				{
+					options.BrokerList = TestBase.Brokers;
+					options.ConsumerGroupId = "E2EGroup";
+					options.ConsumeMode = ConsumeMode.StreamEnd;
+					options.PollTimeout = TimeSpan.FromMilliseconds(10);
+					options.MessageTrackingEnabled = false;
+
+					options
+						.AddExternalTopic(Consts.StreamNamespaceExternalAvro)
+						;
+				})
+				.AddAvro(Consts.KafkaStreamProvider, "https://[host name]/schema-registry")
+				.ConfigureApplicationParts(parts =>
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
+				.UseLoggingTracker();
+
 	}
 }

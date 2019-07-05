@@ -1,36 +1,42 @@
 ﻿using Confluent.Kafka;
-using Confluent.Kafka.SyncOverAsync;
 using Confluent.SchemaRegistry;
 using Confluent.SchemaRegistry.Serdes;
+using Orleans.Streams.Kafka.Utils;
+using Orleans.Streams.Utils;
 using Orleans.Streams.Utils.Serialization;
 using System;
+using System.Collections.Concurrent;
 
 namespace Orleans.Streams.Kafka.Serialization
 {
-	public class AvroExternalStreamDeserializer<T> : IExternalStreamDeserializer<T>
+	public class AvroExternalStreamDeserializer : IExternalStreamDeserializer
 	{
-		private readonly SyncOverAsyncDeserializer<T> _deserializer;
-		private readonly CachedSchemaRegistryClient _registry;
-		private readonly string _topic;
+		private readonly ConcurrentDictionary<Type, object> _deserializers;
+		private readonly ISchemaRegistryClient _registry;
 
-		public AvroExternalStreamDeserializer(
-			string schemaRegistryUrl,
-			string topic
-		)
+		public AvroExternalStreamDeserializer(ISchemaRegistryClient schemaRegistry)
 		{
-			_topic = topic;
-			_registry = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = schemaRegistryUrl });
-			_deserializer = new SyncOverAsyncDeserializer<T>(new AvroDeserializer<T>(_registry));
+			_registry = schemaRegistry;
+			_deserializers = new ConcurrentDictionary<Type, object>();
 		}
 
-		public T Deserialize(byte[] data)
-			=> _deserializer.Deserialize(
-				new ReadOnlySpan<byte>(data),
+		public T Deserialize<T>(QueueProperties queueProps, byte[] data)
+		{
+			var deserializer = GetOrCreate<T>();
+			return AsyncHelper.RunSync(() => deserializer.DeserializeAsync(
+				new ReadOnlyMemory<byte>(data),
 				false,
-				new SerializationContext(MessageComponentType.Value, _topic)
-			);
+				new Confluent.Kafka.SerializationContext(MessageComponentType.Value, queueProps.QueueName)
+			));
+		}
 
 		public void Dispose()
 			=> _registry.Dispose();
+
+		private AvroDeserializer<T> GetOrCreate<T>()
+			=> (AvroDeserializer<T>)_deserializers.GetOrAdd(
+				typeof(T),
+				type => new AvroDeserializer<T>(_registry)
+			);
 	}
 }

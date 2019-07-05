@@ -3,6 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.Configuration;
 using Orleans.Providers.Streams.Common;
+using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Utils;
@@ -11,7 +12,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Orleans.Runtime;
 
 namespace Orleans.Streams.Kafka.Core
 {
@@ -22,6 +22,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
+		private readonly IExternalStreamDeserializer _externalDeserializer;
 		private readonly IQueueAdapterCache _adapterCache;
 		private readonly IStreamQueueMapper _streamQueueMapper;
 		private readonly ILogger<KafkaAdapterFactory> _logger;
@@ -33,7 +34,8 @@ namespace Orleans.Streams.Kafka.Core
 			SimpleQueueCacheOptions cacheOptions,
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
-			IGrainFactory grainFactory
+			IGrainFactory grainFactory,
+			IExternalStreamDeserializer externalDeserializer
 		)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
@@ -42,6 +44,7 @@ namespace Orleans.Streams.Kafka.Core
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
 			_grainFactory = grainFactory;
+			_externalDeserializer = externalDeserializer;
 			_logger = loggerFactory.CreateLogger<KafkaAdapterFactory>();
 
 			if (options.Topics != null && options.Topics.Count == 0)
@@ -65,7 +68,8 @@ namespace Orleans.Streams.Kafka.Core
 				_queueProperties,
 				_serializationManager,
 				_loggerFactory,
-				_grainFactory
+				_grainFactory,
+				_externalDeserializer
 			);
 
 			return Task.FromResult<IQueueAdapter>(adapter);
@@ -84,12 +88,14 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			var streamsConfig = services.GetOptionsByName<KafkaStreamOptions>(name);
 			var cacheOptions = services.GetOptionsByName<SimpleQueueCacheOptions>(name);
+			var deserializer = services.GetRequiredServiceByName<IExternalStreamDeserializer>(name);
 
 			var factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
 				services,
 				name,
 				streamsConfig,
-				cacheOptions
+				cacheOptions,
+				deserializer
 			);
 
 			return factory;
@@ -108,10 +114,9 @@ namespace Orleans.Streams.Kafka.Core
 								join userTopic in _options.Topics on kafkaTopic.Topic equals userTopic.Name
 								from partition in kafkaTopic.Partitions
 								select new QueueProperties(
-									userTopic.Name, 
+									userTopic.Name,
 									(uint)partition.PartitionId,
-									userTopic.IsExternal,
-									userTopic.Deserializer
+									userTopic.IsExternal
 								);
 
 					return props.ToDictionary(prop => prop.QueueName);

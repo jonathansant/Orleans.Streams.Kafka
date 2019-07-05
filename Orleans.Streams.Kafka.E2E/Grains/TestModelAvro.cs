@@ -7,6 +7,7 @@
 // ------------------------------------------------------------------------------
 
 using System;
+using Confluent.SchemaRegistry;
 
 namespace Orleans.Streams.Kafka.E2E.Grains
 {
