@@ -1,9 +1,8 @@
 ﻿using Confluent.Kafka;
-using Newtonsoft.Json;
 using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
+using Orleans.Streams.Kafka.E2E.Serialization;
 using System;
-using System.Collections.Generic;
 using System.Text;
 using System.Threading.Tasks;
 using Xunit;
@@ -39,7 +38,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			var completion = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespace2);
+			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespaceExternal);
 
 			await stream.QuickSubscribe((message, seq) =>
 			{
@@ -48,13 +47,17 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				return Task.CompletedTask;
 			});
 
-			using (var producer = new ProducerBuilder<byte[], string>(config).Build())
+			await Task.Delay(5000);
+
+			using (var producer = new ProducerBuilder<byte[], TestModel>(config)
+				.SetValueSerializer(new LowercaseJsonSerializer<TestModel>())
+				.Build()
+			)
 			{
-				await producer.ProduceAsync(Consts.StreamNamespace2, new Message<byte[], string>
+				await producer.ProduceAsync(Consts.StreamNamespaceExternal, new Message<byte[], TestModel>
 				{
 					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
-					Value = JsonConvert.SerializeObject(testMessage),
-					Headers = new Headers { new Header("x-external-message", BitConverter.GetBytes(true)) },
+					Value = testMessage,
 					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				});
 			}
@@ -111,13 +114,10 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			return grain;
 		}
 
-		private static IDictionary<string, string> GetKafkaServerConfig()
-			=> new Dictionary<string, string>
+		private static ClientConfig GetKafkaServerConfig()
+			=> new ClientConfig
 			{
-				{"bootstrap.servers", "localhost:9092"},
-				{"api.version.request", "true"},
-				{"broker.version.fallback", "0.10.0.0"},
-				{"api.version.fallback.ms", 0.ToString()}
+				BootstrapServers = string.Join(',', Brokers)
 			};
 	}
 }

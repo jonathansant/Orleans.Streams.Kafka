@@ -5,7 +5,7 @@ Kafka persistent stream provider for Microsoft Orleans that uses the [Confluent 
 
 # Dependencies
 `Orleans.Streams.Kafka` has the following dependencies:
-* Confluent.Kafka: **1.0.0-beta-2**
+* Confluent.Kafka: **1.1.0**
 * Orleans.Streams.Utils: [![NuGet version](https://badge.fury.io/nu/Orleans.Streams.Utils.svg)](https://badge.fury.io/nu/Orleans.Streams.Utils)
 
 ## Installation
@@ -22,27 +22,39 @@ public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 {
 	public void Configure(ISiloHostBuilder hostBuilder)
 		=> hostBuilder
-			.AddMemoryGrainStorage("PubSubStore")
-			.AddKafkaStreamProvider("KafkaStreamProvider", options =>
-			{
-				options.BrokerList = new List<string> { "localhost:9092" };
-				options.ConsumerGroupId = "TestGroup";
-				options.Topics = new List<string> { "topic1", "topic2" };
-				options.PollTimeout = TimeSpan.FromMilliseconds(10);
-			});
+				.AddMemoryGrainStorage("PubSubStore")
+				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				{
+					options.BrokerList = new [] {"localhost:8080"};
+					options.ConsumerGroupId = "E2EGroup";
+					options.ConsumeMode = ConsumeMode.StreamEnd;
+
+					options
+						.AddTopic(Consts.StreamNamespace)
+						.AddTopic(Consts.StreamNamespace2)
+						.AddExternalTopic(Consts.StreamNamespaceExternal)
+						;
+				})
+				.AddJson(Consts.KafkaStreamProvider)
+				.UseLoggingTracker();
 }
 
 public class ClientBuilderConfigurator : IClientBuilderConfigurator
 {
 	public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 		=> clientBuilder
-			.AddKafkaStreamProvider("KafkaStreamProvider", options =>
-			{
-				options.BrokerList = new List<string> { "localhost:9092" };
-				options.ConsumerGroupId = "TestGroup";
-				options.Topics = new List<string> { "topic1", "topic2" };
-				options.PollTimeout = TimeSpan.FromMilliseconds(10);
-			});
+				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				{
+					options.BrokerList =  new [] {"localhost:8080"};
+					options.ConsumerGroupId = "E2EGroup";
+
+					options
+						.AddTopic(Consts.StreamNamespace)
+						.AddTopic(Consts.StreamNamespace2)
+						.AddExternalTopic(Consts.StreamNamespaceExternal)
+						;
+				})
+				.AddJson(Consts.KafkaStreamProvider);
 }
 ```
 
@@ -89,7 +101,6 @@ await testStream.SubscribeAsync(OnNextTestMessage);
 ## <a name="configurableValues"></a>Configurable Values
 These are the configurable values that the `Orleans.Streams.Kafka`:
 
-- **ExternalMessageIdentifier**: The header key that will be read by the consumer to identify an external message (i.e. a message not produced by [KafkaAdpater](https://github.com/jonathansant/Orleans.Streams.Kafka/blob/master/Orleans.Streams.Kafka/Core/KafkaAdapter.cs)). *Default value is `external`*
 - **Topics**: The topics that will be used where messages will be Produced/Consumed.
 - **BrokerList**: List of Kafka brokers to connect to.
 - **ConsumerGroupId**: The ConsumerGroupId used by the Kafka Consumer. *Default value is `orleans-kafka`*

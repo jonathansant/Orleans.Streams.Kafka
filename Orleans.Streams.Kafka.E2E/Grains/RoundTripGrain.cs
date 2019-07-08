@@ -34,6 +34,8 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 
 				return Task.CompletedTask;
 			});
+
+			await Task.Delay(5000);
 		}
 
 		public async Task<TestResult> Fire()
@@ -41,8 +43,8 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 			await _stream.OnNextAsync(_model);
 			await Task.WhenAny(_completion.Task, Task.Delay(1000));
 
-			return _completion.Task.IsCompleted 
-				? _completion.Task.Result 
+			return _completion.Task.IsCompleted
+				? _completion.Task.Result
 				: null;
 		}
 	}

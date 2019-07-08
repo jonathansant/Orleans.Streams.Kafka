@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28010.2016
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.29009.5
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Streams.Kafka", "Orleans.Streams.Kafka\Orleans.Streams.Kafka.csproj", "{2A22B25B-D199-47AE-A7AE-8A86E0F8204D}"
 EndProject
@@ -30,6 +30,12 @@ EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Streams.Kafka.E2E", "Orleans.Streams.Kafka.E2E\Orleans.Streams.Kafka.E2E.csproj", "{40241F81-5A3F-407E-BCF0-62952257B622}"
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Testing", "Testing", "{0B69EF45-6884-4AE3-9627-B91079A11164}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Confluent.SchemaRegistry.Serdes", "..\confluent-kafka-dotnet-jonny\src\Confluent.SchemaRegistry.Serdes\Confluent.SchemaRegistry.Serdes.csproj", "{583F5D7E-26A8-482C-88EE-C589A51C77E6}"
+EndProject
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Confluent.SchemaRegistry", "..\confluent-kafka-dotnet-jonny\src\Confluent.SchemaRegistry\Confluent.SchemaRegistry.csproj", "{27D85933-F1D6-4CDA-8EF5-FD1A613DBB30}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "ExternalLibs", "ExternalLibs", "{9EAD4F35-64E1-40E8-94FE-5B0A47B67965}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
@@ -65,6 +71,14 @@ Global
 		{40241F81-5A3F-407E-BCF0-62952257B622}.Debug|Any CPU.Build.0 = Debug|Any CPU
 		{40241F81-5A3F-407E-BCF0-62952257B622}.Release|Any CPU.ActiveCfg = Release|Any CPU
 		{40241F81-5A3F-407E-BCF0-62952257B622}.Release|Any CPU.Build.0 = Release|Any CPU
+		{583F5D7E-26A8-482C-88EE-C589A51C77E6}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{583F5D7E-26A8-482C-88EE-C589A51C77E6}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{583F5D7E-26A8-482C-88EE-C589A51C77E6}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{583F5D7E-26A8-482C-88EE-C589A51C77E6}.Release|Any CPU.Build.0 = Release|Any CPU
+		{27D85933-F1D6-4CDA-8EF5-FD1A613DBB30}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{27D85933-F1D6-4CDA-8EF5-FD1A613DBB30}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{27D85933-F1D6-4CDA-8EF5-FD1A613DBB30}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{27D85933-F1D6-4CDA-8EF5-FD1A613DBB30}.Release|Any CPU.Build.0 = Release|Any CPU
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -75,6 +89,8 @@ Global
 		{6D9C2534-57D3-4078-AE76-27FD9CDB0DF3} = {5366C489-8D00-4047-8BA8-348643ED8ADA}
 		{0F6BAC5B-7FDE-4B1A-B465-06D595CD74D5} = {5366C489-8D00-4047-8BA8-348643ED8ADA}
 		{40241F81-5A3F-407E-BCF0-62952257B622} = {0B69EF45-6884-4AE3-9627-B91079A11164}
+		{583F5D7E-26A8-482C-88EE-C589A51C77E6} = {9EAD4F35-64E1-40E8-94FE-5B0A47B67965}
+		{27D85933-F1D6-4CDA-8EF5-FD1A613DBB30} = {9EAD4F35-64E1-40E8-94FE-5B0A47B67965}
 	EndGlobalSection
 	GlobalSection(ExtensibilityGlobals) = postSolution
 		SolutionGuid = {6A8C1AC8-BD20-483B-9B89-0AD321B5CF52}

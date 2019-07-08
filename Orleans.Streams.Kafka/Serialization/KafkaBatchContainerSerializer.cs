@@ -1,8 +1,8 @@
 ﻿using Confluent.Kafka;
 using Orleans.Serialization;
-using SerializationContext = Confluent.Kafka.SerializationContext;
+using Orleans.Streams.Kafka.Core;
 
-namespace Orleans.Streams.Kafka.Core
+namespace Orleans.Streams.Kafka.Serialization
 {
 	internal class KafkaBatchContainerSerializer : ISerializer<KafkaBatchContainer>
 	{
@@ -13,7 +13,7 @@ namespace Orleans.Streams.Kafka.Core
 			_serializationManager = serializationManager;
 		}
 
-		public byte[] Serialize(KafkaBatchContainer data, SerializationContext context)
+		public byte[] Serialize(KafkaBatchContainer data, Confluent.Kafka.SerializationContext context)
 			=> _serializationManager.SerializeToByteArray(data);
 	}
 }

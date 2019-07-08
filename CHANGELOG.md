@@ -1,4 +1,18 @@
-﻿## [0.9.1](https://github.com/jonathansant/orleans.persistence.redis/compare/0.9.0...0.9.1) (2019-06-24)
+﻿## [1.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.9.1...1.0.0) (2019-07-05)
+
+### Features
+
+- **Avro Serialization:** add `AvroExternalDeserializer` for deserializing external messages using avro and regsitry schema
+- **External Deserialization** integrate new IExternalDeserialization that are new in `Orleans.Steams.Utils` 6.0.0
+- **deps** update to stable `Confluent.Kafka` Library
+
+### BREAKING CHANGES
+
+ - `Topic`
+	- `Topic` is now `TopicConfig`.
+ - `AddKafkaStreamProvider` requires `AddJson` or `AddAvro` to work
+
+## [0.9.1](https://github.com/jonathansant/orleans.streams.kafka/compare/0.9.0...0.9.1) (2019-06-24)
 
 ### Features
 

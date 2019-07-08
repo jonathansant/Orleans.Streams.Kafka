@@ -1,4 +1,8 @@
 ﻿using Confluent.Kafka;
+using Confluent.Kafka.Admin;
+using Confluent.Kafka.SyncOverAsync;
+using Confluent.SchemaRegistry;
+using Confluent.SchemaRegistry.Serdes;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,49 +13,49 @@ namespace ConfluentSample
 {
 	internal class Program
 	{
+		private static List<string> Brokers = new List<string>
+		{
+			"[host name]:39000",
+			"[host name]:39001",
+			"[host name]:39002"
+		};
+
+		private const string Topic = "sucrose-external";
+		private const string RegistryUrl = "https://[host name]/schema-registry";
+
 		private static async Task Main(string[] args)
 		{
-			//Task.Run(() => Consume());
-
-			Task.Run(async () =>
-			{
-				while (true)
-				{
-					await Produce();
-					await Task.Delay(100);
-				}
-			});
+			Task.Run(() => Consume());
+			await Produce();
+			//			await CreateTopic();
 
 			Console.ReadKey();
 		}
 
 		private static async Task Produce()
 		{
-			var config = new Dictionary<string, string>
-			{
-				//{ "bootstrap.servers", "localhost:9092" }
-				{"bootstrap.servers", "pkc-l9pve.eu-west-1.aws.confluent.cloud:9092"},
-				{"api.version.request", "true"},
-				{"broker.version.fallback", "0.10.0.0"},
-				{"api.version.fallback.ms", "0"},
-				{"sasl.mechanisms", "PLAIN"},
-				{"security.protocol", "SASL_SSL"}
-//				{ "debug", "security,broker"}
-			};
-
 			try
 			{
-				using (var producer = new ProducerBuilder<byte[], string>(config).Build())
+				var r = new Random();
+
+				using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = RegistryUrl }))
+				using (var producer = new ProducerBuilder<byte[], AMessage>(new ProducerConfig
 				{
-					var publishPromise5 = await producer.ProduceAsync("jonnyenglish", new Message<byte[], string>
+					BootstrapServers = string.Join(',', Brokers)
+				}).SetValueSerializer(new AvroSerializer<AMessage>(schema).AsSyncOverAsync()).Build())
+				{
+					var result = await producer.ProduceAsync(Topic, new Message<byte[], AMessage>
 					{
 						Key = Encoding.UTF8.GetBytes("streamId"),
-						Value = "{ greeting: 'hello world' }",
-						Headers = new Headers {new Header("external", BitConverter.GetBytes(true))}
+						Value = new AMessage
+						{
+							id = 1,
+							noOfHeads = r.Next(100)
+						}
 					});
 
 					Console.WriteLine(
-						$@"Delivered '{publishPromise5.Value}' to: {publishPromise5.TopicPartitionOffset}");
+						$@"Delivered '{result.Value}' to: {result.TopicPartitionOffset}");
 				}
 			}
 			catch (Exception ex)
@@ -62,41 +66,81 @@ namespace ConfluentSample
 
 		private static void Consume()
 		{
-			var conf = new Dictionary<string, string>
+			var conf = new ConsumerConfig
 			{
-				{ "group.id", "test-consumer-group" },
-				{ "bootstrap.servers", "localhost:9092" },
-				{ "enable.auto.commit", "false" },
-				//{ "auto.commit.interval.ms", 5000 },
-//				{ "auto.offset.reset", "earliest" }
+				BootstrapServers = string.Join(',', Brokers),
+				GroupId = "jonny-king-better-than-michael",
 			};
-			
-			using (var consumer = new ConsumerBuilder<string, string>(conf).Build())
-			using (var admin = new AdminClient(consumer.Handle))
+
+			using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = RegistryUrl }))
+			using (var consumer = new ConsumerBuilder<string, AMessage>(conf).SetValueDeserializer(new AvroDeserializer<AMessage>(schema).AsSyncOverAsync()).Build())
+			using (var admin = new AdminClientBuilder(conf).Build())
 			{
 				Console.WriteLine($@"Partition IDs: {
 						string.Join(',',
 						admin
 						.GetMetadata(TimeSpan.FromMilliseconds(1000))
 						.Topics
-						.First(t => t.Topic.Contains("my-topic"))
+						.First(t => t.Topic.Contains(Topic))
 						.Partitions
 						.Select(x => x.PartitionId))
 					}"
 				);
 
-
-				consumer.Assign(new TopicPartitionOffset("my-topic", 1, Offset.Beginning));
-				//consumer.Subscribe("my-topic");
+				consumer.Assign(new[]
+				{
+					new TopicPartitionOffset(Topic, 1, Offset.Beginning),
+					new TopicPartitionOffset(Topic, 2, Offset.Beginning),
+					new TopicPartitionOffset(Topic, 3, Offset.Beginning)
+				});
+				//consumer.Subscribe(Topic);
 
 				while (true)
 				{
 					var message = consumer.Consume(TimeSpan.FromMilliseconds(100));
 					if (message != null)
 					{
-						Console.WriteLine(message.Value);
+						Console.WriteLine(message.Value.noOfHeads);
 					}
 				}
+			}
+		}
+
+		private static async Task CreateTopic()
+		{
+			try
+			{
+				using (var admin = new AdminClientBuilder(new AdminClientConfig
+				{
+					BootstrapServers = string.Join(',', Brokers)
+				}).Build())
+				{
+					admin.GetMetadata(TimeSpan.FromSeconds(10)).Topics.ForEach(t =>
+					{
+						Console.WriteLine(t.Topic);
+						t.Partitions.ForEach(p => Console.WriteLine("              " + p.PartitionId));
+					});
+
+					await admin.CreateTopicsAsync(new[]
+					{
+						new TopicSpecification
+						{
+							Name = "TestTopicName",
+							NumPartitions = 3,
+							ReplicationFactor = 1
+						},
+						new TopicSpecification
+						{
+							Name = "TestTopicName3",
+							NumPartitions = 3,
+							ReplicationFactor = 1
+						}
+					});
+				}
+			}
+			catch (Exception ex)
+			{
+				Console.WriteLine(ex.Message);
 			}
 		}
 	}

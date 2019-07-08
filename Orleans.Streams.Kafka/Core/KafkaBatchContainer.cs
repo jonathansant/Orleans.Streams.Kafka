@@ -1,5 +1,4 @@
 ﻿using Confluent.Kafka;
-using Newtonsoft.Json;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
 using System;
@@ -11,9 +10,11 @@ namespace Orleans.Streams.Kafka.Core
 	[Serializable]
 	public class KafkaBatchContainer : IBatchContainer, IComparable<KafkaBatchContainer>
 	{
-		private readonly List<object> _events;
 		private readonly Dictionary<string, object> _requestContext;
-		private readonly bool _isExternalBatch;
+
+		[NonSerialized] internal TopicPartitionOffset TopicPartitionOffSet;
+
+		protected List<object> Events { get; set; }
 
 		public Guid StreamGuid { get; }
 
@@ -21,20 +22,13 @@ namespace Orleans.Streams.Kafka.Core
 
 		public StreamSequenceToken SequenceToken { get; internal set; }
 
-		[NonSerialized] internal TopicPartitionOffset TopicPartitionOffSet;
-
 		public KafkaBatchContainer(
 			Guid streamGuid,
 			string streamNamespace,
 			List<object> events,
-			Dictionary<string, object> requestContext,
-			bool isExternalBatch,
-			EventSequenceTokenV2 streamSequenceToken,
-			TopicPartitionOffset offset
-		) : this(streamGuid, streamNamespace, events, requestContext, isExternalBatch)
+			Dictionary<string, object> requestContext
+		) : this(streamGuid, streamNamespace, events, requestContext, null, null)
 		{
-			SequenceToken = streamSequenceToken;
-			TopicPartitionOffSet = offset;
 		}
 
 		public KafkaBatchContainer(
@@ -42,26 +36,23 @@ namespace Orleans.Streams.Kafka.Core
 			string streamNamespace,
 			List<object> events,
 			Dictionary<string, object> requestContext,
-			bool isExternalBatch
+			EventSequenceTokenV2 streamSequenceToken,
+			TopicPartitionOffset offset
 		)
 		{
-			_events = events ?? throw new ArgumentNullException(nameof(events), "Message contains no events.");
+			Events = events ?? throw new ArgumentNullException(nameof(events), "Message contains no events.");
 
 			StreamGuid = streamGuid;
 			StreamNamespace = streamNamespace;
-
+			SequenceToken = streamSequenceToken;
+			TopicPartitionOffSet = offset;
 			_requestContext = requestContext;
-			_isExternalBatch = isExternalBatch;
 		}
 
-		public IEnumerable<Tuple<T, StreamSequenceToken>> GetEvents<T>()
+		public virtual IEnumerable<Tuple<T, StreamSequenceToken>> GetEvents<T>()
 		{
 			var sequenceToken = (EventSequenceTokenV2)SequenceToken;
-
-			if (_isExternalBatch)
-				return SerializeExternalEvents<T>(sequenceToken);
-
-			return _events
+			return Events
 				.OfType<T>()
 				.Select((@event, iteration) =>
 					Tuple.Create<T, StreamSequenceToken>(
@@ -74,7 +65,7 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			// If there is something in this batch that the consumer is interested in, we should send it
 			// else the consumer is not interested in any of these events, so don't send.
-			return _events.Any(item => shouldReceiveFunc(stream, filterData, item));
+			return Events.Any(item => shouldReceiveFunc(stream, filterData, item));
 		}
 
 
@@ -89,38 +80,10 @@ namespace Orleans.Streams.Kafka.Core
 			return true;
 		}
 
-		public int CompareTo(KafkaBatchContainer other) 
+		public int CompareTo(KafkaBatchContainer other)
 			=> TopicPartitionOffSet.Offset.Value.CompareTo(other.TopicPartitionOffSet.Offset.Value);
 
 		public override string ToString()
-			=> $"[KafkaBatchContainer:Stream={StreamGuid},#Items={_events.Count}]";
-
-		private IEnumerable<Tuple<T, StreamSequenceToken>> SerializeExternalEvents<T>(EventSequenceTokenV2 sequenceToken)
-		{
-			var serializedEvents = _events
-				.Select((@event, iteration) =>
-				{
-					try
-					{
-						T message;
-						var messageType = typeof(T);
-
-						if (messageType.IsPrimitive || messageType == typeof(string) || messageType == typeof(decimal))
-							message = (T) Convert.ChangeType(@event, typeof(T));
-						else
-							message = JsonConvert
-								.DeserializeObject<T>((string) @event); // todo: support for multiple serializer
-
-						return Tuple.Create<T, StreamSequenceToken>(message, sequenceToken.CreateSequenceTokenForEvent(iteration));
-					}
-					catch (Exception)
-					{
-						return null;
-					}
-				})
-				.Where(@event => @event != null);
-
-			return serializedEvents;
-		}
+			=> $"[{GetType().Name}:Stream={StreamGuid},#Items={Events.Count}]";
 	}
 }

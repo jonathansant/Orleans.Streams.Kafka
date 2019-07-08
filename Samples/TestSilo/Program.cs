@@ -41,8 +41,7 @@ namespace TestSilo
 				{
 					options.BrokerList = new List<string> { "localhost:9092" };
 					options.ConsumerGroupId = "TestGroup";
-					options.ExternalMessageIdentifier = "external";
-					options.Topics = new List<Topic> { new Topic { Name = "gossip-testing" } };
+					options.Topics = new List<TopicConfig> { new TopicConfig { Name = "gossip-testing" } };
 					options.MessageTrackingEnabled = true;
 				});
 

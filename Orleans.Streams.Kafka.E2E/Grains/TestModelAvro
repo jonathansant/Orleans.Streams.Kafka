@@ -1,0 +1,19 @@
+{
+  "name": "TestModelAvro",
+  "type": "record",
+  "namespace": "Orleans.Streams.Kafka.E2E.Grains",
+  "fields": [
+    {
+      "name": "numberOfLegs",
+      "type": "int"
+    },
+    {
+      "name": "numberOfHeads",
+      "type": "int"
+    },
+    {
+      "name": "isLastMessage",
+      "type": "boolean"
+    }
+  ]
+}
