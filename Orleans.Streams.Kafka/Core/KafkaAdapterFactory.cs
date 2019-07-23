@@ -34,6 +34,21 @@ namespace Orleans.Streams.Kafka.Core
 			SimpleQueueCacheOptions cacheOptions,
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
+			IGrainFactory grainFactory
+		) : this(name, options, cacheOptions, serializationManager, loggerFactory, grainFactory, null)
+		{
+			if (options.Topics.Any(topic => topic.IsExternal))
+				throw new InvalidOperationException(
+				"Cannot have external topic with no 'IExternalDeserializer' defined. Use 'AddJson' or 'AddAvro'"
+			);
+		}
+
+		public KafkaAdapterFactory(
+			string name,
+			KafkaStreamOptions options,
+			SimpleQueueCacheOptions cacheOptions,
+			SerializationManager serializationManager,
+			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
 			IExternalStreamDeserializer externalDeserializer
 		)
@@ -88,15 +103,24 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			var streamsConfig = services.GetOptionsByName<KafkaStreamOptions>(name);
 			var cacheOptions = services.GetOptionsByName<SimpleQueueCacheOptions>(name);
-			var deserializer = services.GetRequiredServiceByName<IExternalStreamDeserializer>(name);
+			var deserializer = services.GetServiceByName<IExternalStreamDeserializer>(name);
 
-			var factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
-				services,
-				name,
-				streamsConfig,
-				cacheOptions,
-				deserializer
-			);
+			KafkaAdapterFactory factory;
+			if (deserializer != null)
+				factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
+					services,
+					name,
+					streamsConfig,
+					cacheOptions,
+					deserializer
+				);
+			else
+				factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
+					services,
+					name,
+					streamsConfig,
+					cacheOptions
+				);
 
 			return factory;
 		}

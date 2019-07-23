@@ -22,7 +22,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		[Fact]
 		public async Task ProduceConsumeTest()
 		{
-			var grain = await WakeUpGrain<IStreamGrainV2>();
+			var grain = await WakeUpGrain<IRoundTripGrain>();
 			var result = await grain.Fire();
 
 			Assert.Equal(result.Expected, result.Actual);
@@ -119,5 +119,69 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			{
 				BootstrapServers = string.Join(',', Brokers)
 			};
+	}
+
+	public class ClusteredStreamTests_GuidStreamId : TestBase
+	{
+		private const int ReceiveDelay = 500;
+
+		public ClusteredStreamTests_GuidStreamId()
+		{
+			Initialize(3);
+		}
+
+		[Fact]
+		public async Task E2E()
+		{
+			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
+			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
+			var stream = streamProvider.GetStream<TestModel>(newId, Consts.StreamNamespace2);
+
+			var expected = TestModel.Random();
+			var roundTrip = new TaskCompletionSource<TestModel>();
+
+			await stream.QuickSubscribe((message, seq) =>
+			{
+				roundTrip.SetResult(message);
+				return Task.CompletedTask;
+			});
+
+			await Task.Delay(5000);
+
+			await stream.OnNextAsync(expected);
+
+			await Task.WhenAny(Task.Delay(ReceiveDelay * 4), roundTrip.Task);
+
+			if (!roundTrip.Task.IsCompleted)
+				throw new XunitException("Message not received.");
+
+			Assert.Equal(expected, roundTrip.Task.Result);
+		}
+	}
+
+	public class ClusteredStreamTests_DynamicData : TestBase
+	{
+		private const int ReceiveDelay = 500;
+
+		public ClusteredStreamTests_DynamicData()
+		{
+			Initialize(3);
+		}
+
+		[Fact]
+		public async Task E2E()
+		{
+			var grain = await WakeUpGrain<IRoundTripDynamicModelGrain>();
+			var result = await grain.Fire();
+			Assert.Equal(result.Expected, result.Actual);
+		}
+
+		private async Task<TGrain> WakeUpGrain<TGrain>() where TGrain : IBaseTestGrain
+		{
+			var grain = Cluster.GrainFactory.GetGrain<TGrain>("testGrain");
+			await grain.WakeUp();
+
+			return grain;
+		}
 	}
 }

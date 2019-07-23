@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
+using Orleans.Concurrency;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Consumer;
@@ -47,7 +48,6 @@ namespace Orleans.Streams.Kafka.Core
 
 		public Task Initialize(TimeSpan timeout)
 		{
-
 			_consumer = new ConsumerBuilder<byte[], byte[]>(_options.ToConsumerProperties())
 				.SetErrorHandler((sender, errorEvent) =>
 					_logger.LogError(
@@ -147,7 +147,6 @@ namespace Orleans.Streams.Kafka.Core
 					if (consumeResult == null)
 						break;
 
-
 					var batchContainer = consumeResult.ToBatchContainer(
 						new SerializationContext
 						{
@@ -181,7 +180,7 @@ namespace Orleans.Streams.Kafka.Core
 				return Task.CompletedTask;
 
 			var trackingGrain = _grainFactory.GetMessageTrackerGrain(_queueProperties.QueueName);
-			return trackingGrain.Track(container);
+			return trackingGrain.Track(new Immutable<IBatchContainer>(container));
 		}
 	}
 }

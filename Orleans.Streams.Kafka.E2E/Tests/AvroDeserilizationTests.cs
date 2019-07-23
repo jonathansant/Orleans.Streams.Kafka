@@ -49,7 +49,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 			using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig
 			{
-				SchemaRegistryUrl = "https://[host name]/schema-registry"
+				SchemaRegistryUrl = "https://dev-data.rivertech.dev/schema-registry"
 			}))
 			using (var producer = new ProducerBuilder<byte[], TestModelAvro>(config)
 				.SetValueSerializer(new AvroSerializer<TestModelAvro>(schema).AsSyncOverAsync())
@@ -84,7 +84,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = TestBase.Brokers;
-					options.ConsumerGroupId = "E2EGroup";
+					options.ConsumerGroupId = "E2EGroup_client";
 
 					options
 						.AddExternalTopic(Consts.StreamNamespaceExternalAvro)
@@ -93,13 +93,17 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 				})
-				.AddAvro(Consts.KafkaStreamProvider, "https://[host name]/schema-registry")
+				.AddAvro(Consts.KafkaStreamProvider, "https://dev-data.rivertech.dev/schema-registry")
 				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
+				;
+
 	}
 
 	public class AvroSiloBuilderConfigurator : ISiloBuilderConfigurator
 	{
+		private static readonly string GroupId = "E2EGroup" + Guid.NewGuid();
+
 		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
 				.AddMemoryGrainStorage("PubSubStore")
@@ -107,19 +111,18 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = TestBase.Brokers;
-					options.ConsumerGroupId = "E2EGroup";
+					options.ConsumerGroupId = GroupId; // create a new consumer group since multiple tests will be initializing new silos with the same consumer group
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
-					options.MessageTrackingEnabled = false;
+					options.MessageTrackingEnabled = true;
 
 					options
 						.AddExternalTopic(Consts.StreamNamespaceExternalAvro)
 						;
 				})
-				.AddAvro(Consts.KafkaStreamProvider, "https://[host name]/schema-registry")
+				.AddAvro(Consts.KafkaStreamProvider, "https://dev-data.rivertech.dev/schema-registry")
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
 				.UseLoggingTracker();
-
 	}
 }

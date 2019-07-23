@@ -1,25 +1,26 @@
-﻿using Orleans.Concurrency;
+﻿using Newtonsoft.Json.Linq;
+using Orleans.Concurrency;
 using Orleans.Streams.Kafka.E2E.Extensions;
 using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.E2E.Grains
 {
-	public interface IRoundTripGrain : IBaseTestGrain
+	public interface IRoundTripDynamicModelGrain : IBaseTestGrain
 	{
 		Task<TestResult> Fire();
 	}
 
 	[Reentrant]
-	public class RoundTripGrain : BaseTestGrain, IRoundTripGrain
+	public class RoundTripDynamicModelGrain : BaseTestGrain, IRoundTripDynamicModelGrain
 	{
-		private IAsyncStream<TestModel> _stream;
+		private IAsyncStream<JObject> _stream;
 		private TestModel _model;
 		private TaskCompletionSource<TestResult> _completion;
 
 		public override async Task OnActivateAsync()
 		{
 			var provider = GetStreamProvider(Consts.KafkaStreamProvider);
-			_stream = provider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
+			_stream = provider.GetStream<JObject>(Consts.StreamId3, Consts.StreamNamespace);
 
 			_model = TestModel.Random();
 			_completion = new TaskCompletionSource<TestResult>();
@@ -28,7 +29,7 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 			{
 				_completion.SetResult(new TestResult
 				{
-					Actual = actual,
+					Actual = actual.ToObject<TestModel>(),
 					Expected = _model
 				});
 
@@ -40,7 +41,7 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 
 		public async Task<TestResult> Fire()
 		{
-			await _stream.OnNextAsync(_model);
+			await _stream.OnNextAsync(JObject.FromObject(_model));
 			await Task.WhenAny(_completion.Task, Task.Delay(1000));
 
 			return _completion.Task.IsCompleted

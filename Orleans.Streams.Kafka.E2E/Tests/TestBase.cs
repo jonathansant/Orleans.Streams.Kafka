@@ -1,5 +1,7 @@
 ﻿using Microsoft.Extensions.Configuration;
+using Microsoft.Extensions.Logging;
 using Orleans.Hosting;
+using Orleans.Logging;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Grains;
 using Orleans.Streams.Utils.MessageTracking;
@@ -17,14 +19,14 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		protected TestCluster Cluster { get; private set; }
 
-		public static string BrokerEndpoint = "[host name]:39000";
+		public static string BrokerEndpoint = "dev-data.rivertech.dev:39000";
 		//		public static string BrokerEndpoint = "localhost:9092";
 
 		public static List<string> Brokers = new List<string>
 		{
 			BrokerEndpoint,
-			"[host name]:39001",
-			"[host name]:39002"
+			"dev-data.rivertech.dev:39001",
+			"dev-data.rivertech.dev:39002"
 		};
 
 		private TestClusterBuilder _builder;
@@ -64,10 +66,11 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 	{
 		public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 			=> clientBuilder
+				.ConfigureLogging(logger => logger.AddFile("C:\\dog\\log.txt").SetMinimumLevel(LogLevel.Information))
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = TestBase.Brokers;
-					options.ConsumerGroupId = "E2EGroup";
+					options.ConsumerGroupId = "E2EGroup_client";
 
 					options
 						.AddTopic(Consts.StreamNamespace)
@@ -85,17 +88,20 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 	public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 	{
+		private readonly string _groupId = "E2EGroup" + Guid.NewGuid();
+
 		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
+				.ConfigureLogging(logger => logger.AddFile("C:\\dog\\log.txt").SetMinimumLevel(LogLevel.Information))
 				.AddMemoryGrainStorage("PubSubStore")
 				.UseLoggingTracker()
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = TestBase.Brokers;
-					options.ConsumerGroupId = "E2EGroup";
+					options.ConsumerGroupId = _groupId;
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
-					options.MessageTrackingEnabled = false;
+					options.MessageTrackingEnabled = true;
 
 					options
 						.AddTopic(Consts.StreamNamespace)
@@ -107,6 +113,5 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
 				.UseLoggingTracker();
-
 	}
 }

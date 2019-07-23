@@ -38,26 +38,23 @@ namespace Orleans.Streams.Kafka.Core
 			return serializedEvents;
 		}
 
-		private Tuple<T, StreamSequenceToken> DeserializeExternalEvent<T>(EventSequenceTokenV2 sequenceToken, object @event, int iteration)
+		private Tuple<T, StreamSequenceToken> DeserializeExternalEvent<T>(
+			EventSequenceTokenV2 sequenceToken,
+			object @event,
+			int iteration
+		)
 		{
-			try
-			{
-				T message;
-				var messageType = typeof(T);
+			T message;
+			var messageType = typeof(T);
 
-				if (messageType == typeof(byte[]))
-					message = (T)@event;
-				else if (messageType.IsPrimitive || messageType == typeof(string) || messageType == typeof(decimal))
-					message = (T)Convert.ChangeType(@event, typeof(T));
-				else
-					message = _deserializer.Deserialize<T>(_queueProps, (byte[])@event);
+			if (messageType == typeof(byte[]))
+				message = (T)@event;
+			else if (messageType.IsPrimitive || messageType == typeof(string) || messageType == typeof(decimal))
+				message = (T)Convert.ChangeType(@event, typeof(T));
+			else
+				message = _deserializer.Deserialize<T>(_queueProps, (byte[])@event);
 
-				return Tuple.Create<T, StreamSequenceToken>(message, sequenceToken.CreateSequenceTokenForEvent(iteration));
-			}
-			catch (Exception)
-			{
-				return null;
-			}
+			return Tuple.Create<T, StreamSequenceToken>(message, sequenceToken.CreateSequenceTokenForEvent(iteration));
 		}
 	}
 }
