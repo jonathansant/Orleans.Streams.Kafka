@@ -17,14 +17,14 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		protected TestCluster Cluster { get; private set; }
 
-		public static string BrokerEndpoint = "dev-data.rivertech.dev:39000";
+		public static string BrokerEndpoint = "[host name]:39000";
 		//		public static string BrokerEndpoint = "localhost:9092";
 
 		public static List<string> Brokers = new List<string>
 		{
 			BrokerEndpoint,
-			"dev-data.rivertech.dev:39001",
-			"dev-data.rivertech.dev:39002"
+			"[host name]:39001",
+			"[host name]:39002"
 		};
 
 		private TestClusterBuilder _builder;
