@@ -1,4 +1,16 @@
-﻿## [1.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.9.1...1.0.0) (2019-07-05)
+﻿## [2.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/1.0.0...2.0.0) (2019-07-24)
+
+### Features
+
+- `AddJson`, `AddAvro` are no longer required if there are no external topics
+- Add more tests and parallelize them
+
+### BREAKING CHANGES
+
+- update to `Orleans.Streams.Utils` to version 7.0.0 which optimizes (and also fixes potential problems) message tracking
+- `KafkaExternalBatchContainer` will fail on deserilization exceptions.
+
+## [1.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/0.9.1...1.0.0) (2019-07-05)
 
 ### Features
 

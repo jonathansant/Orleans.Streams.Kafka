@@ -1,7 +1,5 @@
 ﻿using Microsoft.Extensions.Configuration;
-using Microsoft.Extensions.Logging;
 using Orleans.Hosting;
-using Orleans.Logging;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Grains;
 using Orleans.Streams.Utils.MessageTracking;
@@ -66,7 +64,6 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 	{
 		public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 			=> clientBuilder
-				.ConfigureLogging(logger => logger.AddFile("C:\\dog\\log.txt").SetMinimumLevel(LogLevel.Information))
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = TestBase.Brokers;
@@ -88,17 +85,14 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 	public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 	{
-		private readonly string _groupId = "E2EGroup" + Guid.NewGuid();
-
 		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
-				.ConfigureLogging(logger => logger.AddFile("C:\\dog\\log.txt").SetMinimumLevel(LogLevel.Information))
 				.AddMemoryGrainStorage("PubSubStore")
 				.UseLoggingTracker()
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = TestBase.Brokers;
-					options.ConsumerGroupId = _groupId;
+					options.ConsumerGroupId = "E2EGroup";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.MessageTrackingEnabled = true;

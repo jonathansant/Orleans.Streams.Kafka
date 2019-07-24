@@ -29,46 +29,6 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		}
 
 		[Fact]
-		public async Task ProduceConsumeExternalMessage()
-		{
-			var config = GetKafkaServerConfig();
-
-			var testMessage = TestModel.Random();
-
-			var completion = new TaskCompletionSource<bool>();
-
-			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespaceExternal);
-
-			await stream.QuickSubscribe((message, seq) =>
-			{
-				Assert.Equal(testMessage, message);
-				completion.SetResult(true);
-				return Task.CompletedTask;
-			});
-
-			await Task.Delay(5000);
-
-			using (var producer = new ProducerBuilder<byte[], TestModel>(config)
-				.SetValueSerializer(new LowercaseJsonSerializer<TestModel>())
-				.Build()
-			)
-			{
-				await producer.ProduceAsync(Consts.StreamNamespaceExternal, new Message<byte[], TestModel>
-				{
-					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
-					Value = testMessage,
-					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
-				});
-			}
-
-			await Task.WhenAny(completion.Task, Task.Delay(ReceiveDelay * 4));
-
-			if (!completion.Task.IsCompleted)
-				throw new XunitException("Message not received.");
-		}
-
-		[Fact]
 		public async Task ConsumeInOrderMultipleStreams()
 		{
 			var grain = await WakeUpGrain<IMultiStreamGrain>();
@@ -113,6 +73,55 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 			return grain;
 		}
+	}
+
+	public class ClusteredStreamTests_ProduceConsumeExternalMessage : TestBase
+	{
+		public ClusteredStreamTests_ProduceConsumeExternalMessage()
+		{
+			Initialize(3);
+		}
+
+		[Fact]
+		public async Task E2E()
+		{
+			var config = GetKafkaServerConfig();
+
+			var testMessage = TestModel.Random();
+
+			var completion = new TaskCompletionSource<bool>();
+
+			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
+			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespaceExternal);
+
+			await stream.QuickSubscribe((message, seq) =>
+			{
+				Assert.Equal(testMessage, message);
+				completion.SetResult(true);
+				return Task.CompletedTask;
+			});
+
+			await Task.Delay(5000);
+
+			using (var producer = new ProducerBuilder<byte[], TestModel>(config)
+				.SetValueSerializer(new LowercaseJsonSerializer<TestModel>())
+				.Build()
+			)
+			{
+				await producer.ProduceAsync(Consts.StreamNamespaceExternal, new Message<byte[], TestModel>
+				{
+					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
+					Value = testMessage,
+					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
+				});
+			}
+
+			await Task.WhenAny(completion.Task, Task.Delay(500 * 4));
+
+			if (!completion.Task.IsCompleted)
+				throw new XunitException("Message not received.");
+		}
+
 
 		private static ClientConfig GetKafkaServerConfig()
 			=> new ClientConfig
@@ -159,6 +168,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		}
 	}
 
+	// todo: fix worm that breaks external test. figure out why JObject breaks other tests
 	public class ClusteredStreamTests_DynamicData : TestBase
 	{
 		private const int ReceiveDelay = 500;

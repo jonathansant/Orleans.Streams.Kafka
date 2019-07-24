@@ -17,17 +17,17 @@ using Xunit.Sdk;
 
 namespace Orleans.Streams.Kafka.E2E.Tests
 {
-	public class AvroDeserilizationTests : TestBase
+	public class AvroDeserilizationTests_ProduceConsumeExternalMessage : TestBase
 	{
 		private const int ReceiveDelay = 500;
 
-		public AvroDeserilizationTests()
+		public AvroDeserilizationTests_ProduceConsumeExternalMessage()
 		{
 			Initialize<AvroClientBuilderConfigurator, AvroSiloBuilderConfigurator>(3);
 		}
 
 		[Fact]
-		public async Task ProduceConsumeExternalMessage()
+		public async Task E2E()
 		{
 			var config = GetKafkaServerConfig();
 
@@ -102,8 +102,6 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 	public class AvroSiloBuilderConfigurator : ISiloBuilderConfigurator
 	{
-		private static readonly string GroupId = "E2EGroup" + Guid.NewGuid();
-
 		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
 				.AddMemoryGrainStorage("PubSubStore")
@@ -111,7 +109,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = TestBase.Brokers;
-					options.ConsumerGroupId = GroupId; // create a new consumer group since multiple tests will be initializing new silos with the same consumer group
+					options.ConsumerGroupId = "E2EGroup";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.MessageTrackingEnabled = true;
