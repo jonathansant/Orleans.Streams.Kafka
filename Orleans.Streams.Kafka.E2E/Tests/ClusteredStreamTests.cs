@@ -22,50 +22,10 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		[Fact]
 		public async Task ProduceConsumeTest()
 		{
-			var grain = await WakeUpGrain<IStreamGrainV2>();
+			var grain = await WakeUpGrain<IRoundTripGrain>();
 			var result = await grain.Fire();
 
 			Assert.Equal(result.Expected, result.Actual);
-		}
-
-		[Fact]
-		public async Task ProduceConsumeExternalMessage()
-		{
-			var config = GetKafkaServerConfig();
-
-			var testMessage = TestModel.Random();
-
-			var completion = new TaskCompletionSource<bool>();
-
-			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespaceExternal);
-
-			await stream.QuickSubscribe((message, seq) =>
-			{
-				Assert.Equal(testMessage, message);
-				completion.SetResult(true);
-				return Task.CompletedTask;
-			});
-
-			await Task.Delay(5000);
-
-			using (var producer = new ProducerBuilder<byte[], TestModel>(config)
-				.SetValueSerializer(new LowercaseJsonSerializer<TestModel>())
-				.Build()
-			)
-			{
-				await producer.ProduceAsync(Consts.StreamNamespaceExternal, new Message<byte[], TestModel>
-				{
-					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
-					Value = testMessage,
-					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
-				});
-			}
-
-			await Task.WhenAny(completion.Task, Task.Delay(ReceiveDelay * 4));
-
-			if (!completion.Task.IsCompleted)
-				throw new XunitException("Message not received.");
 		}
 
 		[Fact]
@@ -113,11 +73,125 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 			return grain;
 		}
+	}
+
+	public class ClusteredStreamTests_ProduceConsumeExternalMessage : TestBase
+	{
+		public ClusteredStreamTests_ProduceConsumeExternalMessage()
+		{
+			Initialize(3);
+		}
+
+		[Fact]
+		public async Task E2E()
+		{
+			var config = GetKafkaServerConfig();
+
+			var testMessage = TestModel.Random();
+
+			var completion = new TaskCompletionSource<bool>();
+
+			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
+			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespaceExternal);
+
+			await stream.QuickSubscribe((message, seq) =>
+			{
+				Assert.Equal(testMessage, message);
+				completion.SetResult(true);
+				return Task.CompletedTask;
+			});
+
+			await Task.Delay(5000);
+
+			using (var producer = new ProducerBuilder<byte[], TestModel>(config)
+				.SetValueSerializer(new LowercaseJsonSerializer<TestModel>())
+				.Build()
+			)
+			{
+				await producer.ProduceAsync(Consts.StreamNamespaceExternal, new Message<byte[], TestModel>
+				{
+					Key = Encoding.UTF8.GetBytes(Consts.StreamId2),
+					Value = testMessage,
+					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
+				});
+			}
+
+			await Task.WhenAny(completion.Task, Task.Delay(500 * 4));
+
+			if (!completion.Task.IsCompleted)
+				throw new XunitException("Message not received.");
+		}
+
 
 		private static ClientConfig GetKafkaServerConfig()
 			=> new ClientConfig
 			{
 				BootstrapServers = string.Join(',', Brokers)
 			};
+	}
+
+	public class ClusteredStreamTests_GuidStreamId : TestBase
+	{
+		private const int ReceiveDelay = 500;
+
+		public ClusteredStreamTests_GuidStreamId()
+		{
+			Initialize(3);
+		}
+
+		[Fact]
+		public async Task E2E()
+		{
+			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
+			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
+			var stream = streamProvider.GetStream<TestModel>(newId, Consts.StreamNamespace2);
+
+			var expected = TestModel.Random();
+			var roundTrip = new TaskCompletionSource<TestModel>();
+
+			await stream.QuickSubscribe((message, seq) =>
+			{
+				roundTrip.SetResult(message);
+				return Task.CompletedTask;
+			});
+
+			await Task.Delay(5000);
+
+			await stream.OnNextAsync(expected);
+
+			await Task.WhenAny(Task.Delay(ReceiveDelay * 4), roundTrip.Task);
+
+			if (!roundTrip.Task.IsCompleted)
+				throw new XunitException("Message not received.");
+
+			Assert.Equal(expected, roundTrip.Task.Result);
+		}
+	}
+
+	// todo: fix worm that breaks external test. figure out why JObject breaks other tests
+	public class ClusteredStreamTests_DynamicData : TestBase
+	{
+		private const int ReceiveDelay = 500;
+
+		public ClusteredStreamTests_DynamicData()
+		{
+			Initialize(3);
+		}
+
+		[Fact]
+		public async Task E2E()
+		{
+			var grain = await WakeUpGrain<IRoundTripDynamicModelGrain>();
+			var result = await grain.Fire();
+			Assert.Equal(result.Expected, result.Actual);
+		}
+
+		private async Task<TGrain> WakeUpGrain<TGrain>() where TGrain : IBaseTestGrain
+		{
+			var grain = Cluster.GrainFactory.GetGrain<TGrain>("testGrain");
+			await grain.WakeUp();
+
+			return grain;
+		}
 	}
 }

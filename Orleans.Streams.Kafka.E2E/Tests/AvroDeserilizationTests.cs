@@ -17,17 +17,17 @@ using Xunit.Sdk;
 
 namespace Orleans.Streams.Kafka.E2E.Tests
 {
-	public class AvroDeserilizationTests : TestBase
+	public class AvroDeserilizationTests_ProduceConsumeExternalMessage : TestBase
 	{
 		private const int ReceiveDelay = 500;
 
-		public AvroDeserilizationTests()
+		public AvroDeserilizationTests_ProduceConsumeExternalMessage()
 		{
 			Initialize<AvroClientBuilderConfigurator, AvroSiloBuilderConfigurator>(3);
 		}
 
 		[Fact]
-		public async Task ProduceConsumeExternalMessage()
+		public async Task E2E()
 		{
 			var config = GetKafkaServerConfig();
 
@@ -84,7 +84,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = TestBase.Brokers;
-					options.ConsumerGroupId = "E2EGroup";
+					options.ConsumerGroupId = "E2EGroup_client";
 
 					options
 						.AddExternalTopic(Consts.StreamNamespaceExternalAvro)
@@ -95,7 +95,9 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				})
 				.AddAvro(Consts.KafkaStreamProvider, "https://[host name]/schema-registry")
 				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
+				;
+
 	}
 
 	public class AvroSiloBuilderConfigurator : ISiloBuilderConfigurator
@@ -110,7 +112,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.ConsumerGroupId = "E2EGroup";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
-					options.MessageTrackingEnabled = false;
+					options.MessageTrackingEnabled = true;
 
 					options
 						.AddExternalTopic(Consts.StreamNamespaceExternalAvro)
@@ -120,6 +122,5 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
 				.UseLoggingTracker();
-
 	}
 }

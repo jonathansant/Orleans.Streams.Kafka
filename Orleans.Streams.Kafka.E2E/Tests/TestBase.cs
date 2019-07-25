@@ -67,7 +67,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
 				{
 					options.BrokerList = TestBase.Brokers;
-					options.ConsumerGroupId = "E2EGroup";
+					options.ConsumerGroupId = "E2EGroup_client";
 
 					options
 						.AddTopic(Consts.StreamNamespace)
@@ -95,7 +95,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.ConsumerGroupId = "E2EGroup";
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
-					options.MessageTrackingEnabled = false;
+					options.MessageTrackingEnabled = true;
 
 					options
 						.AddTopic(Consts.StreamNamespace)
@@ -107,6 +107,5 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
 				.UseLoggingTracker();
-
 	}
 }
