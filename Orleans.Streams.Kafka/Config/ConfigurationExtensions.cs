@@ -16,6 +16,24 @@ namespace Orleans.Hosting
 	{
 		private const int DefaultCacheSize = 4096;
 
+		public static KafkaStreamClientBuilder AddKafka(
+			this IClientBuilder builder,
+			string providerName
+		)
+			=> new KafkaStreamClientBuilder(builder, providerName);
+
+		public static KafkaStreamSiloBuilder AddKafka(
+			this ISiloBuilder builder,
+			string providerName
+		)
+			=> new KafkaStreamSiloBuilder(builder, providerName);
+
+		public static KafkaStreamSiloHostBuilder AddKafka(
+			this ISiloHostBuilder builder,
+			string providerName
+		)
+			=> new KafkaStreamSiloHostBuilder(builder, providerName);
+
 		public static IClientBuilder AddKafkaStreamProvider(
 			this IClientBuilder builder,
 			string providerName,

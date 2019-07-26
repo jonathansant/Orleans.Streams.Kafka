@@ -1,4 +1,14 @@
-﻿## [2.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/1.0.0...2.0.0) (2019-07-24)
+﻿## [2.0.1](https://github.com/jonathansant/orleans.streams.kafka/compare/1.0.0...2.0.1) (2019-07-26)
+
+### Features
+
+- Add `KafkaStreamSiloBuilder`, `KafkaStreamClientBuilder`, `KafkaStreamSiloHostBuilder` for easier setup
+
+### Bug Fixes
+
+- Update fix from `Orleans.Stream.Utils` which fixes deserilization problems with message tracking
+
+## [2.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/1.0.0...2.0.0) (2019-07-24)
 
 ### Features
 

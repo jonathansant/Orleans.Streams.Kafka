@@ -4,13 +4,13 @@ using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Runtime;
 using Orleans.Streams;
+using Orleans.Streams.Kafka.Config;
 using System;
 using System.Collections.Generic;
 using System.Net;
 using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
-using Orleans.Streams.Kafka.Config;
 using TestGrains;
 
 namespace TestClient
@@ -67,12 +67,14 @@ namespace TestClient
 						.UseStaticClustering(options => options.Gateways.Add((new IPEndPoint(siloAddress, gatewayPort)).ToGatewayUri()))
 						.ConfigureApplicationParts(parts => parts.AddApplicationPart(Assembly.Load("TestGrains")).WithReferences())
 						.ConfigureLogging(logging => logging.AddConsole())
-						.AddKafkaStreamProvider("KafkaProvider", options =>
+						.AddKafka("KafkaProvider")
+						.WithOptions(options =>
 						{
 							options.BrokerList = new List<string> { "localhost:9092" };
 							options.ConsumerGroupId = "TestGroup";
 							options.Topics = new List<TopicConfig> { new TopicConfig { Name = "gossip-testing" } };
 						})
+						.Build()
 						.Build();
 
 					await client.Connect();

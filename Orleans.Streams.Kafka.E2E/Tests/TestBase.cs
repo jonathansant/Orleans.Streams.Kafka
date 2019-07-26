@@ -2,7 +2,6 @@
 using Orleans.Hosting;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Grains;
-using Orleans.Streams.Utils.MessageTracking;
 using Orleans.TestingHost;
 using System;
 using System.Collections.Generic;
@@ -64,10 +63,11 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 	{
 		public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 			=> clientBuilder
-				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				.AddKafka(Consts.KafkaStreamProvider)
+				.WithOptions(options =>
 				{
 					options.BrokerList = TestBase.Brokers;
-					options.ConsumerGroupId = "E2EGroup_client";
+					options.ConsumerGroupId = "E2EGroup";
 
 					options
 						.AddTopic(Consts.StreamNamespace)
@@ -78,7 +78,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 				})
-				.AddJson(Consts.KafkaStreamProvider)
+				.AddJson()
+				.Build()
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 	}
@@ -88,8 +89,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
 				.AddMemoryGrainStorage("PubSubStore")
-				.UseLoggingTracker()
-				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				.AddKafka(Consts.KafkaStreamProvider)
+				.WithOptions(options =>
 				{
 					options.BrokerList = TestBase.Brokers;
 					options.ConsumerGroupId = "E2EGroup";
@@ -103,9 +104,10 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 						.AddExternalTopic(Consts.StreamNamespaceExternal)
 						;
 				})
-				.AddJson(Consts.KafkaStreamProvider)
+				.AddJson()
+				.AddLoggingTracker()
+				.Build()
 				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
-				.UseLoggingTracker();
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 	}
 }

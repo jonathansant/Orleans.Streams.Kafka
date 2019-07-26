@@ -4,7 +4,6 @@ using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Streams.Kafka.Config;
-using Orleans.Streams.Utils.MessageTracking;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -36,14 +35,16 @@ namespace TestSilo
 				.ConfigureLogging(logging => logging.AddConsole())
 				.AddMemoryGrainStorageAsDefault()
 				.AddMemoryGrainStorage("PubSubStore")
-				.UseLoggingTracker()
-				.AddKafkaStreamProvider("KafkaProvider", options =>
+				.AddKafka("KafkaProvider")
+				.WithOptions(options =>
 				{
 					options.BrokerList = new List<string> { "localhost:9092" };
 					options.ConsumerGroupId = "TestGroup";
 					options.Topics = new List<TopicConfig> { new TopicConfig { Name = "gossip-testing" } };
 					options.MessageTrackingEnabled = true;
-				});
+				})
+				.AddLoggingTracker()
+				.Build();
 
 			var host = builder.Build();
 			await host.StartAsync();

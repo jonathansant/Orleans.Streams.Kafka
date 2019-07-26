@@ -7,7 +7,6 @@ using Orleans.Hosting;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
-using Orleans.Streams.Utils.MessageTracking;
 using Orleans.TestingHost;
 using System;
 using System.Text;
@@ -81,7 +80,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 	{
 		public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
 			=> clientBuilder
-				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				.AddKafka(Consts.KafkaStreamProvider)
+				.WithOptions(options =>
 				{
 					options.BrokerList = TestBase.Brokers;
 					options.ConsumerGroupId = "E2EGroup_client";
@@ -93,7 +93,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 				})
-				.AddAvro(Consts.KafkaStreamProvider, "https://[host name]/schema-registry")
+				.AddAvro("https://[host name]/schema-registry")
+				.Build()
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
 				;
@@ -105,8 +106,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
 				.AddMemoryGrainStorage("PubSubStore")
-				.UseLoggingTracker()
-				.AddKafkaStreamProvider(Consts.KafkaStreamProvider, options =>
+				.AddKafka(Consts.KafkaStreamProvider)
+				.WithOptions(options =>
 				{
 					options.BrokerList = TestBase.Brokers;
 					options.ConsumerGroupId = "E2EGroup";
@@ -118,9 +119,10 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 						.AddExternalTopic(Consts.StreamNamespaceExternalAvro)
 						;
 				})
-				.AddAvro(Consts.KafkaStreamProvider, "https://[host name]/schema-registry")
+				.AddAvro("https://[host name]/schema-registry")
+				.AddLoggingTracker()
+				.Build()
 				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
-				.UseLoggingTracker();
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 	}
 }

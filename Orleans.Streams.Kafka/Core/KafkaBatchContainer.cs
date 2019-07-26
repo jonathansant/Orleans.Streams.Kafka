@@ -14,6 +14,8 @@ namespace Orleans.Streams.Kafka.Core
 
 		[NonSerialized] internal TopicPartitionOffset TopicPartitionOffSet;
 
+		internal List<object> RawEvents => Events;
+
 		protected List<object> Events { get; set; }
 
 		public Guid StreamGuid { get; }
