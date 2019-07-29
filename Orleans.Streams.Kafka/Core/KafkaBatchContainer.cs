@@ -1,6 +1,7 @@
 ﻿using Confluent.Kafka;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
+using Orleans.Streams.Utils.MessageTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -8,13 +9,12 @@ using System.Linq;
 namespace Orleans.Streams.Kafka.Core
 {
 	[Serializable]
-	public class KafkaBatchContainer : IBatchContainer, IComparable<KafkaBatchContainer>
+	public class KafkaBatchContainer : ITraceablebleBatch, IComparable<KafkaBatchContainer>
 	{
 		private readonly Dictionary<string, object> _requestContext;
 
 		[NonSerialized] internal TopicPartitionOffset TopicPartitionOffSet;
 
-		internal List<object> RawEvents => Events;
 
 		protected List<object> Events { get; set; }
 
@@ -23,6 +23,8 @@ namespace Orleans.Streams.Kafka.Core
 		public string StreamNamespace { get; }
 
 		public StreamSequenceToken SequenceToken { get; internal set; }
+
+		public List<object> RawEvents => Events;
 
 		public KafkaBatchContainer(
 			Guid streamGuid,

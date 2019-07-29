@@ -90,6 +90,7 @@ namespace Orleans.Streams.Kafka.Core
 
 		public IQueueAdapterReceiver CreateReceiver(QueueId queueId)
 			=> new KafkaAdapterReceiver(
+				Name,
 				_queueProperties[queueId.GetStringNamePrefix()],
 				_options,
 				_serializationManager,

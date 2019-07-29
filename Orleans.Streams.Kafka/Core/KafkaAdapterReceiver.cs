@@ -19,6 +19,7 @@ namespace Orleans.Streams.Kafka.Core
 	public class KafkaAdapterReceiver : IQueueAdapterReceiver
 	{
 		private readonly ILogger<KafkaAdapterReceiver> _logger;
+		private readonly string _providerName;
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly IGrainFactory _grainFactory;
@@ -30,6 +31,7 @@ namespace Orleans.Streams.Kafka.Core
 		private Task<IList<IBatchContainer>> _consumePromise;
 
 		public KafkaAdapterReceiver(
+			string providerName,
 			QueueProperties queueProperties,
 			KafkaStreamOptions options,
 			SerializationManager serializationManager,
@@ -40,6 +42,7 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
 
+			_providerName = providerName;
 			_queueProperties = queueProperties;
 			_serializationManager = serializationManager;
 			_grainFactory = grainFactory;
@@ -175,18 +178,13 @@ namespace Orleans.Streams.Kafka.Core
 			}
 		}
 
-		private Task TrackMessage(KafkaBatchContainer container)
+		private Task TrackMessage(ITraceablebleBatch container)
 		{
 			if (!_options.MessageTrackingEnabled)
 				return Task.CompletedTask;
 
-			var trackingGrain = _grainFactory.GetMessageTrackerGrain(_queueProperties.QueueName);
-			return trackingGrain.Track(new Immutable<TrackingUnit>(new TrackingUnit(
-				container.StreamGuid,
-				container.StreamNamespace,
-				container.SequenceToken,
-				container.RawEvents
-			)));
+			var trackingGrain = _grainFactory.GetMessageTrackerGrain($"{_providerName}::{_queueProperties.QueueName}");
+			return trackingGrain.Track(new Immutable<TrackingUnit>(container.ToTrackingUnit()));
 		}
 	}
 }

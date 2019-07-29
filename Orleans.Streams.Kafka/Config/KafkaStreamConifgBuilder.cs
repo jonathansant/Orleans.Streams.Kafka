@@ -56,6 +56,19 @@ namespace Orleans.Streams.Kafka.Config
 			return this;
 		}
 
+		public KafkaStreamSiloBuilder AddMessageTracking<TTraceWriter>(Func<IServiceProvider, string, TTraceWriter> configure)
+			where TTraceWriter : class, ITraceWriter
+		{
+			_hostBuilder.ConfigureServices(services
+				=> services.AddSingletonNamedService<ITraceWriter>(
+					_providerName,
+					(provider, name) => configure?.Invoke(provider, name))
+				);
+
+
+			return this;
+		}
+
 		public KafkaStreamSiloBuilder AddLoggingTracker()
 		{
 			_hostBuilder.UseLoggingTracker(_providerName);
@@ -119,6 +132,19 @@ namespace Orleans.Streams.Kafka.Config
 			_hostBuilder.ConfigureServices(services
 				=> services.AddSingletonNamedService<ITraceWriter, TTraceWriter>(_providerName)
 			);
+
+			return this;
+		}
+
+		public KafkaStreamSiloHostBuilder AddMessageTracking<TTraceWriter>(Func<IServiceProvider, string, TTraceWriter> configure)
+			where TTraceWriter : class, ITraceWriter
+		{
+			_hostBuilder.ConfigureServices(services
+				=> services.AddSingletonNamedService<ITraceWriter>(
+					_providerName,
+					(provider, name) => configure?.Invoke(provider, name))
+			);
+
 
 			return this;
 		}
