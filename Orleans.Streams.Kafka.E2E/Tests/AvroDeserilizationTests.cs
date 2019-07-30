@@ -87,7 +87,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.ConsumerGroupId = "E2EGroup_client";
 
 					options
-						.AddExternalTopic(Consts.StreamNamespaceExternalAvro)
+						.AddExternalTopic<TestModelAvro>(Consts.StreamNamespaceExternalAvro)
 						;
 
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
@@ -116,7 +116,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.MessageTrackingEnabled = true;
 
 					options
-						.AddExternalTopic(Consts.StreamNamespaceExternalAvro)
+						.AddExternalTopic<TestModelAvro>(Consts.StreamNamespaceExternalAvro)
 						;
 				})
 				.AddAvro("https://[host name]/schema-registry")

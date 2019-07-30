@@ -72,7 +72,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options
 						.AddTopic(Consts.StreamNamespace)
 						.AddTopic(Consts.StreamNamespace2)
-						.AddExternalTopic(Consts.StreamNamespaceExternal)
+						.AddExternalTopic<TestModel>(Consts.StreamNamespaceExternal)
 						;
 
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
@@ -101,7 +101,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options
 						.AddTopic(Consts.StreamNamespace)
 						.AddTopic(Consts.StreamNamespace2)
-						.AddExternalTopic(Consts.StreamNamespaceExternal)
+						.AddExternalTopic<TestModel>(Consts.StreamNamespaceExternal)
 						;
 				})
 				.AddJson()

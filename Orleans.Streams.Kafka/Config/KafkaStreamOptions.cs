@@ -42,12 +42,30 @@ namespace Orleans.Streams.Kafka.Config
 		/// Add a new external topic.
 		/// </summary>
 		/// <param name="name">Topic Name</param>
-		public KafkaStreamOptions AddExternalTopic(string name)
+		public KafkaStreamOptions AddExternalTopic<T>(string name)
 		{
 			Topics.Add(new TopicConfig
 			{
 				IsExternal = true,
 				Name = name,
+				ExternalContractType = typeof(T)
+			});
+
+			return this;
+		}
+
+		/// <summary>
+		/// Add a new external topic.
+		/// </summary>
+		/// <param name="type">The data type that this contract will use.</param>
+		/// <param name="name">Topic Name</param>
+		public KafkaStreamOptions AddExternalTopic(Type type, string name)
+		{
+			Topics.Add(new TopicConfig
+			{
+				IsExternal = true,
+				Name = name,
+				ExternalContractType = type
 			});
 
 			return this;
@@ -69,6 +87,11 @@ namespace Orleans.Streams.Kafka.Config
 		/// Specifies whether the topic will be produced by producers external to the silo
 		/// </summary>
 		public bool IsExternal { get; set; }
+
+		/// <summary>
+		/// The expected DataType that is expected on this topic
+		/// </summary>
+		public Type ExternalContractType { get; set; }
 	}
 
 	public enum ConsumeMode

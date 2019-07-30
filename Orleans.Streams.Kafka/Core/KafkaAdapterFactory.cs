@@ -140,7 +140,8 @@ namespace Orleans.Streams.Kafka.Core
 								select new QueueProperties(
 									userTopic.Name,
 									(uint)partition.PartitionId,
-									userTopic.IsExternal
+									userTopic.IsExternal,
+									userTopic.ExternalContractType
 								);
 
 					return props.ToDictionary(prop => prop.QueueName);

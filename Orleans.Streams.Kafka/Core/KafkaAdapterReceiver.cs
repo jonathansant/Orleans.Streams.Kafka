@@ -183,7 +183,7 @@ namespace Orleans.Streams.Kafka.Core
 			if (!_options.MessageTrackingEnabled)
 				return Task.CompletedTask;
 
-			var trackingGrain = _grainFactory.GetMessageTrackerGrain($"{_providerName}::{_queueProperties.QueueName}");
+			var trackingGrain = _grainFactory.GetMessageTrackerGrain(_providerName, _queueProperties.QueueName);
 			return trackingGrain.Track(new Immutable<TrackingUnit>(container.ToTrackingUnit()));
 		}
 	}
