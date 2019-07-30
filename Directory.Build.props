@@ -26,6 +26,6 @@
 
   <!-- Shared Package Versions -->
   <PropertyGroup>
-    <StreamUtilsVersion>7.*</StreamUtilsVersion>
+    <StreamUtilsVersion>8.*</StreamUtilsVersion>
   </PropertyGroup>
 </Project>
