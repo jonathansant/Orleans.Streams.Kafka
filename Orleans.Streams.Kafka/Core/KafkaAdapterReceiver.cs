@@ -5,7 +5,6 @@ using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Consumer;
 using Orleans.Streams.Utils;
-using Orleans.Streams.Utils.MessageTracking;
 using Orleans.Streams.Utils.Serialization;
 using System;
 using System.Collections.Generic;
@@ -178,13 +177,13 @@ namespace Orleans.Streams.Kafka.Core
 			}
 		}
 
-		private Task TrackMessage(ITraceablebleBatch container)
+		private Task TrackMessage(IBatchContainer container)
 		{
 			if (!_options.MessageTrackingEnabled)
 				return Task.CompletedTask;
 
 			var trackingGrain = _grainFactory.GetMessageTrackerGrain(_providerName, _queueProperties.QueueName);
-			return trackingGrain.Track(new Immutable<TrackingUnit>(container.ToTrackingUnit()));
+			return trackingGrain.Track(new Immutable<IBatchContainer>(container));
 		}
 	}
 }

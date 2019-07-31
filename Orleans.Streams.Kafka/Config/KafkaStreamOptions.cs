@@ -44,13 +44,7 @@ namespace Orleans.Streams.Kafka.Config
 		/// <param name="name">Topic Name</param>
 		public KafkaStreamOptions AddExternalTopic<T>(string name)
 		{
-			Topics.Add(new TopicConfig
-			{
-				IsExternal = true,
-				Name = name,
-				ExternalContractType = typeof(T)
-			});
-
+			AddExternalTopic(typeof(T), name);
 			return this;
 		}
 

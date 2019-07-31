@@ -1,7 +1,6 @@
 ﻿using Confluent.Kafka;
 using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
-using Orleans.Streams.Utils.MessageTracking;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -9,7 +8,7 @@ using System.Linq;
 namespace Orleans.Streams.Kafka.Core
 {
 	[Serializable]
-	public class KafkaBatchContainer : ITraceablebleBatch, IComparable<KafkaBatchContainer>
+	public class KafkaBatchContainer : IBatchContainer, IComparable<KafkaBatchContainer>
 	{
 		private readonly Dictionary<string, object> _requestContext;
 
