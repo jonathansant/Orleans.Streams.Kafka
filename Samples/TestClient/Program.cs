@@ -4,7 +4,6 @@ using Orleans.Configuration;
 using Orleans.Hosting;
 using Orleans.Runtime;
 using Orleans.Streams;
-using Orleans.Streams.Kafka.Config;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -34,7 +33,7 @@ namespace TestClient
 			Console.WriteLine(result);
 
 			var streamProvider = clusterClient.GetStreamProvider("KafkaProvider");
-			var stream = streamProvider.GetStream<TestModel>("streamId", "gossip-testing");
+			var stream = streamProvider.GetStream<TestModel>("streamId", "sucrose-test");
 
 			string line;
 			while ((line = Console.ReadLine()) != string.Empty)
@@ -47,7 +46,7 @@ namespace TestClient
 			Console.ReadKey();
 		}
 
-		private static async Task<IClusterClient> StartClientWithRetries(int initializeAttemptsBeforeFailing = 7)
+		private static async Task<IClusterClient> StartClientWithRetries(int initializeAttemptsBeforeFailing = 25)
 		{
 			var attempt = 0;
 			IClusterClient client;
@@ -57,6 +56,13 @@ namespace TestClient
 				{
 					var siloAddress = IPAddress.Loopback;
 					var gatewayPort = 30000;
+
+					var brokers = new List<string>
+					{
+						"[host name]:39000",
+						"[host name]:39001",
+						"[host name]:39002"
+					};
 
 					client = new ClientBuilder()
 						.Configure<ClusterOptions>(options =>
@@ -70,9 +76,9 @@ namespace TestClient
 						.AddKafka("KafkaProvider")
 						.WithOptions(options =>
 						{
-							options.BrokerList = new List<string> { "localhost:9092" };
+							options.BrokerList = brokers;
 							options.ConsumerGroupId = "TestGroup";
-							options.Topics = new List<TopicConfig> { new TopicConfig { Name = "gossip-testing" } };
+							options.AddTopic("sucrose-test");
 						})
 						.Build()
 						.Build();

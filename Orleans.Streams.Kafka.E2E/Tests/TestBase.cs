@@ -16,12 +16,9 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		protected TestCluster Cluster { get; private set; }
 
-		public static string BrokerEndpoint = "[host name]:39000";
-		//		public static string BrokerEndpoint = "localhost:9092";
-
 		public static List<string> Brokers = new List<string>
 		{
-			BrokerEndpoint,
+			"[host name]:39000",
 			"[host name]:39001",
 			"[host name]:39002"
 		};

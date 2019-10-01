@@ -22,8 +22,6 @@ namespace Orleans.Streams.Kafka.Core
 
 		public StreamSequenceToken SequenceToken { get; internal set; }
 
-		public List<object> RawEvents => Events;
-
 		public KafkaBatchContainer(
 			Guid streamGuid,
 			string streamNamespace,
