@@ -3,7 +3,6 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
-using Orleans.Streams.Kafka.Config;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -22,6 +21,13 @@ namespace TestSilo
 			const int gatewayPort = 30000;
 			var siloAddress = IPAddress.Loopback;
 
+			var brokers = new List<string>
+			{
+				"[host name]:39000",
+				"[host name]:39001",
+				"[host name]:39002"
+			};
+
 			var builder = new SiloHostBuilder()
 				.Configure<ClusterOptions>(options =>
 				{
@@ -38,10 +44,10 @@ namespace TestSilo
 				.AddKafka("KafkaProvider")
 				.WithOptions(options =>
 				{
-					options.BrokerList = new List<string> { "localhost:9092" };
+					options.BrokerList = brokers.ToArray();
 					options.ConsumerGroupId = "TestGroup";
-					options.Topics = new List<TopicConfig> { new TopicConfig { Name = "gossip-testing" } };
 					options.MessageTrackingEnabled = true;
+					options.AddTopic("sucrose-test");
 				})
 				.AddLoggingTracker()
 				.Build();
