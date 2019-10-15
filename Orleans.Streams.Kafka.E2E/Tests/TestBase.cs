@@ -41,7 +41,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		protected void ShutDown()
 			=> Cluster?.StopAllSilos();
 
-		public Task InitializeAsync()
+		public virtual Task InitializeAsync()
 		{
 			Cluster = _builder.Build();
 			Cluster.Deploy();
