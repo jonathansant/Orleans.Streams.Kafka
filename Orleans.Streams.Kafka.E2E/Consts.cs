@@ -13,6 +13,8 @@
 		public const string StreamNamespace = "sucrose-test";
 		public const string StreamNamespace2 = "sucrose-test2";
 		public const string StreamNamespace3 = "sucrose-test3";
+		public const string StreamNamespaceAuto = "sucrose-auto";
+		public const string StreamNamespaceAuto2 = "sucrose-auto-2";
 		public const string StreamNamespaceExternal = "sucrose-external";
 		public const string StreamNamespaceExternalAvro = "sucrose-external-avro";
 	}

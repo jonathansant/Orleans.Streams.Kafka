@@ -27,13 +27,18 @@ namespace Orleans.Streams.Kafka.Config
 		/// Add a new internal topic.
 		/// </summary>
 		/// <param name="name">Topic Name</param>
-		public KafkaStreamOptions AddTopic(string name)
+		/// <param name="topicCreationConfig"></param>
+		public KafkaStreamOptions AddTopic(string name, TopicCreationConfig topicCreationConfig = null)
 		{
-			Topics.Add(new TopicConfig
+			var config = new TopicConfig { IsExternal = false, Name = name };
+			if (topicCreationConfig != null)
 			{
-				IsExternal = false,
-				Name = name
-			});
+				config.AutoCreate = topicCreationConfig.AutoCreate;
+				config.Partitions = topicCreationConfig.Partitions;
+				config.ReplicationFactor = topicCreationConfig.ReplicationFactor;
+			}
+
+			Topics.Add(config);
 
 			return this;
 		}
@@ -42,9 +47,10 @@ namespace Orleans.Streams.Kafka.Config
 		/// Add a new external topic.
 		/// </summary>
 		/// <param name="name">Topic Name</param>
-		public KafkaStreamOptions AddExternalTopic<T>(string name)
+		/// <param name="topicCreationConfig"></param>
+		public KafkaStreamOptions AddExternalTopic<T>(string name, TopicCreationConfig topicCreationConfig = null)
 		{
-			AddExternalTopic(typeof(T), name);
+			AddExternalTopic(typeof(T), name, topicCreationConfig);
 			return this;
 		}
 
@@ -53,14 +59,22 @@ namespace Orleans.Streams.Kafka.Config
 		/// </summary>
 		/// <param name="type">The data type that this contract will use.</param>
 		/// <param name="name">Topic Name</param>
-		public KafkaStreamOptions AddExternalTopic(Type type, string name)
+		/// <param name="topicCreationConfig"></param>
+		public KafkaStreamOptions AddExternalTopic(
+			Type type,
+			string name,
+			TopicCreationConfig topicCreationConfig = null
+		)
 		{
-			Topics.Add(new TopicConfig
+			var config = new TopicConfig { IsExternal = true, Name = name, ExternalContractType = type };
+			if (topicCreationConfig != null)
 			{
-				IsExternal = true,
-				Name = name,
-				ExternalContractType = type
-			});
+				config.AutoCreate = topicCreationConfig.AutoCreate;
+				config.Partitions = topicCreationConfig.Partitions;
+				config.ReplicationFactor = topicCreationConfig.ReplicationFactor;
+			}
+
+			Topics.Add(config);
 
 			return this;
 		}
@@ -86,6 +100,49 @@ namespace Orleans.Streams.Kafka.Config
 		/// The expected DataType that is expected on this topic
 		/// </summary>
 		public Type ExternalContractType { get; set; }
+
+		/// <summary>
+		/// Determines whether the topic will be auto created
+		/// </summary>
+		/// <remarks><c>false</c> by default.</remarks>
+		public bool AutoCreate { get; set; }
+
+		/// <summary>
+		/// If <see cref="AutoCreate"/> is true the topic will
+		/// be created with set number of topics
+		/// </summary>
+		/// <remarks>-1 by default</remarks>
+		public int Partitions { get; set; } = -1;
+
+		/// <summary>
+		/// If <see cref="AutoCreate"/> is true the topic will
+		/// be created with the Replication Factor defined
+		/// </summary>
+		/// <remarks>1 by default</remarks>
+		public short ReplicationFactor { get; set; } = 1;
+	}
+
+	public class TopicCreationConfig
+	{
+		/// <summary>
+		/// Determines whether the topic will be auto created
+		/// </summary>
+		/// <remarks><c>false</c> by default.</remarks>
+		public bool AutoCreate { get; set; }
+
+		/// <summary>
+		/// If <see cref="AutoCreate"/> is true the topic will
+		/// be created with set number of topics
+		/// </summary>
+		/// <remarks>-1 by default</remarks>
+		public int Partitions { get; set; } = -1;
+
+		/// <summary>
+		/// If <see cref="AutoCreate"/> is true the topic will
+		/// be created with the Replication Factor defined
+		/// </summary>
+		/// <remarks>1 by default</remarks>
+		public short ReplicationFactor { get; set; } = 1;
 	}
 
 	public enum ConsumeMode
