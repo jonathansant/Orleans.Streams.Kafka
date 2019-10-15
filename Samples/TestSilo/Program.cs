@@ -3,6 +3,7 @@ using Microsoft.Extensions.Logging;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Orleans.Streams.Kafka.Config;
 using System;
 using System.Collections.Generic;
 using System.Net;
@@ -48,6 +49,8 @@ namespace TestSilo
 					options.ConsumerGroupId = "TestGroup";
 					options.MessageTrackingEnabled = true;
 					options.AddTopic("sucrose-test");
+					options.AddTopic("sucrose-auto", new TopicCreationConfig { AutoCreate = true, Partitions = 2, ReplicationFactor = 1 });
+					options.AddTopic("sucrose-auto2", new TopicCreationConfig { AutoCreate = true, Partitions = 3, ReplicationFactor = 1 });
 				})
 				.AddLoggingTracker()
 				.Build();

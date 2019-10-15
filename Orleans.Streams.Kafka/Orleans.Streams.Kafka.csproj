@@ -3,6 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <Description>Orleans streaming provider for Kafka.</Description>
     <PackageTags>orleans kafka streams providers streamprovider confluent</PackageTags>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <!-- vendor packages -->
   <ItemGroup>
