@@ -33,12 +33,12 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly AdminClientConfig _config;
 
 		public KafkaAdapterFactory(
-		string name,
-		KafkaStreamOptions options,
-		SimpleQueueCacheOptions cacheOptions,
-		SerializationManager serializationManager,
-		ILoggerFactory loggerFactory,
-		IGrainFactory grainFactory
+			string name,
+			KafkaStreamOptions options,
+			SimpleQueueCacheOptions cacheOptions,
+			SerializationManager serializationManager,
+			ILoggerFactory loggerFactory,
+			IGrainFactory grainFactory
 		) : this(name, options, cacheOptions, serializationManager, loggerFactory, grainFactory, null)
 		{
 			if (options.Topics.Any(topic => topic.IsExternal))
