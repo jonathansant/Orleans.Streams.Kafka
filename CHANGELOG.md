@@ -1,4 +1,21 @@
-﻿## [2.0.1](https://github.com/jonathansant/orleans.streams.kafka/compare/1.0.0...2.0.1) (2019-07-26)
+﻿## [3.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/2.0.1...3.0.0) (2019-10-25)
+
+### Features
+
+- Topics get Auto Created with provided options
+- Eager serialization: serialize eagerly instead of lazy in the batch container
+
+### Bug Fixes
+
+- Consumer not with lag 1 fix
+
+### BREAKING CHANGES
+
+- update to `Orleans.Streams.Utils` to version 8.0.0 which optimizes (and also fixes potential problems) message tracking
+- `KafkaExternalBatchContainer` will fail on deserilization exceptions.
+
+
+## [2.0.1](https://github.com/jonathansant/orleans.streams.kafka/compare/1.0.0...2.0.1) (2019-07-26)
 
 ### Features
 

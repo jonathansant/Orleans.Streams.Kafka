@@ -1,7 +1,12 @@
 ﻿using Confluent.Kafka;
+using Confluent.Kafka.Admin;
+using Microsoft.Extensions.Configuration;
+using Orleans.Hosting;
+using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
 using Orleans.Streams.Kafka.E2E.Serialization;
+using Orleans.TestingHost;
 using System;
 using System.Text;
 using System.Threading.Tasks;
@@ -168,7 +173,212 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		}
 	}
 
-	// todo: fix worm that breaks external test. figure out why JObject breaks other tests
+	public class ClusteredStreamTests_AutoTopicCreation : TestBase
+	{
+		private const int ReceiveDelay = 500;
+
+		public ClusteredStreamTests_AutoTopicCreation()
+		{
+			Initialize<ClientBuilderConfigurator, SiloBuilderConfigurator>(3);
+		}
+
+		public override async Task InitializeAsync()
+		{
+			using var admin = new AdminClientBuilder(new ClientConfig { BootstrapServers = string.Join(',', Brokers) }).Build();
+
+			try
+			{
+				await admin.DeleteTopicsAsync(new[] { Consts.StreamNamespaceAuto });
+			}
+			catch (DeleteTopicsException)
+			{
+				// ignored
+			}
+
+			await base.InitializeAsync();
+		}
+
+		[Fact]
+		public async Task E2E()
+		{
+			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
+			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
+			var stream = streamProvider.GetStream<TestModel>(newId, Consts.StreamNamespaceAuto);
+
+			var expected = TestModel.Random();
+			var roundTrip = new TaskCompletionSource<TestModel>();
+
+			await stream.QuickSubscribe((message, seq) =>
+			{
+				roundTrip.SetResult(message);
+				return Task.CompletedTask;
+			});
+
+			await Task.Delay(5000);
+
+			await stream.OnNextAsync(expected);
+
+			await Task.WhenAny(Task.Delay(ReceiveDelay * 4), roundTrip.Task);
+
+			if (!roundTrip.Task.IsCompleted)
+				throw new XunitException("Message not received.");
+
+			Assert.Equal(expected, roundTrip.Task.Result);
+		}
+
+		public class ClientBuilderConfigurator : IClientBuilderConfigurator
+		{
+			public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
+				=> clientBuilder
+					.AddKafka(Consts.KafkaStreamProvider)
+					.WithOptions(options =>
+					{
+						options.BrokerList = TestBase.Brokers;
+						options.ConsumerGroupId = "E2EGroup";
+
+						options
+							.AddTopic(Consts.StreamNamespace)
+							.AddTopic(Consts.StreamNamespaceAuto, new TopicCreationConfig { AutoCreate = true })
+							;
+
+						options.PollTimeout = TimeSpan.FromMilliseconds(10);
+						options.ConsumeMode = ConsumeMode.StreamEnd;
+					})
+					.Build()
+					.ConfigureApplicationParts(parts =>
+						parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+		}
+
+		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
+		{
+			public void Configure(ISiloHostBuilder hostBuilder)
+				=> hostBuilder
+					.AddMemoryGrainStorage("PubSubStore")
+					.AddKafka(Consts.KafkaStreamProvider)
+					.WithOptions(options =>
+					{
+						options.BrokerList = TestBase.Brokers;
+						options.ConsumerGroupId = "E2EGroup";
+						options.ConsumeMode = ConsumeMode.StreamEnd;
+						options.PollTimeout = TimeSpan.FromMilliseconds(10);
+						options.MessageTrackingEnabled = true;
+
+						options
+							.AddTopic(Consts.StreamNamespace)
+							.AddTopic(Consts.StreamNamespaceAuto, new TopicCreationConfig { AutoCreate = true })
+							;
+					})
+					.AddLoggingTracker()
+					.Build()
+					.ConfigureApplicationParts(parts =>
+						parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+		}
+	}
+
+	public class ClusteredStreamTests_AutoTopicCreation_TopicExists : TestBase
+	{
+		private const int ReceiveDelay = 500;
+
+		public ClusteredStreamTests_AutoTopicCreation_TopicExists()
+		{
+			Initialize<ClientBuilderConfigurator, SiloBuilderConfigurator>(3);
+		}
+
+		public override async Task InitializeAsync()
+		{
+			using var admin = new AdminClientBuilder(new ClientConfig { BootstrapServers = string.Join(',', Brokers) }).Build();
+
+			try
+			{
+				await admin.DeleteTopicsAsync(new[] { Consts.StreamNamespaceAuto2 });
+			}
+			catch (DeleteTopicsException)
+			{
+				// ignored
+			}
+
+			await admin.CreateTopicsAsync(new[] { new TopicSpecification { Name = Consts.StreamNamespaceAuto2, NumPartitions = 3, ReplicationFactor = 1 } });
+
+			await base.InitializeAsync();
+		}
+
+		[Fact]
+		public async Task E2E()
+		{
+			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
+			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
+			var stream = streamProvider.GetStream<TestModel>(newId, Consts.StreamNamespaceAuto2);
+
+			var expected = TestModel.Random();
+			var roundTrip = new TaskCompletionSource<TestModel>();
+
+			await stream.QuickSubscribe((message, seq) =>
+			{
+				roundTrip.SetResult(message);
+				return Task.CompletedTask;
+			});
+
+			await Task.Delay(5000);
+
+			await stream.OnNextAsync(expected);
+
+			await Task.WhenAny(Task.Delay(ReceiveDelay * 4), roundTrip.Task);
+
+			if (!roundTrip.Task.IsCompleted)
+				throw new XunitException("Message not received.");
+
+			Assert.Equal(expected, roundTrip.Task.Result);
+		}
+
+		public class ClientBuilderConfigurator : IClientBuilderConfigurator
+		{
+			public virtual void Configure(IConfiguration configuration, IClientBuilder clientBuilder)
+				=> clientBuilder
+					.AddKafka(Consts.KafkaStreamProvider)
+					.WithOptions(options =>
+					{
+						options.BrokerList = TestBase.Brokers;
+						options.ConsumerGroupId = "E2EGroup";
+
+						options
+							.AddTopic(Consts.StreamNamespace)
+							.AddTopic(Consts.StreamNamespaceAuto2, new TopicCreationConfig { AutoCreate = true })
+							;
+
+						options.PollTimeout = TimeSpan.FromMilliseconds(10);
+						options.ConsumeMode = ConsumeMode.StreamEnd;
+					})
+					.Build()
+					.ConfigureApplicationParts(parts =>
+						parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+		}
+
+		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
+		{
+			public void Configure(ISiloHostBuilder hostBuilder)
+				=> hostBuilder
+					.AddMemoryGrainStorage("PubSubStore")
+					.AddKafka(Consts.KafkaStreamProvider)
+					.WithOptions(options =>
+					{
+						options.BrokerList = TestBase.Brokers;
+						options.ConsumerGroupId = "E2EGroup";
+						options.ConsumeMode = ConsumeMode.StreamEnd;
+						options.PollTimeout = TimeSpan.FromMilliseconds(10);
+						options.MessageTrackingEnabled = true;
+
+						options
+							.AddTopic(Consts.StreamNamespace)
+							.AddTopic(Consts.StreamNamespaceAuto2, new TopicCreationConfig { AutoCreate = true })
+							;
+					})
+					.AddLoggingTracker()
+					.Build()
+					.ConfigureApplicationParts(parts =>
+						parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+		}
+	}
+
 	public class ClusteredStreamTests_DynamicData : TestBase
 	{
 		private const int ReceiveDelay = 500;

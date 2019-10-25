@@ -16,12 +16,9 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		protected TestCluster Cluster { get; private set; }
 
-		public static string BrokerEndpoint = "[host name]:39000";
-		//		public static string BrokerEndpoint = "localhost:9092";
-
 		public static List<string> Brokers = new List<string>
 		{
-			BrokerEndpoint,
+			"[host name]:39000",
 			"[host name]:39001",
 			"[host name]:39002"
 		};
@@ -44,7 +41,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		protected void ShutDown()
 			=> Cluster?.StopAllSilos();
 
-		public Task InitializeAsync()
+		public virtual Task InitializeAsync()
 		{
 			Cluster = _builder.Build();
 			Cluster.Deploy();
@@ -72,7 +69,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options
 						.AddTopic(Consts.StreamNamespace)
 						.AddTopic(Consts.StreamNamespace2)
-						.AddExternalTopic(Consts.StreamNamespaceExternal)
+						.AddExternalTopic<TestModel>(Consts.StreamNamespaceExternal)
 						;
 
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
@@ -101,7 +98,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options
 						.AddTopic(Consts.StreamNamespace)
 						.AddTopic(Consts.StreamNamespace2)
-						.AddExternalTopic(Consts.StreamNamespaceExternal)
+						.AddExternalTopic<TestModel>(Consts.StreamNamespaceExternal)
 						;
 				})
 				.AddJson()

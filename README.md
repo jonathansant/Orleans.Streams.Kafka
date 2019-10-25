@@ -32,8 +32,8 @@ public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 
 					options
 						.AddTopic(Consts.StreamNamespace)
-						.AddTopic(Consts.StreamNamespace2)
-						.AddExternalTopic(Consts.StreamNamespaceExternal)
+						.AddTopic(Consts.StreamNamespace2, new TopicCreationConfig { AutoCreate = true, Partitions = 2, ReplicationFactor = 1 })
+						.AddExternalTopic<TestModel>(Consts.StreamNamespaceExternal)
 						;
 				})
 				.AddJson()
@@ -53,9 +53,9 @@ public class ClientBuilderConfigurator : IClientBuilderConfigurator
 					  options.ConsumerGroupId = "E2EGroup";
 
 					  options
-						  .AddTopic(Consts.StreamNamespace)
-						  .AddTopic(Consts.StreamNamespace2)
-						  .AddExternalTopic(Consts.StreamNamespaceExternal)
+						 .AddTopic(Consts.StreamNamespace)
+						 .AddTopic(Consts.StreamNamespace2, new TopicCreationConfig { AutoCreate = true, Partitions = 2, ReplicationFactor = 1 })
+						 .AddExternalTopic<TestModel>(Consts.StreamNamespaceExternal)
 						  ;
 				  })
 				  .AddJson()

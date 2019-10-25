@@ -1,7 +1,7 @@
-﻿using System.Text;
-using Confluent.Kafka;
+﻿using Confluent.Kafka;
 using Newtonsoft.Json;
 using Newtonsoft.Json.Serialization;
+using System.Text;
 
 namespace Orleans.Streams.Kafka.E2E.Serialization
 {

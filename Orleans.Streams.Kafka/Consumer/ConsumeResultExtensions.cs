@@ -21,13 +21,18 @@ namespace Orleans.Streams.Kafka.Consumer
 			if (queueProperties.IsExternal)
 			{
 				var key = Encoding.UTF8.GetString(result.Key);
-				return new KafkaExternalBatchContainer(
+
+				var message = serializationContext
+					.ExternalStreamDeserializer
+					.Deserialize(queueProperties, queueProperties.ExternalContractType, result.Value);
+
+				return new KafkaBatchContainer(
 					StreamProviderUtils.GenerateStreamGuid(key),
-					queueProperties,
-					new List<byte[]> { result.Value },
+					queueProperties.Namespace,
+					new List<object> { message },
+					null,
 					sequence,
-					result.TopicPartitionOffset,
-					serializationContext.ExternalStreamDeserializer
+					result.TopicPartitionOffset
 				);
 			}
 
