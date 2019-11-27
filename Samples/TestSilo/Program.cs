@@ -24,9 +24,9 @@ namespace TestSilo
 
 			var brokers = new List<string>
 			{
-				"[host name]:39000",
-				"[host name]:39001",
-				"[host name]:39002"
+				"dev-data.rivertech.dev:39000",
+				"dev-data.rivertech.dev:39001",
+				"dev-data.rivertech.dev:39002"
 			};
 
 			var builder = new SiloHostBuilder()

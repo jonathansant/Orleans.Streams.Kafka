@@ -164,16 +164,16 @@ namespace Orleans.Hosting
 							Url = registryUrl
 						})
 				)
-				.AddSingletonNamedService<IExternalStreamDeserializer>(
+				.AddSingletonNamedService<IExternalStreamSerDes>(
 					providerName,
 					(provider, name)
-						=> ActivatorUtilities.CreateInstance<AvroExternalStreamDeserializer>(
+						=> ActivatorUtilities.CreateInstance<AvroExternalStreamSerializer>(
 							provider,
 							provider.GetRequiredServiceByName<ISchemaRegistryClient>(providerName))
 						);
 
 		private static void AddJson(this IServiceCollection services, string providerName)
 			=> services
-				.AddSingletonNamedService<IExternalStreamDeserializer, JsonExternalStreamDeserializer>(providerName);
+				.AddSingletonNamedService<IExternalStreamSerDes, JsonExternalStreamSerializer>(providerName);
 	}
 }

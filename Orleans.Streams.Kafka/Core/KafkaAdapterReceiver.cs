@@ -22,7 +22,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly KafkaStreamOptions _options;
 		private readonly SerializationManager _serializationManager;
 		private readonly IGrainFactory _grainFactory;
-		private readonly IExternalStreamDeserializer _externalDeserializer;
+		private readonly IExternalStreamSerDes _externalDeserializer;
 		private readonly QueueProperties _queueProperties;
 
 		private IConsumer<byte[], byte[]> _consumer;
@@ -36,7 +36,7 @@ namespace Orleans.Streams.Kafka.Core
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
-			IExternalStreamDeserializer externalDeserializer
+			IExternalStreamSerDes externalDeserializer
 		)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
@@ -61,19 +61,13 @@ namespace Orleans.Streams.Kafka.Core
 					))
 				.Build();
 
-			var offsetMode = Offset.Stored;
-			switch (_options.ConsumeMode)
+			var offsetMode = _options.ConsumeMode switch
 			{
-				case ConsumeMode.LastCommittedMessage:
-					offsetMode = Offset.Stored;
-					break;
-				case ConsumeMode.StreamEnd:
-					offsetMode = Offset.End;
-					break;
-				case ConsumeMode.StreamStart:
-					offsetMode = Offset.Beginning;
-					break;
-			}
+				ConsumeMode.LastCommittedMessage => Offset.Stored,
+				ConsumeMode.StreamEnd => Offset.End,
+				ConsumeMode.StreamStart => Offset.Beginning,
+				_ => Offset.Stored
+			};
 
 			_consumer.Assign(new TopicPartitionOffset(_queueProperties.Namespace, (int)_queueProperties.PartitionId, offsetMode));
 

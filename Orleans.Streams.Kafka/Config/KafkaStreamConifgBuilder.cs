@@ -25,10 +25,10 @@ namespace Orleans.Streams.Kafka.Config
 		}
 
 		public KafkaStreamSiloBuilder AddExternalDeserializer<TDeserializer>()
-			where TDeserializer : class, IExternalStreamDeserializer
+			where TDeserializer : class, IExternalStreamSerDes
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<IExternalStreamDeserializer, TDeserializer>(_providerName)
+				=> services.AddSingletonNamedService<IExternalStreamSerDes, TDeserializer>(_providerName)
 			);
 
 			return this;
@@ -105,10 +105,10 @@ namespace Orleans.Streams.Kafka.Config
 		}
 
 		public KafkaStreamSiloHostBuilder AddExternalDeserializer<TDeserializer>()
-			where TDeserializer : class, IExternalStreamDeserializer
+			where TDeserializer : class, IExternalStreamSerDes
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<IExternalStreamDeserializer, TDeserializer>(_providerName)
+				=> services.AddSingletonNamedService<IExternalStreamSerDes, TDeserializer>(_providerName)
 			);
 
 			return this;
@@ -185,10 +185,10 @@ namespace Orleans.Streams.Kafka.Config
 		}
 
 		public KafkaStreamClientBuilder AddExternalDeserializer<TDeserializer>()
-			where TDeserializer : class, IExternalStreamDeserializer
+			where TDeserializer : class, IExternalStreamSerDes
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<IExternalStreamDeserializer, TDeserializer>(_providerName)
+				=> services.AddSingletonNamedService<IExternalStreamSerDes, TDeserializer>(_providerName)
 			);
 
 			return this;

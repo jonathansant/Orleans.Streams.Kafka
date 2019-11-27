@@ -20,7 +20,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
-		private readonly IExternalStreamDeserializer _externalDeserializer;
+		private readonly IExternalStreamSerDes _externalDeserializer;
 		private readonly IProducer<byte[], KafkaBatchContainer> _producer;
 		private readonly ILogger<KafkaAdapter> _logger;
 
@@ -35,7 +35,7 @@ namespace Orleans.Streams.Kafka.Core
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
-			IExternalStreamDeserializer externalDeserializer
+			IExternalStreamSerDes externalDeserializer
 		)
 		{
 			_options = options;

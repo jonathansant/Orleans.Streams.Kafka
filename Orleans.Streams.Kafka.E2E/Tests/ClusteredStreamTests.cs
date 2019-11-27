@@ -337,7 +337,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					.AddKafka(Consts.KafkaStreamProvider)
 					.WithOptions(options =>
 					{
-						options.BrokerList = TestBase.Brokers;
+						options.BrokerList = Brokers;
 						options.ConsumerGroupId = "E2EGroup";
 
 						options

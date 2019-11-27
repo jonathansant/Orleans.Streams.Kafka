@@ -48,7 +48,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 			using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig
 			{
-				SchemaRegistryUrl = "https://[host name]/schema-registry"
+				SchemaRegistryUrl = "https://dev-data.rivertech.dev/schema-registry"
 			}))
 			using (var producer = new ProducerBuilder<byte[], TestModelAvro>(config)
 				.SetValueSerializer(new AvroSerializer<TestModelAvro>(schema).AsSyncOverAsync())
@@ -93,7 +93,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 				})
-				.AddAvro("https://[host name]/schema-registry")
+				.AddAvro("https://dev-data.rivertech.dev/schema-registry")
 				.Build()
 				.ConfigureApplicationParts(parts =>
 					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
@@ -119,7 +119,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 						.AddExternalTopic<TestModelAvro>(Consts.StreamNamespaceExternalAvro)
 						;
 				})
-				.AddAvro("https://[host name]/schema-registry")
+				.AddAvro("https://dev-data.rivertech.dev/schema-registry")
 				.AddLoggingTracker()
 				.Build()
 				.ConfigureApplicationParts(parts =>
