@@ -36,6 +36,7 @@ namespace Orleans.Streams.Kafka.Config
 				config.AutoCreate = topicCreationConfig.AutoCreate;
 				config.Partitions = topicCreationConfig.Partitions;
 				config.ReplicationFactor = topicCreationConfig.ReplicationFactor;
+				config.RetentionPeriodInMs = topicCreationConfig.RetentionPeriodInMs;
 			}
 
 			Topics.Add(config);
@@ -120,6 +121,14 @@ namespace Orleans.Streams.Kafka.Config
 		/// </summary>
 		/// <remarks>1 by default</remarks>
 		public short ReplicationFactor { get; set; } = 1;
+
+		/// <summary>
+		/// If <see cref="RetentionPeriodInMs"/> is set the topic will
+		/// be created with only retain data for this much duration.
+		/// If not set, it'll take default configuration of broker which is 7 days.
+		/// </summary>
+		/// <remarks>7 days by default</remarks>
+		public ulong RetentionPeriodInMs { get; set; } = 604800000;
 	}
 
 	public class TopicCreationConfig
@@ -143,6 +152,14 @@ namespace Orleans.Streams.Kafka.Config
 		/// </summary>
 		/// <remarks>1 by default</remarks>
 		public short ReplicationFactor { get; set; } = 1;
+
+		/// <summary>
+		/// If <see cref="RetentionPeriodInMs"/> is set the topic will
+		/// be created with only retain data for this much duration in milliseconds.
+		/// If not set, it'll take default configuration of broker which is 7 days.
+		/// </summary>
+		/// <remarks>7 days by default</remarks>
+		public ulong RetentionPeriodInMs { get; set; } = 604800000;
 	}
 
 	public enum ConsumeMode

@@ -17,6 +17,8 @@ using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.Core
 {
+	using System.Globalization;
+
 	public class KafkaAdapterFactory : IQueueAdapterFactory
 	{
 		private readonly string _name;
@@ -137,7 +139,7 @@ namespace Orleans.Streams.Kafka.Core
 				var currentMetaTopics = meta.Topics.ToList();
 
 				var props = new List<QueueProperties>();
-				var autoProps = new List<(QueueProperties props, short replicationFactor)>();
+				var autoProps = new List<(QueueProperties props, short replicationFactor, ulong retentionPeriodInMs )>();
 
 				foreach (var topic in _options.Topics)
 				{
@@ -149,7 +151,7 @@ namespace Orleans.Streams.Kafka.Core
 					{
 						var prop = CreateQueueProperty(topic, partitionId: i);
 						props.Add(prop);
-						autoProps.Add((prop, topic.ReplicationFactor));
+						autoProps.Add((prop, topic.ReplicationFactor, topic.RetentionPeriodInMs));
 					}
 				}
 
@@ -182,7 +184,7 @@ namespace Orleans.Streams.Kafka.Core
 				);
 		}
 
-		private static Task CreateAutoTopics(IAdminClient admin, IEnumerable<(QueueProperties prop, short replicationFactor)> autoQueues)
+		private static Task CreateAutoTopics(IAdminClient admin, IEnumerable<(QueueProperties prop, short replicationFactor, ulong retentionPeriodInMs)> autoQueues)
 		{
 			var topics = autoQueues
 					.GroupBy(queue => queue.prop.Namespace)
@@ -190,11 +192,17 @@ namespace Orleans.Streams.Kafka.Core
 						new List<TopicSpecification>(),
 						(result, queues) =>
 						{
+							var tuple = queues.First();
+
 							result.Add(new TopicSpecification
 							{
 								Name = queues.Key,
 								NumPartitions = queues.Count(),
-								ReplicationFactor = queues.First().replicationFactor
+								ReplicationFactor = tuple.replicationFactor,
+								Configs = new Dictionary<string, string>()
+								          {
+									          {"retention.ms", tuple.retentionPeriodInMs.ToString(CultureInfo.InvariantCulture) }
+								          }
 							});
 
 							return result;
