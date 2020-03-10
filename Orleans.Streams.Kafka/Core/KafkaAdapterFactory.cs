@@ -139,7 +139,7 @@ namespace Orleans.Streams.Kafka.Core
 				var currentMetaTopics = meta.Topics.ToList();
 
 				var props = new List<QueueProperties>();
-				var autoProps = new List<(QueueProperties props, short replicationFactor, ulong retentionPeriodInMs )>();
+				var autoProps = new List<(QueueProperties props, short replicationFactor, ulong? retentionPeriodInMs )>();
 
 				foreach (var topic in _options.Topics)
 				{
@@ -184,7 +184,7 @@ namespace Orleans.Streams.Kafka.Core
 				);
 		}
 
-		private static Task CreateAutoTopics(IAdminClient admin, IEnumerable<(QueueProperties prop, short replicationFactor, ulong retentionPeriodInMs)> autoQueues)
+		private static Task CreateAutoTopics(IAdminClient admin, IEnumerable<(QueueProperties prop, short replicationFactor, ulong? retentionPeriodInMs)> autoQueues)
 		{
 			var topics = autoQueues
 					.GroupBy(queue => queue.prop.Namespace)
@@ -194,16 +194,25 @@ namespace Orleans.Streams.Kafka.Core
 						{
 							var tuple = queues.First();
 
-							result.Add(new TopicSpecification
+							var topicSpecification = new TopicSpecification
+							                         {
+								                         Name = queues.Key,
+								                         NumPartitions = queues.Count(),
+								                         ReplicationFactor = tuple.replicationFactor
+							                         };
+
+							if (tuple.retentionPeriodInMs.HasValue)
 							{
-								Name = queues.Key,
-								NumPartitions = queues.Count(),
-								ReplicationFactor = tuple.replicationFactor,
-								Configs = new Dictionary<string, string>()
-								          {
-									          {"retention.ms", tuple.retentionPeriodInMs.ToString(CultureInfo.InvariantCulture) }
-								          }
-							});
+								topicSpecification.Configs = new Dictionary<string, string>()
+								                             {
+									                             {
+										                             "retention.ms",
+										                             tuple.retentionPeriodInMs.ToString()
+									                             }
+								                             };
+							}
+
+							result.Add(topicSpecification);
 
 							return result;
 						}
