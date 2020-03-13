@@ -1,4 +1,10 @@
-﻿## [3.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/2.0.1...3.0.0) (2019-10-25)
+## [3.1.0](https://github.com/jonathansant/orleans.streams.kafka/compare/3.0.0...3.1.0) (2020-03-12)
+
+### Features
+
+- Topics get created with retention period for messages in ms (Default is 7 days)
+
+## [3.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/2.0.1...3.0.0) (2019-10-25)
 
 ### Features
 

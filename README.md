@@ -115,3 +115,4 @@ These are the configurable values that the `Orleans.Streams.Kafka`:
 - **AdminRequestTimeout**: Timeout for admin requests. *Default value is `5s`*
 - **ConsumeMode**: Determines the offset to start consuming from. *Default value is `ConsumeMode.LastCommittedMessage`*
 - **ProducerTimeout**: Timeout for produce requests. *Default value is `5s`*
+- **RetentionPeriodInMs**: Message retention period in milliseconds for kafka topic. *Default value is 7 days*

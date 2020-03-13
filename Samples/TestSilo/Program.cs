@@ -49,8 +49,8 @@ namespace TestSilo
 					options.ConsumerGroupId = "TestGroup";
 					options.MessageTrackingEnabled = true;
 					options.AddTopic("sucrose-test");
-					options.AddTopic("sucrose-auto", new TopicCreationConfig { AutoCreate = true, Partitions = 2, ReplicationFactor = 1 });
-					options.AddTopic("sucrose-auto2", new TopicCreationConfig { AutoCreate = true, Partitions = 3, ReplicationFactor = 1 });
+					options.AddTopic("sucrose-auto", new TopicCreationConfig { AutoCreate = true, Partitions = 2, ReplicationFactor = 1 , RetentionPeriodInMs = 86400000});
+					options.AddTopic("sucrose-auto2", new TopicCreationConfig { AutoCreate = true, Partitions = 3, ReplicationFactor = 1, RetentionPeriodInMs = 86400000});
 				})
 				.AddLoggingTracker()
 				.Build();
