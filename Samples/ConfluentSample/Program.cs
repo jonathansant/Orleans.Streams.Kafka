@@ -38,7 +38,7 @@ namespace ConfluentSample
 			{
 				var r = new Random();
 
-				using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = RegistryUrl }))
+				using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig { Url = RegistryUrl }))
 				using (var producer = new ProducerBuilder<byte[], AMessage>(new ProducerConfig
 				{
 					BootstrapServers = string.Join(',', Brokers)
@@ -72,7 +72,7 @@ namespace ConfluentSample
 				GroupId = "jonny-king-better-than-michael",
 			};
 
-			using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig { SchemaRegistryUrl = RegistryUrl }))
+			using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig { Url = RegistryUrl }))
 			using (var consumer = new ConsumerBuilder<string, AMessage>(conf).SetValueDeserializer(new AvroDeserializer<AMessage>(schema).AsSyncOverAsync()).Build())
 			using (var admin = new AdminClientBuilder(conf).Build())
 			{

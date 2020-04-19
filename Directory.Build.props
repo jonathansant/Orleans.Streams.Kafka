@@ -27,7 +27,7 @@
   <!-- Shared Package Versions -->
   <PropertyGroup>
     <StreamUtilsVersion>9.0.0-dev-66</StreamUtilsVersion>
-    <ConfluentKafkaVersion>1.3.0-PRE1</ConfluentKafkaVersion>
+    <ConfluentKafkaVersion>1.4.0</ConfluentKafkaVersion>
     <OrleansVersion>3.0.0</OrleansVersion>
     <MicrosoftLoggingVersion>3.0.0</MicrosoftLoggingVersion>
   </PropertyGroup>
