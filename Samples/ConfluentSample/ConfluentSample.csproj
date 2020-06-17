@@ -1,25 +1,14 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <OutputType>Exe</OutputType>
-    <TargetFramework>netcoreapp2.1</TargetFramework>
+    <TargetFramework>netcoreapp3.1</TargetFramework>
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Confluent.Apache.Avro" Version="1.7.7.6" />
-    <PackageReference Include="Confluent.Kafka" Version="1.1.0" />
-    <!-- <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.0.1.1" /> -->
+    <PackageReference Include="Confluent.Apache.Avro" Version="$(ConfluentAvroVersion)" />
+    <PackageReference Include="Confluent.Kafka" Version="$(ConfluentKafkaVersion)" />
+    <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="$(OrleansVersion)" />
+    <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.3.0" />
     <!-- <ProjectReference Include="..\..\..\confluent-kafka-dotnet-jonny\src\Confluent.SchemaRegistry.Serdes\Confluent.SchemaRegistry.Serdes.csproj" /> -->
-
-    <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="2.3.2" />
-  </ItemGroup>
-
-  <!-- todo: remove when confluent merge my pr -->
-  <ItemGroup>
-    <Reference Include="Confluent.SchemaRegistry">
-      <HintPath>..\..\ExternalLibs\Confluent.SchemaRegistry.dll</HintPath>
-    </Reference>
-    <Reference Include="Confluent.SchemaRegistry.Serdes">
-      <HintPath>..\..\ExternalLibs\Confluent.SchemaRegistry.Serdes.dll</HintPath>
-    </Reference>
   </ItemGroup>
 </Project>
