@@ -1,3 +1,13 @@
+## [4.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/3.1.0...4.0.0) (2020-06-18)
+
+### Features
+
+- Update Orleans v3.2 & Kafka v1.4.3
+
+### BREAKING CHANGES
+- Update Orleans v3.2
+- Update Microsoft Extensions libraries v3.1.5
+
 ## [3.1.0](https://github.com/jonathansant/orleans.streams.kafka/compare/3.0.0...3.1.0) (2020-03-12)
 
 ### Features
