@@ -161,7 +161,7 @@ namespace Orleans.Hosting
 						provider,
 						new SchemaRegistryConfig
 						{
-							Url = registryUrl
+								Url = registryUrl
 						})
 				)
 				.AddSingletonNamedService<IExternalStreamDeserializer>(
