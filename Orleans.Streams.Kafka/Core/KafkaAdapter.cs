@@ -71,7 +71,7 @@ namespace Orleans.Streams.Kafka.Core
 					streamGuid,
 					streamNamespace,
 					eventList,
-					requestContext
+					_options.ImportRequestContext ? requestContext : null
 				);
 
 				await _producer.Produce(batch);

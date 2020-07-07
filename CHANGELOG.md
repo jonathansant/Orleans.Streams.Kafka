@@ -1,3 +1,13 @@
+## [4.1.0](https://github.com/jonathansant/orleans.streams.kafka/compare/4.0.0...4.1.0) (2020-07-06)
+
+### Features
+
+- Add `ImportRequestContext` option
+
+### Bug Fixes
+
+- `ConsumerResult.Key` & `ConsumerResult.Value` where depricated and sometimes causing serialization issues
+
 ## [4.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/3.1.0...4.0.0) (2020-06-18)
 
 ### Features
