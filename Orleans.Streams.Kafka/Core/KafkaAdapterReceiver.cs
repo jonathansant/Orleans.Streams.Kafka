@@ -128,7 +128,15 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			try
 			{
-				await Task.WhenAll(_commitPromise, _consumePromise);
+				var tasks = new List<Task>();
+
+				if (_commitPromise != null)
+					tasks.Add(_commitPromise);
+
+				if (_consumePromise != null)
+					tasks.Add(_consumePromise);
+
+				await Task.WhenAll(tasks);
 			}
 			finally
 			{
