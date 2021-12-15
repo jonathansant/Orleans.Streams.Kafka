@@ -8,7 +8,7 @@
 
   <ItemGroup>
    <!--<PackageReference Include="Confluent.Apache.Avro" Version="$(ConfluentAvroVersion)" />--><!-- todo: remove -->
-    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.6.1" />
+    <PackageReference Include="Microsoft.NET.Test.Sdk" Version="16.11.0" />
     <PackageReference Include="Microsoft.Orleans.Core" Version="$(OrleansVersion)" />
     <PackageReference Include="Microsoft.Orleans.OrleansCodeGenerator.Build" Version="$(OrleansVersion)">
       <PrivateAssets>all</PrivateAssets>
@@ -18,7 +18,7 @@
     <PackageReference Include="Microsoft.Orleans.TestingHost" Version="$(OrleansVersion)" />
    <PackageReference Include="xunit" Version="2.4.1" />
    <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.3.0" />
-   <PackageReference Include="xunit.runner.visualstudio" Version="2.4.2">
+   <PackageReference Include="xunit.runner.visualstudio" Version="2.4.3">
       <PrivateAssets>all</PrivateAssets>
       <IncludeAssets>runtime; build; native; contentfiles; analyzers</IncludeAssets>
     </PackageReference>
