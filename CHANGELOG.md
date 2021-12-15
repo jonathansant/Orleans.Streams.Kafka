@@ -1,4 +1,4 @@
-## [4.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/3.1.0...4.0.0) (2020-06-18)
+## [5.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/4.2.0...5.0.0) (2021-12-15)
 
 ### Features
 
