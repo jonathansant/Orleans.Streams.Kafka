@@ -1,3 +1,13 @@
+## [6.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/5.0.0...6.0.0) (2022-03-09)
+
+### Features
+
+- Update Orleans v3.6.0 & dotnet 6.0
+
+### BREAKING CHANGES
+- Update Orleans v3.6.0
+- Update dotnet 6.0
+
 ## [5.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/4.2.0...5.0.0) (2021-12-15)
 
 ### Features

@@ -21,15 +21,15 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <!-- Shared Package Versions -->
   <PropertyGroup>
-    <OrleansVersion>3.5.1</OrleansVersion>
-    <StreamUtilsVersion>10.0.0</StreamUtilsVersion>
+    <OrleansVersion>3.6.0</OrleansVersion>
+    <StreamUtilsVersion>11.0.0</StreamUtilsVersion>
     <ConfluentKafkaVersion>1.8.2</ConfluentKafkaVersion>
     <ConfluentAvroVersion>1.7.7.7</ConfluentAvroVersion>
-    <MicrosoftExtensionsVersion>5.0.0</MicrosoftExtensionsVersion>
+    <MicrosoftExtensionsVersion>6.0.0</MicrosoftExtensionsVersion>
   </PropertyGroup>
 </Project>
