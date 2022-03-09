@@ -21,7 +21,7 @@
   </PropertyGroup>
 
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFramework>net6.0</TargetFramework>
   </PropertyGroup>
 
   <!-- Shared Package Versions -->
