@@ -3,7 +3,6 @@ using Orleans.Providers.Streams.Common;
 using Orleans.Streams.Kafka.Core;
 using Orleans.Streams.Utils;
 using System.Collections.Generic;
-using System.Linq;
 using System.Text;
 using SerializationContext = Orleans.Streams.Kafka.Serialization.SerializationContext;
 
@@ -32,7 +31,7 @@ namespace Orleans.Streams.Kafka.Consumer
 
 				var message = serializationContext
 					.ExternalStreamDeserializer
-					.Deserialize(queueProperties, queueProperties.ExternalContractType, result.Message.Value, headers);
+					.Deserialize(queueProperties, queueProperties.ExternalContractType, result);
 
 				return new KafkaBatchContainer(
 					StreamProviderUtils.GenerateStreamGuid(key),
