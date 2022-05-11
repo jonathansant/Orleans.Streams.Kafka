@@ -22,13 +22,6 @@ namespace Orleans.Streams.Kafka.Consumer
 			{
 				var key = Encoding.UTF8.GetString(result.Message.Key);
 
-				var headers = new List<KeyValuePair<string, byte[]>>();
-
-				foreach (IHeader header in result.Message.Headers)
-				{
-					headers.Add(new(header.Key, header.GetValueBytes()));
-				}
-
 				var message = serializationContext
 					.ExternalStreamDeserializer
 					.Deserialize(queueProperties, queueProperties.ExternalContractType, result);
