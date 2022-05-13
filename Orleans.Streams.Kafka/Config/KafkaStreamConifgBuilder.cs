@@ -1,5 +1,6 @@
 ﻿using Orleans.Hosting;
 using Orleans.Runtime;
+using Orleans.Streams.Kafka.Consumer;
 using Orleans.Streams.Utils.MessageTracking;
 using Orleans.Streams.Utils.Serialization;
 using System;
@@ -29,6 +30,16 @@ namespace Orleans.Streams.Kafka.Config
 		{
 			_hostBuilder.ConfigureServices(services
 				=> services.AddSingletonNamedService<IExternalStreamDeserializer, TDeserializer>(_providerName)
+			);
+
+			return this;
+		}
+
+		public KafkaStreamSiloBuilder AddStreamIdSelector<TSelector>()
+				where TSelector : class, IStreamIdSelector
+		{
+			_hostBuilder.ConfigureServices(services
+				=> services.AddSingletonNamedService<IStreamIdSelector, TSelector>(_providerName)
 			);
 
 			return this;
