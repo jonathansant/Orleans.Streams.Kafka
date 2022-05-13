@@ -7,6 +7,7 @@ using Orleans.Providers.Streams.Common;
 using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
+using Orleans.Streams.Kafka.Consumer;
 using Orleans.Streams.Kafka.Utils;
 using Orleans.Streams.Utils;
 using Orleans.Streams.Utils.Serialization;
@@ -17,8 +18,6 @@ using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.Core
 {
-	using Orleans.Streams.Kafka.Consumer;
-
 	public class KafkaAdapterFactory : IQueueAdapterFactory
 	{
 		private static readonly IStreamIdSelector _defaultStreamIdSelector = new DefaultStreamIdSelector();
