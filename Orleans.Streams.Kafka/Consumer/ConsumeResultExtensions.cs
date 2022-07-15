@@ -22,7 +22,7 @@ namespace Orleans.Streams.Kafka.Consumer
 			{
 				var message = serializationContext
 					.ExternalStreamDeserializer
-					.Deserialize(queueProperties, queueProperties.ExternalContractType, result.Message.Value);
+					.Deserialize(queueProperties, queueProperties.ExternalContractType, result);
 
 				return new KafkaBatchContainer(
 					StreamProviderUtils.GenerateStreamGuid(streamId),

@@ -180,6 +180,10 @@ namespace Orleans.Streams.Kafka.Core
 
 				return batches;
 			}
+			catch (OperationCanceledException ex) when (ex.CancellationToken.IsCancellationRequested)
+			{
+				return new List<IBatchContainer>();
+			}
 			catch (Exception ex)
 			{
 				_logger.LogError(ex, "Failed to poll for messages queueId: {@queueProperties}", _queueProperties);
