@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Orleans.Providers.Streams.Common;
+using Orleans.Runtime;
 using Orleans.Streams.Kafka.Core;
 using Orleans.Streams.Utils;
 using System.Collections.Generic;
@@ -21,14 +22,14 @@ namespace Orleans.Streams.Kafka.Consumer
 			if (queueProperties.IsExternal)
 			{
 				var key = Encoding.UTF8.GetString(result.Message.Key);
+				var streamId = StreamId.Create(queueProperties.Namespace, key);
 
 				var message = serializationContext
 					.ExternalStreamDeserializer
 					.Deserialize(queueProperties, queueProperties.ExternalContractType, result);
 
 				return new KafkaBatchContainer(
-					StreamProviderUtils.GenerateStreamGuid(key),
-					queueProperties.Namespace,
+					streamId,
 					new List<object> { message },
 					null,
 					sequence,
