@@ -16,24 +16,20 @@ namespace Orleans.Streams.Kafka.Core
 
 		protected List<object> Events { get; set; }
 
-		public Guid StreamGuid { get; }
-
-		public string StreamNamespace { get; }
+		public StreamId StreamId { get; }
 
 		public StreamSequenceToken SequenceToken { get; internal set; }
 
 		public KafkaBatchContainer(
-			Guid streamGuid,
-			string streamNamespace,
+			StreamId streamId,
 			List<object> events,
 			Dictionary<string, object> requestContext
-		) : this(streamGuid, streamNamespace, events, requestContext, null, null)
+		) : this(streamId, events, requestContext, null, null)
 		{
 		}
 
 		public KafkaBatchContainer(
-			Guid streamGuid,
-			string streamNamespace,
+			StreamId streamId,
 			List<object> events,
 			Dictionary<string, object> requestContext,
 			EventSequenceTokenV2 streamSequenceToken,
@@ -42,8 +38,7 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			Events = events ?? throw new ArgumentNullException(nameof(events), "Message contains no events.");
 
-			StreamGuid = streamGuid;
-			StreamNamespace = streamNamespace;
+			StreamId = streamId;
 			SequenceToken = streamSequenceToken;
 			TopicPartitionOffSet = offset;
 			_requestContext = requestContext;
@@ -61,14 +56,6 @@ namespace Orleans.Streams.Kafka.Core
 				);
 		}
 
-		public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)
-		{
-			// If there is something in this batch that the consumer is interested in, we should send it
-			// else the consumer is not interested in any of these events, so don't send.
-			return Events.Any(item => shouldReceiveFunc(stream, filterData, item));
-		}
-
-
 		public bool ImportRequestContext()
 		{
 			if (_requestContext == null)
@@ -84,6 +71,6 @@ namespace Orleans.Streams.Kafka.Core
 			=> TopicPartitionOffSet.Offset.Value.CompareTo(other.TopicPartitionOffSet.Offset.Value);
 
 		public override string ToString()
-			=> $"[{GetType().Name}:Stream={StreamGuid},#Items={Events.Count}]";
+			=> $"[{GetType().Name}:Stream={StreamId.GetNamespace()}.{StreamId.GetKeyAsString()},#Items={Events.Count}]";
 	}
 }

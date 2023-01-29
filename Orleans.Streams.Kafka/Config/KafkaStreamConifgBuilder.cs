@@ -88,11 +88,11 @@ namespace Orleans.Streams.Kafka.Config
 
 	public class KafkaStreamSiloHostBuilder
 	{
-		private readonly ISiloHostBuilder _hostBuilder;
+		private readonly ISiloBuilder _hostBuilder;
 		private readonly string _providerName;
 		private Action<KafkaStreamOptions> _configure;
 
-		public KafkaStreamSiloHostBuilder(ISiloHostBuilder hostBuilder, string providerName)
+		public KafkaStreamSiloHostBuilder(ISiloBuilder hostBuilder, string providerName)
 		{
 			_hostBuilder = hostBuilder;
 			_providerName = providerName;
@@ -155,7 +155,7 @@ namespace Orleans.Streams.Kafka.Config
 			return this;
 		}
 
-		public ISiloHostBuilder Build()
+		public ISiloBuilder Build()
 		{
 			_hostBuilder.AddKafkaStreamProvider(
 				_providerName,
