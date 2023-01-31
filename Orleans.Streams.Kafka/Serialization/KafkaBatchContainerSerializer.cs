@@ -19,9 +19,9 @@ namespace Orleans.Streams.Kafka.Serialization
 		public byte[] Serialize(KafkaBatchContainer data, Confluent.Kafka.SerializationContext context)
 		{
 			var serializedString = _serializationManager.Serialize(data, typeof(KafkaBatchContainer));
-			var bytes = new Span<byte>();
+			var bytes = new byte[serializedString.Length];
 			Encoding.UTF8.GetBytes(serializedString, bytes);
-			return bytes.ToArray();
+			return bytes;
 		}
 	}
 }

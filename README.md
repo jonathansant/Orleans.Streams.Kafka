@@ -78,7 +78,7 @@ Console.BackgroundColor = ConsoleColor.DarkMagenta;
 Console.WriteLine(result);
 
 var streamProvider = clusterClient.GetStreamProvider("KafkaProvider");
-var stream = streamProvider.GetStream<TestModel>("streamId", "topic1");
+var stream = streamProvider.GetStream<TestModel>("topic1", "streamId");
 await stream.OnNextAsync(new TestModel
 {
 	Greeting = "hello world"
@@ -88,7 +88,7 @@ await stream.OnNextAsync(new TestModel
 ### Consuming:
 ```CSharp
 var kafkaProvider = GetStreamProvider("KafkaStreamProvider");
-var testStream = kafkaProvider.GetStream<TestModel>("streamId", "topic1");
+var testStream = kafkaProvider.GetStream<TestModel>("topic1", "streamId");
 
 // To resume stream in case of stream deactivation
 var subscriptionHandles = await testStream.GetAllSubscriptionHandles();

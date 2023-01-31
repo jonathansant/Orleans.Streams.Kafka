@@ -22,8 +22,8 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 		public override async Task OnActivateAsync(CancellationToken _)
 		{
 			var provider = this.GetStreamProvider(Consts.KafkaStreamProvider);
-			_stream = provider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
-			_stream2 = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespace2);
+			_stream = provider.GetStream<TestModel>(Consts.StreamNamespace, Consts.StreamId);
+			_stream2 = provider.GetStream<TestModel>(Consts.StreamNamespace2, Consts.StreamId2);
 
 			_model = TestModel.Random();
 			_completion = new TaskCompletionSource<TestResult>();

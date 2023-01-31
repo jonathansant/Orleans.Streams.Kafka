@@ -35,7 +35,7 @@ namespace TestClient
 			Console.WriteLine(result);
 
 			var streamProvider = clusterClient.GetStreamProvider("KafkaProvider");
-			var stream = streamProvider.GetStream<TestModel>("streamId", "sucrose-test");
+			var stream = streamProvider.GetStream<TestModel>("sucrose-test", "streamId");
 
 			string line;
 			while ((line = Console.ReadLine()) != string.Empty)

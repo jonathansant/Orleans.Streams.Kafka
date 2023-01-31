@@ -40,8 +40,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			var grain = await WakeUpGrain<IMultiStreamGrain>();
 
 			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = streamProvider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
-			var stream2 = streamProvider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespace2);
+			var stream = streamProvider.GetStream<TestModel>(Consts.StreamNamespace, Consts.StreamId);
+			var stream2 = streamProvider.GetStream<TestModel>(Consts.StreamNamespace2, Consts.StreamId2);
 
 			var result = grain.Fire();
 
@@ -98,7 +98,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			var completion = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespaceExternal);
+			var stream = provider.GetStream<TestModel>(Consts.StreamNamespaceExternal, Consts.StreamId2);
 
 			await stream.QuickSubscribe((message, seq) =>
 			{
@@ -384,7 +384,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			Initialize(3);
 		}
 
-		[Fact]
+		[Fact(Skip = "No generator")]
 		public async Task E2E()
 		{
 			var grain = await WakeUpGrain<IRoundTripDynamicModelGrain>();

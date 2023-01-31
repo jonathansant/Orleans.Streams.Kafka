@@ -7,33 +7,28 @@ using System.Linq;
 
 namespace Orleans.Streams.Kafka.Core
 {
-	[Serializable]
+	[GenerateSerializer]
 	public class KafkaBatchContainer : IBatchContainer, IComparable<KafkaBatchContainer>
 	{
 		private readonly Dictionary<string, object> _requestContext;
 
 		[NonSerialized] internal TopicPartitionOffset TopicPartitionOffSet;
+		
+		[Id(0)]
+		public List<object> Events { get; set; }
 
-		protected List<object> Events { get; set; }
-
+		[Id(1)]
 		public StreamId StreamId { get; }
 
+		[Id(2)]
 		public StreamSequenceToken SequenceToken { get; internal set; }
 
 		public KafkaBatchContainer(
 			StreamId streamId,
 			List<object> events,
-			Dictionary<string, object> requestContext
-		) : this(streamId, events, requestContext, null, null)
-		{
-		}
-
-		public KafkaBatchContainer(
-			StreamId streamId,
-			List<object> events,
 			Dictionary<string, object> requestContext,
-			EventSequenceTokenV2 streamSequenceToken,
-			TopicPartitionOffset offset
+			EventSequenceTokenV2 streamSequenceToken = null,
+			TopicPartitionOffset offset = null
 		)
 		{
 			Events = events ?? throw new ArgumentNullException(nameof(events), "Message contains no events.");

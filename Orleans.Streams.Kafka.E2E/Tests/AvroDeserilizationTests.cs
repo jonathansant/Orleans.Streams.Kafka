@@ -35,7 +35,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			var completion = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = provider.GetStream<TestModelAvro>(Consts.StreamId4, Consts.StreamNamespaceExternalAvro);
+			var stream = provider.GetStream<TestModelAvro>(Consts.StreamNamespaceExternalAvro, Consts.StreamId4);
 
 			await stream.QuickSubscribe((message, seq) =>
 			{
