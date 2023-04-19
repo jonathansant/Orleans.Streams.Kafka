@@ -6,8 +6,8 @@ This provider has the added benefit that it allows external messages (not genera
 
 # Dependencies
 `Orleans.Streams.Kafka` has the following dependencies:
-* Microsoft Orleans **3.2.0**
-* Confluent.Kafka: **1.4.3**
+* Microsoft Orleans **3.6.0**
+* Confluent.Kafka: **1.9.3**
 * Orleans.Streams.Utils: [![NuGet version](https://badge.fury.io/nu/Orleans.Streams.Utils.svg)](https://badge.fury.io/nu/Orleans.Streams.Utils)
 
 ## Installation
