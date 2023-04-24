@@ -36,7 +36,7 @@ jobs:
       run: |
         dotnet --version
         dotnet --info
-        node -v
+        echo \n Node Version | node -v
 
     # Execute all unit tests in the solution
 #     - name: Execute unit tests
