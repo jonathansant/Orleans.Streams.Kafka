@@ -32,6 +32,12 @@ jobs:
       with:
         dotnet-version: 6.0.x
 
+    - name: Print Versions
+      run: |
+        dotnet --version
+        dotnet --info
+        node -v
+
     # Execute all unit tests in the solution
 #     - name: Execute unit tests
 #       run: dotnet test
@@ -45,5 +51,5 @@ jobs:
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
       run: | 
-        dotnet pack $env:Solution_Name /p:PackageVersion=$PACKAGE_VERSION -c release
+        dotnet pack "$Solution_Name" /p:PackageVersion=$PACKAGE_VERSION -c release
         dotnet nuget push ./*.nupkg -k $env:NUGET -s "nuget.org"
