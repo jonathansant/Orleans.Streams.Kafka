@@ -17,7 +17,7 @@ jobs:
     runs-on: ubuntu-latest
 
     env:
-      Solution_Name: Orleans.Streams.Kafka-build.sln
+      solution_name: Orleans.Streams.Kafka-build.sln
       # Test_Project_Path: your-test-project-path
 
     steps:
@@ -36,7 +36,12 @@ jobs:
       run: |
         dotnet --version
         dotnet --info
-        echo \n Node Version | node -v
+        echo Node Version:
+        node -v
+
+    - name: Extract Version
+      run: |
+        env:app_version=$(node -p "require('./package.json').version")
 
     # Execute all unit tests in the solution
 #     - name: Execute unit tests
@@ -44,12 +49,12 @@ jobs:
 
     # Restore the application to populate the obj folder with RuntimeIdentifiers
     - name: Restore the application
-      run: dotnet restore ./"$Solution_Name" /p:Configuration="$Configuration"
+      run: dotnet restore ./"$solution_name" /p:Configuration="$Configuration"
       env:
         Configuration: ${{ matrix.configuration }}
 
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
       run: | 
-        dotnet pack "$Solution_Name" /p:PackageVersion=$PACKAGE_VERSION -c release
+        dotnet pack "$solution_name" /p:PackageVersion=$app_version -c release
         dotnet nuget push ./*.nupkg -k $env:NUGET -s "nuget.org"
