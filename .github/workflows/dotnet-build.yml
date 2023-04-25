@@ -41,7 +41,7 @@ jobs:
 
     - name: Extract Version
       run: |
-        env:app_version=$(node -p "require('./package.json').version")
+        app_version=$(node -p "require('./package.json').version") >> $app_version
 
     # Execute all unit tests in the solution
 #     - name: Execute unit tests
