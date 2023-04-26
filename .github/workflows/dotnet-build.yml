@@ -41,7 +41,7 @@ jobs:
 
     - name: Extract Version
       run: |
-        $(node -p -e "require('./package.json').version") >> $GITHUB_OUTPUT
+        echo $(node -p -e "require('./package.json').version") >> $GITHUB_OUTPUT
 
     # Execute all unit tests in the solution
 #     - name: Execute unit tests
