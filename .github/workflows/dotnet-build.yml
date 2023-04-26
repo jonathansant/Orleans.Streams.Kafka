@@ -36,6 +36,7 @@ jobs:
       run: |
         dotnet --version
         dotnet --info
+        echo ""
         echo Node Version:
         node -v
 
@@ -55,6 +56,6 @@ jobs:
 
     - name: Create the app package
       run: | 
-        echo "$nuget"
+        echo "${{ secrets.nuget }}"
         dotnet pack "$solution_name" /p:PackageVersion=$package_version -o . -c release
         dotnet nuget push ./*.nupkg -k "$NUGET" -s "nuget.org"
