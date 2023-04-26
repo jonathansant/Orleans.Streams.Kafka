@@ -41,7 +41,7 @@ jobs:
 
     - name: Extract Version
       run: |
-        echo $(node -p -e "require('./package.json').version") >> $GITHUB_OUTPUT
+        echo package_version=$(node -p -e "require('./package.json').version") >> $GITHUB_OUTPUT
 
     # Execute all unit tests in the solution
 #     - name: Execute unit tests
@@ -56,6 +56,6 @@ jobs:
     # Create the app package by building and packaging the Windows Application Packaging project
     - name: Create the app package
       run: | 
-        echo "$app_version"
-        # dotnet pack "$solution_name" /p:PackageVersion=$app_version -c release
+        echo "$package_version"
+        # dotnet pack "$solution_name" /p:PackageVersion=$package_version -c release
         # dotnet nuget push ./*.nupkg -k $env:NUGET -s "nuget.org"
