@@ -56,5 +56,11 @@ jobs:
 
     - name: Create the app package
       run: |
-        dotnet pack "$solution_name" /p:PackageVersion=$package_version -o . -c release
-        dotnet nuget push ./*.nupkg -k ${{ secrets.nuget }} -s "nuget.org"
+        # dotnet pack "$solution_name" /p:PackageVersion=$package_version -o . -c release
+        # dotnet nuget push ./*.nupkg -k ${{ secrets.nuget }} -s "nuget.org"
+
+    - name: Git tag
+      run: |
+        git tag $package_version
+        git push origin $package_version
+        echo Git tag created: "$package_version"
