@@ -55,6 +55,6 @@ jobs:
 
     - name: Create the app package
       run: | 
-        echo "$NUGET"
+        echo "$nuget"
         dotnet pack "$solution_name" /p:PackageVersion=$package_version -o . -c release
         dotnet nuget push ./*.nupkg -k "$NUGET" -s "nuget.org"
