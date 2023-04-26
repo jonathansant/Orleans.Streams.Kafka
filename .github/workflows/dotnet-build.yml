@@ -55,7 +55,6 @@ jobs:
         Configuration: ${{ matrix.configuration }}
 
     - name: Create the app package
-      run: | 
-        echo "${{ secrets.nuget }}"
+      run: |
         dotnet pack "$solution_name" /p:PackageVersion=$package_version -o . -c release
-        dotnet nuget push ./*.nupkg -k "$NUGET" -s "nuget.org"
+        dotnet nuget push ./*.nupkg -k ${{ secrets.nuget }} -s "nuget.org"
