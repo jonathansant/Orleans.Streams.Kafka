@@ -42,8 +42,7 @@ jobs:
     - name: Extract Version
       run: |
         package_version=$(node -p -e "require('./package.json').version")
-        echo "Output [$package_version]"
-        echo "package_version=$package_version" >> $GITHUB_OUTPUT
+        echo "package_version=$package_version" >> $GITHUB_ENV
 
     # Execute all unit tests in the solution
 #     - name: Execute unit tests
@@ -59,6 +58,5 @@ jobs:
     - name: Create the app package
       run: | 
         echo "$package_version"
-        echo my_var [${{needs.extract-version}}]
         # dotnet pack "$solution_name" /p:PackageVersion=$package_version -c release
         # dotnet nuget push ./*.nupkg -k $env:NUGET -s "nuget.org"
