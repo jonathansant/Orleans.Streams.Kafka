@@ -1,5 +1,6 @@
 ﻿using Orleans.Concurrency;
 using Orleans.Streams.Kafka.E2E.Extensions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.E2E.Grains
@@ -16,15 +17,15 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 		private TestModel _model;
 		private TaskCompletionSource<TestResult> _completion;
 
-		public override async Task OnActivateAsync()
+		public override async Task OnActivateAsync(CancellationToken _)
 		{
-			var provider = GetStreamProvider(Consts.KafkaStreamProvider);
-			_stream = provider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
+			var provider = this.GetStreamProvider(Consts.KafkaStreamProvider);
+			_stream = provider.GetStream<TestModel>(Consts.StreamNamespace, Consts.StreamId);
 
 			_model = TestModel.Random();
 			_completion = new TaskCompletionSource<TestResult>();
 
-			await _stream.QuickSubscribe((actual, token) =>
+			await _stream.SubscribeAsync((actual, token) =>
 			{
 				_completion.SetResult(new TestResult
 				{
@@ -35,13 +36,13 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 				return Task.CompletedTask;
 			});
 
-			await Task.Delay(5000);
+			await Task.Delay(5);
 		}
 
 		public async Task<TestResult> Fire()
 		{
 			await _stream.OnNextAsync(_model);
-			await Task.WhenAny(_completion.Task, Task.Delay(1000));
+			await Task.WhenAny(_completion.Task, Task.Delay(6000));
 
 			return _completion.Task.IsCompleted
 				? _completion.Task.Result

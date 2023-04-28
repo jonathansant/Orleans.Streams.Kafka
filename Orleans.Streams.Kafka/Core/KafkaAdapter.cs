@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
+using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Producer;
@@ -17,11 +18,11 @@ namespace Orleans.Streams.Kafka.Core
 	{
 		private readonly KafkaStreamOptions _options;
 		private readonly IDictionary<string, QueueProperties> _queueProperties;
-		private readonly SerializationManager _serializationManager;
+		private readonly OrleansJsonSerializer _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
 		private readonly IExternalStreamDeserializer _externalDeserializer;
-		private readonly IProducer<byte[], KafkaBatchContainer> _producer;
+		private readonly IProducer<string, KafkaBatchContainer> _producer;
 		private readonly ILogger<KafkaAdapter> _logger;
 
 		public string Name { get; }
@@ -32,7 +33,7 @@ namespace Orleans.Streams.Kafka.Core
 			string providerName,
 			KafkaStreamOptions options,
 			IDictionary<string, QueueProperties> queueProperties,
-			SerializationManager serializationManager,
+			OrleansJsonSerializer serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
 			IExternalStreamDeserializer externalDeserializer
@@ -48,14 +49,13 @@ namespace Orleans.Streams.Kafka.Core
 
 			Name = providerName;
 
-			_producer = new ProducerBuilder<byte[], KafkaBatchContainer>(options.ToProducerProperties())
+			_producer = new ProducerBuilder<string, KafkaBatchContainer>(options.ToProducerProperties())
 				.SetValueSerializer(new KafkaBatchContainerSerializer(serializationManager))
 				.Build();
 		}
 
 		public async Task QueueMessageBatchAsync<T>(
-			Guid streamGuid,
-			string streamNamespace,
+			StreamId streamId,
 			IEnumerable<T> events,
 			StreamSequenceToken token,
 			Dictionary<string, object> requestContext
@@ -68,8 +68,7 @@ namespace Orleans.Streams.Kafka.Core
 					return;
 
 				var batch = new KafkaBatchContainer(
-					streamGuid,
-					streamNamespace,
+					streamId,
 					eventList,
 					_options.ImportRequestContext ? requestContext : null
 				);
@@ -80,8 +79,8 @@ namespace Orleans.Streams.Kafka.Core
 			{
 				_logger.LogError(
 					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}",
-					streamNamespace,
-					streamGuid.ToString()
+					streamId.GetNamespace(),
+					streamId.GetKeyAsString()
 				);
 
 				throw;
