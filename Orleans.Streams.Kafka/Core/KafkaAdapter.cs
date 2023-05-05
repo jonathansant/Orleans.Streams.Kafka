@@ -2,6 +2,7 @@
 using Microsoft.Extensions.Logging;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
+using Orleans.Streams.Kafka.Consumer;
 using Orleans.Streams.Kafka.Producer;
 using Orleans.Streams.Kafka.Serialization;
 using Orleans.Streams.Utils;
@@ -23,6 +24,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly IExternalStreamDeserializer _externalDeserializer;
 		private readonly IProducer<byte[], KafkaBatchContainer> _producer;
 		private readonly ILogger<KafkaAdapter> _logger;
+		private readonly IStreamIdSelector _streamIdSelector;
 
 		public string Name { get; }
 		public bool IsRewindable { get; } = false; // todo: provide way to pass sequence token (offset) so that we can rewind
@@ -35,7 +37,8 @@ namespace Orleans.Streams.Kafka.Core
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
-			IExternalStreamDeserializer externalDeserializer
+			IExternalStreamDeserializer externalDeserializer,
+			IStreamIdSelector streamIdSelector
 		)
 		{
 			_options = options;
@@ -45,6 +48,7 @@ namespace Orleans.Streams.Kafka.Core
 			_grainFactory = grainFactory;
 			_externalDeserializer = externalDeserializer;
 			_logger = _loggerFactory.CreateLogger<KafkaAdapter>();
+			_streamIdSelector = streamIdSelector;
 
 			Name = providerName;
 
@@ -96,7 +100,8 @@ namespace Orleans.Streams.Kafka.Core
 				_serializationManager,
 				_loggerFactory,
 				_grainFactory,
-				_externalDeserializer
+				_externalDeserializer,
+				_streamIdSelector
 			);
 
 		public void Dispose()

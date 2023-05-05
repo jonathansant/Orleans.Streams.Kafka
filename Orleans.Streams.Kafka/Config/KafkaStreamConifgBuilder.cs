@@ -1,5 +1,6 @@
 ﻿using Orleans.Hosting;
 using Orleans.Runtime;
+using Orleans.Streams.Kafka.Consumer;
 using Orleans.Streams.Utils.MessageTracking;
 using Orleans.Streams.Utils.Serialization;
 using System;
@@ -29,6 +30,28 @@ namespace Orleans.Streams.Kafka.Config
 		{
 			_hostBuilder.ConfigureServices(services
 				=> services.AddSingletonNamedService<IExternalStreamDeserializer, TDeserializer>(_providerName)
+			);
+
+			return this;
+		}
+
+		public KafkaStreamSiloBuilder AddStreamIdSelector<TSelector>()
+				where TSelector : class, IStreamIdSelector
+		{
+			_hostBuilder.ConfigureServices(services
+				=> services.AddSingletonNamedService<IStreamIdSelector, TSelector>(_providerName)
+			);
+
+			return this;
+		}
+
+		public KafkaStreamSiloBuilder AddStreamIdSelector<TSelector>(Func<IServiceProvider, string, TSelector> configure)
+				where TSelector : class, IStreamIdSelector
+		{
+			_hostBuilder.ConfigureServices(services
+				=> services.AddSingletonNamedService<TSelector>(
+					_providerName,
+					(provider, name) => configure?.Invoke(provider, name))
 			);
 
 			return this;
@@ -114,6 +137,28 @@ namespace Orleans.Streams.Kafka.Config
 			return this;
 		}
 
+		public KafkaStreamSiloHostBuilder AddStreamIdSelector<TSelector>()
+				where TSelector : class, IStreamIdSelector
+		{
+			_hostBuilder.ConfigureServices(services
+				=> services.AddSingletonNamedService<IStreamIdSelector, TSelector>(_providerName)
+			);
+
+			return this;
+		}
+
+		public KafkaStreamSiloHostBuilder AddStreamIdSelector<TSelector>(Func<IServiceProvider, string, TSelector> configure)
+				where TSelector : class, IStreamIdSelector
+		{
+			_hostBuilder.ConfigureServices(services
+				=> services.AddSingletonNamedService<TSelector>(
+					_providerName,
+					(provider, name) => configure?.Invoke(provider, name))
+			);
+
+			return this;
+		}
+
 		public KafkaStreamSiloHostBuilder AddAvro(string schemaRegistryUrl)
 		{
 			_hostBuilder.AddAvro(_providerName, schemaRegistryUrl);
@@ -189,6 +234,28 @@ namespace Orleans.Streams.Kafka.Config
 		{
 			_hostBuilder.ConfigureServices(services
 				=> services.AddSingletonNamedService<IExternalStreamDeserializer, TDeserializer>(_providerName)
+			);
+
+			return this;
+		}
+
+		public KafkaStreamClientBuilder AddStreamIdSelector<TSelector>()
+				where TSelector : class, IStreamIdSelector
+		{
+			_hostBuilder.ConfigureServices(services
+				=> services.AddSingletonNamedService<IStreamIdSelector, TSelector>(_providerName)
+			);
+
+			return this;
+		}
+
+		public KafkaStreamClientBuilder AddStreamIdSelector<TSelector>(Func<IServiceProvider, string, TSelector> configure)
+				where TSelector : class, IStreamIdSelector
+		{
+			_hostBuilder.ConfigureServices(services
+				=> services.AddSingletonNamedService<TSelector>(
+					_providerName,
+					(provider, name) => configure?.Invoke(provider, name))
 			);
 
 			return this;
