@@ -251,7 +251,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 		{
-			public void Configure(ISiloHostBuilder hostBuilder)
+			public void Configure(ISiloBuilder hostBuilder)
 				=> hostBuilder
 					.AddMemoryGrainStorage("PubSubStore")
 					.AddKafka(Consts.KafkaStreamProvider)
@@ -355,7 +355,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 		{
-			public void Configure(ISiloHostBuilder hostBuilder)
+			public void Configure(ISiloBuilder hostBuilder)
 				=> hostBuilder
 					.AddMemoryGrainStorage("PubSubStore")
 					.AddKafka(Consts.KafkaStreamProvider)

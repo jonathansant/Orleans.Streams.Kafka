@@ -6,14 +6,19 @@ namespace Orleans.Streams.Kafka.Serialization
 {
 	internal class KafkaBatchContainerSerializer : ISerializer<KafkaBatchContainer>
 	{
-		private readonly SerializationManager _serializationManager;
+		private readonly Serializer _serializer;
 
-		public KafkaBatchContainerSerializer(SerializationManager serializationManager)
+		public KafkaBatchContainerSerializer(Serializer serializer)
 		{
-			_serializationManager = serializationManager;
+			_serializer = serializer;
 		}
 
 		public byte[] Serialize(KafkaBatchContainer data, Confluent.Kafka.SerializationContext context)
-			=> _serializationManager.SerializeToByteArray(data);
+		{
+			// todo: check
+			byte[] result = new byte[100];
+			_serializer.Serialize(data, result);
+			return result;
+		}
 	}
 }

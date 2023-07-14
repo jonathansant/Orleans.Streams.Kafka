@@ -17,13 +17,11 @@ using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.Core
 {
-	using System.Globalization;
-
 	public class KafkaAdapterFactory : IQueueAdapterFactory
 	{
 		private readonly string _name;
 		private readonly KafkaStreamOptions _options;
-		private readonly SerializationManager _serializationManager;
+		private readonly Serializer _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
 		private readonly IExternalStreamDeserializer _externalDeserializer;
@@ -38,7 +36,7 @@ namespace Orleans.Streams.Kafka.Core
 			string name,
 			KafkaStreamOptions options,
 			SimpleQueueCacheOptions cacheOptions,
-			SerializationManager serializationManager,
+			Serializer serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory
 		) : this(name, options, cacheOptions, serializationManager, loggerFactory, grainFactory, null)
@@ -53,7 +51,7 @@ namespace Orleans.Streams.Kafka.Core
 			string name,
 			KafkaStreamOptions options,
 			SimpleQueueCacheOptions cacheOptions,
-			SerializationManager serializationManager,
+			Serializer serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
 			IExternalStreamDeserializer externalDeserializer

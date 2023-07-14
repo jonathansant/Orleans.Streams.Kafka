@@ -1,5 +1,6 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
+using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Producer;
@@ -17,7 +18,7 @@ namespace Orleans.Streams.Kafka.Core
 	{
 		private readonly KafkaStreamOptions _options;
 		private readonly IDictionary<string, QueueProperties> _queueProperties;
-		private readonly SerializationManager _serializationManager;
+		private readonly Serializer _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
 		private readonly IExternalStreamDeserializer _externalDeserializer;
@@ -32,7 +33,7 @@ namespace Orleans.Streams.Kafka.Core
 			string providerName,
 			KafkaStreamOptions options,
 			IDictionary<string, QueueProperties> queueProperties,
-			SerializationManager serializationManager,
+			Serializer serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
 			IExternalStreamDeserializer externalDeserializer
@@ -61,6 +62,38 @@ namespace Orleans.Streams.Kafka.Core
 			Dictionary<string, object> requestContext
 		)
 		{
+			try
+			{
+				var eventList = events.Cast<object>().ToList();
+				if (eventList.Count == 0)
+					return;
+
+				var batch = new KafkaBatchContainer(
+					streamGuid,
+					streamNamespace,
+					eventList,
+					_options.ImportRequestContext ? requestContext : null
+				);
+
+				await _producer.Produce(batch);
+			}
+			catch (Exception ex)
+			{
+				_logger.LogError(
+					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}",
+					streamNamespace,
+					streamGuid.ToString()
+				);
+
+				throw;
+			}
+		}
+
+		public async Task QueueMessageBatchAsync<T>(StreamId streamId, IEnumerable<T> events, StreamSequenceToken token,
+			Dictionary<string, object> requestContext)
+		{
+			var streamGuid = new Guid(streamId.Key.ToString());
+			var streamNamespace = streamId.GetNamespace();
 			try
 			{
 				var eventList = events.Cast<object>().ToList();

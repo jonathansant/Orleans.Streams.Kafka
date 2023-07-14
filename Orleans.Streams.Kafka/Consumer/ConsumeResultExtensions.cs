@@ -37,7 +37,7 @@ namespace Orleans.Streams.Kafka.Consumer
 			}
 
 			var serializationManager = serializationContext.SerializationManager;
-			var batchContainer = serializationManager.DeserializeFromByteArray<KafkaBatchContainer>(result.Message.Value);
+			var batchContainer = serializationManager.Deserialize<KafkaBatchContainer>(result.Message.Value);
 
 			batchContainer.SequenceToken ??= sequence;
 			batchContainer.TopicPartitionOffSet = result.TopicPartitionOffset;

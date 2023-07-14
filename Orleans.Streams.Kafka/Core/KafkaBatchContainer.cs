@@ -61,12 +61,13 @@ namespace Orleans.Streams.Kafka.Core
 				);
 		}
 
-		public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)
-		{
-			// If there is something in this batch that the consumer is interested in, we should send it
-			// else the consumer is not interested in any of these events, so don't send.
-			return Events.Any(item => shouldReceiveFunc(stream, filterData, item));
-		}
+		// todo: is it used?
+		//public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)
+		//{
+		//	// If there is something in this batch that the consumer is interested in, we should send it
+		//	// else the consumer is not interested in any of these events, so don't send.
+		//	return Events.Any(item => shouldReceiveFunc(stream, filterData, item));
+		//}
 
 
 		public bool ImportRequestContext()
@@ -79,6 +80,8 @@ namespace Orleans.Streams.Kafka.Core
 
 			return true;
 		}
+
+		public StreamId StreamId { get; }
 
 		public int CompareTo(KafkaBatchContainer other)
 			=> TopicPartitionOffSet.Offset.Value.CompareTo(other.TopicPartitionOffSet.Offset.Value);

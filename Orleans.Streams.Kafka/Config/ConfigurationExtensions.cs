@@ -22,18 +22,6 @@ namespace Orleans.Hosting
 		)
 			=> new KafkaStreamClientBuilder(builder, providerName);
 
-		public static KafkaStreamSiloBuilder AddKafka(
-			this ISiloBuilder builder,
-			string providerName
-		)
-			=> new KafkaStreamSiloBuilder(builder, providerName);
-
-		public static KafkaStreamSiloHostBuilder AddKafka(
-			this ISiloHostBuilder builder,
-			string providerName
-		)
-			=> new KafkaStreamSiloHostBuilder(builder, providerName);
-
 		public static IClientBuilder AddKafkaStreamProvider(
 			this IClientBuilder builder,
 			string providerName,
@@ -48,7 +36,6 @@ namespace Orleans.Hosting
 		)
 		{
 			builder
-				.ConfigureApplicationParts(parts => parts.AddFrameworkPart(typeof(KafkaAdapterFactory).Assembly).WithReferences())
 				.ConfigureServices(services =>
 				{
 					services
@@ -77,7 +64,6 @@ namespace Orleans.Hosting
 		)
 		{
 			builder
-				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(KafkaAdapterFactory).Assembly).WithReferences())
 				.ConfigureServices(services =>
 				{
 					services
@@ -91,40 +77,6 @@ namespace Orleans.Hosting
 
 			return builder;
 		}
-
-		public static ISiloHostBuilder AddKafkaStreamProvider(
-			this ISiloHostBuilder builder,
-			string providerName,
-			Action<KafkaStreamOptions> configureOptions
-		) => AddSiloProvider(builder, providerName, opt => opt.Configure(configureOptions));
-
-		private static ISiloHostBuilder AddSiloProvider(
-			this ISiloHostBuilder builder,
-			string providerName,
-			Action<OptionsBuilder<KafkaStreamOptions>> configureOptions = null
-		)
-		{
-			builder
-				.ConfigureApplicationParts(parts => parts.AddApplicationPart(typeof(KafkaAdapterFactory).Assembly).WithReferences())
-				.ConfigureServices(services =>
-				{
-					services
-						.ConfigureNamedOptionForLogging<KafkaStreamOptions>(providerName)
-						.ConfigureNamedOptionForLogging<HashRingStreamQueueMapperOptions>(providerName)
-					;
-				})
-				.AddPersistentStreams(providerName, KafkaAdapterFactory.Create,
-					stream => stream.Configure(configureOptions))
-				.Configure<SimpleQueueCacheOptions>(options => options.CacheSize = DefaultCacheSize);
-
-			return builder;
-		}
-
-		public static ISiloBuilder AddAvro(
-			this ISiloBuilder builder,
-			string providerName,
-			string registryUrl
-		) => builder.ConfigureServices(services => services.AddAvro(providerName, registryUrl));
 
 		public static IClientBuilder AddAvro(
 			this IClientBuilder builder,
@@ -132,24 +84,19 @@ namespace Orleans.Hosting
 			string registryUrl
 		) => builder.ConfigureServices(services => services.AddAvro(providerName, registryUrl));
 
-		public static ISiloHostBuilder AddAvro(
-			this ISiloHostBuilder builder,
+		public static ISiloBuilder AddAvro(
+			this ISiloBuilder builder,
 			string providerName,
 			string registryUrl
 		) => builder.ConfigureServices(services => services.AddAvro(providerName, registryUrl));
-
-		public static ISiloBuilder AddJson(
-			this ISiloBuilder builder,
-			string providerName
-		) => builder.ConfigureServices(services => services.AddJson(providerName));
 
 		public static IClientBuilder AddJson(
 			this IClientBuilder builder,
 			string providerName
 		) => builder.ConfigureServices(services => services.AddJson(providerName));
 
-		public static ISiloHostBuilder AddJson(
-			this ISiloHostBuilder builder,
+		public static ISiloBuilder AddJson(
+			this ISiloBuilder builder,
 			string providerName
 		) => builder.ConfigureServices(services => services.AddJson(providerName));
 
@@ -161,7 +108,7 @@ namespace Orleans.Hosting
 						provider,
 						new SchemaRegistryConfig
 						{
-								Url = registryUrl
+							Url = registryUrl
 						})
 				)
 				.AddSingletonNamedService<IExternalStreamDeserializer>(

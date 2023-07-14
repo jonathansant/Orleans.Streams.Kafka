@@ -22,7 +22,7 @@ Example KafkaStreamProvider configuration:
 ```CSharp
 public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 {
-	public void Configure(ISiloHostBuilder hostBuilder)
+	public void Configure(ISiloBuilder hostBuilder)
 		=> hostBuilder
 				.AddMemoryGrainStorage("PubSubStore")
 				.AddKafka("KafkaStreamProvider")
