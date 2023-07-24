@@ -2,6 +2,7 @@
 using Orleans.Providers;
 using Orleans.Streams;
 using System;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace TestGrains
@@ -15,9 +16,9 @@ namespace TestGrains
 			return Task.FromResult(phrase);
 		}
 
-		public override async Task OnActivateAsync()
+		public override async Task OnActivateAsync(CancellationToken cancellationToken)
 		{
-			var kafkaProvider = GetStreamProvider("KafkaProvider");
+			var kafkaProvider = this.GetStreamProvider("KafkaProvider");
 			var testStream = kafkaProvider.GetStream<TestModel>("streamId", "sucrose-test"); // todo: use stream utils
 
 			// To resume stream in case of stream deactivation

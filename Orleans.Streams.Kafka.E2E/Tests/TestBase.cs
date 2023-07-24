@@ -29,7 +29,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			=> Initialize<ClientBuilderConfigurator, SiloBuilderConfigurator>(noOfSilos);
 
 		protected void Initialize<TClientConfig, TSiloConfig>(short noOfSilos)
-			where TSiloConfig : ISiloBuilderConfigurator, new()
+			where TSiloConfig : ISiloConfigurator, new()
 			where TClientConfig : IClientBuilderConfigurator, new()
 		{
 			_noOfSilos = noOfSilos;
@@ -77,11 +77,10 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				})
 				.AddJson()
 				.Build()
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+			;
 	}
 
-	public class SiloBuilderConfigurator : ISiloBuilderConfigurator
+	public class SiloBuilderConfigurator : ISiloConfigurator
 	{
 		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
@@ -103,8 +102,6 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				})
 				.AddJson()
 				.AddLoggingTracker()
-				.Build()
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+				.Build();
 	}
 }

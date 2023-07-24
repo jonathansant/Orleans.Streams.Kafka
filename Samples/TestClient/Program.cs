@@ -1,4 +1,5 @@
-﻿using Microsoft.Extensions.Logging;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Hosting;
 using Orleans;
 using Orleans.Configuration;
 using Orleans.Hosting;
@@ -7,7 +8,6 @@ using Orleans.Streams;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using TestGrains;
@@ -63,27 +63,23 @@ namespace TestClient
 						"[host name]:39001",
 						"[host name]:39002"
 					};
-
-					client = new ClientBuilder()
+					var host = new HostBuilder().UseOrleansClient(builder => 
+						builder	
 						.Configure<ClusterOptions>(options =>
 						{
 							options.ClusterId = "TestCluster";
 							options.ServiceId = "123";
 						})
 						.UseStaticClustering(options => options.Gateways.Add((new IPEndPoint(siloAddress, gatewayPort)).ToGatewayUri()))
-						.ConfigureApplicationParts(parts => parts.AddApplicationPart(Assembly.Load("TestGrains")).WithReferences())
-						.ConfigureLogging(logging => logging.AddConsole())
 						.AddKafka("KafkaProvider")
 						.WithOptions(options =>
 						{
 							options.BrokerList = brokers;
 							options.ConsumerGroupId = "TestGroup";
 							options.AddTopic("sucrose-test");
-						})
-						.Build()
+						}))
 						.Build();
-
-					await client.Connect();
+					client = host.Services.GetRequiredService<IClusterClient>();
 
 					Console.WriteLine("Client successfully connect to silo host");
 					break;

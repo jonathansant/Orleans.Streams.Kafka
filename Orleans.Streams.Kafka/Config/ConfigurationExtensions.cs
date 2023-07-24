@@ -21,14 +21,13 @@ namespace Orleans.Hosting
 			string providerName
 		)
 			=> new KafkaStreamClientBuilder(builder, providerName);
-
-		public static IClientBuilder AddKafkaStreamProvider(
-			this IClientBuilder builder,
-			string providerName,
-			Action<KafkaStreamOptions> configureOptions
+		
+		public static KafkaStreamSiloHostBuilder AddKafka(
+			this ISiloBuilder builder,
+			string providerName
 		)
-			=> AddClientProvider(builder, providerName, opt => opt.Configure(configureOptions));
-
+			=> new KafkaStreamSiloHostBuilder(builder, providerName);
+		
 		private static IClientBuilder AddClientProvider(
 			IClientBuilder builder,
 			string providerName,
@@ -50,6 +49,13 @@ namespace Orleans.Hosting
 
 			return builder;
 		}
+		
+		public static IClientBuilder AddKafkaStreamProvider(
+			this IClientBuilder builder,
+			string providerName,
+			Action<KafkaStreamOptions> configureOptions
+		)
+			=> AddClientProvider(builder, providerName, opt => opt.Configure(configureOptions));
 
 		public static ISiloBuilder AddKafkaStreamProvider(
 			this ISiloBuilder builder,

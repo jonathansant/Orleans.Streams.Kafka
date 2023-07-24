@@ -95,13 +95,11 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				})
 				.AddAvro("https://[host name]/schema-registry")
 				.Build()
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
 				;
 
 	}
 
-	public class AvroSiloBuilderConfigurator : ISiloBuilderConfigurator
+	public class AvroSiloBuilderConfigurator : ISiloConfigurator
 	{
 		public void Configure(ISiloBuilder hostBuilder)
 			=> hostBuilder
@@ -121,8 +119,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				})
 				.AddAvro("https://[host name]/schema-registry")
 				.AddLoggingTracker()
-				.Build()
-				.ConfigureApplicationParts(parts =>
-					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
+				.Build();
+
+		public void Configure(ISiloBuilder siloBuilder) => throw new NotImplementedException();
 	}
 }
