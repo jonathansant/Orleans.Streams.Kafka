@@ -26,7 +26,7 @@
 
   <!-- Shared Package Versions -->
   <PropertyGroup>
-    <OrleansVersion>7.2.0</OrleansVersion>
+    <OrleansVersion>7.2.1</OrleansVersion>
     <StreamUtilsVersion>11.1.0</StreamUtilsVersion>
     <ConfluentKafkaVersion>1.9.3</ConfluentKafkaVersion>
     <ConfluentAvroVersion>1.7.7.7</ConfluentAvroVersion>
