@@ -35,7 +35,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			var completion = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = provider.GetStream<TestModelAvro>(Consts.StreamId4, Consts.StreamNamespaceExternalAvro);
+			var stream = provider.GetStream<TestModelAvro>(Consts.StreamNamespaceExternalAvro, Consts.StreamId4);
 
 			await stream.QuickSubscribe((message, seq) =>
 			{
@@ -120,7 +120,5 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				.AddAvro("https://[host name]/schema-registry")
 				.AddLoggingTracker()
 				.Build();
-
-		public void Configure(ISiloBuilder siloBuilder) => throw new NotImplementedException();
 	}
 }
