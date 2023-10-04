@@ -7,19 +7,24 @@ using System.Linq;
 
 namespace Orleans.Streams.Kafka.Core
 {
-	[Serializable]
+	[GenerateSerializer]
 	public class KafkaBatchContainer : IBatchContainer, IComparable<KafkaBatchContainer>
 	{
+		[Id(0)]
 		private readonly Dictionary<string, object> _requestContext;
 
 		[NonSerialized] internal TopicPartitionOffset TopicPartitionOffSet;
 
+		[Id(1)]
 		protected List<object> Events { get; set; }
 
+		[Id(2)]
 		public Guid StreamGuid { get; }
 
+		[Id(3)]
 		public string StreamNamespace { get; }
 
+		[Id(4)]
 		public StreamSequenceToken SequenceToken { get; internal set; }
 
 		public KafkaBatchContainer(
@@ -61,15 +66,6 @@ namespace Orleans.Streams.Kafka.Core
 				);
 		}
 
-		// todo: is it used?
-		//public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)
-		//{
-		//	// If there is something in this batch that the consumer is interested in, we should send it
-		//	// else the consumer is not interested in any of these events, so don't send.
-		//	return Events.Any(item => shouldReceiveFunc(stream, filterData, item));
-		//}
-
-
 		public bool ImportRequestContext()
 		{
 			if (_requestContext == null)
@@ -81,6 +77,7 @@ namespace Orleans.Streams.Kafka.Core
 			return true;
 		}
 
+		[Id(5)]
 		public StreamId StreamId { get; }
 
 		public int CompareTo(KafkaBatchContainer other)
