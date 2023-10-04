@@ -19,26 +19,21 @@ namespace Orleans.Streams.Kafka.Core
 		protected List<object> Events { get; set; }
 
 		[Id(2)]
-		public Guid StreamGuid { get; }
+		public StreamId StreamId { get; }
 
 		[Id(3)]
-		public string StreamNamespace { get; }
-
-		[Id(4)]
 		public StreamSequenceToken SequenceToken { get; internal set; }
 
 		public KafkaBatchContainer(
-			Guid streamGuid,
-			string streamNamespace,
+			StreamId streamId,
 			List<object> events,
 			Dictionary<string, object> requestContext
-		) : this(streamGuid, streamNamespace, events, requestContext, null, null)
+		) : this(streamId, events, requestContext, null, null)
 		{
 		}
 
 		public KafkaBatchContainer(
-			Guid streamGuid,
-			string streamNamespace,
+			StreamId streamId,
 			List<object> events,
 			Dictionary<string, object> requestContext,
 			EventSequenceTokenV2 streamSequenceToken,
@@ -47,8 +42,7 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			Events = events ?? throw new ArgumentNullException(nameof(events), "Message contains no events.");
 
-			StreamGuid = streamGuid;
-			StreamNamespace = streamNamespace;
+			StreamId = streamId;
 			SequenceToken = streamSequenceToken;
 			TopicPartitionOffSet = offset;
 			_requestContext = requestContext;
@@ -77,13 +71,10 @@ namespace Orleans.Streams.Kafka.Core
 			return true;
 		}
 
-		[Id(5)]
-		public StreamId StreamId { get; }
-
 		public int CompareTo(KafkaBatchContainer other)
 			=> TopicPartitionOffSet.Offset.Value.CompareTo(other.TopicPartitionOffSet.Offset.Value);
 
 		public override string ToString()
-			=> $"[{GetType().Name}:Stream={StreamGuid},#Items={Events.Count}]";
+			=> $"[{GetType().Name}:Stream={StreamId.GetNamespace()}.{StreamId.GetKeyAsString()},#Items={Events.Count}]";
 	}
 }

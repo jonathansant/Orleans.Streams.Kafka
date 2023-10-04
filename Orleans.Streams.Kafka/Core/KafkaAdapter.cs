@@ -55,8 +55,7 @@ namespace Orleans.Streams.Kafka.Core
 		}
 
 		public async Task QueueMessageBatchAsync<T>(
-			Guid streamGuid,
-			string streamNamespace,
+			StreamId streamId,
 			IEnumerable<T> events,
 			StreamSequenceToken token,
 			Dictionary<string, object> requestContext
@@ -69,8 +68,7 @@ namespace Orleans.Streams.Kafka.Core
 					return;
 
 				var batch = new KafkaBatchContainer(
-					streamGuid,
-					streamNamespace,
+					streamId,
 					eventList,
 					_options.ImportRequestContext ? requestContext : null
 				);
@@ -81,40 +79,8 @@ namespace Orleans.Streams.Kafka.Core
 			{
 				_logger.LogError(
 					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}",
-					streamNamespace,
-					streamGuid.ToString()
-				);
-
-				throw;
-			}
-		}
-
-		public async Task QueueMessageBatchAsync<T>(StreamId streamId, IEnumerable<T> events, StreamSequenceToken token,
-			Dictionary<string, object> requestContext)
-		{
-			var streamGuid = new Guid(streamId.Key.ToString());
-			var streamNamespace = streamId.GetNamespace();
-			try
-			{
-				var eventList = events.Cast<object>().ToList();
-				if (eventList.Count == 0)
-					return;
-
-				var batch = new KafkaBatchContainer(
-					streamGuid,
-					streamNamespace,
-					eventList,
-					_options.ImportRequestContext ? requestContext : null
-				);
-
-				await _producer.Produce(batch);
-			}
-			catch (Exception ex)
-			{
-				_logger.LogError(
-					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}",
-					streamNamespace,
-					streamGuid.ToString()
+					streamId.GetNamespace(),
+					streamId.GetKeyAsString()
 				);
 
 				throw;
