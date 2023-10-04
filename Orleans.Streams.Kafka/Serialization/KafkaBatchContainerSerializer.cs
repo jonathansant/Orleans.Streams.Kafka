@@ -16,7 +16,7 @@ namespace Orleans.Streams.Kafka.Serialization
 		public byte[] Serialize(KafkaBatchContainer data, Confluent.Kafka.SerializationContext context)
 		{
 			// todo: check
-			byte[] result = new byte[100];
+			var result = new byte[100];
 			_serializer.Serialize(data, result);
 			return result;
 		}
