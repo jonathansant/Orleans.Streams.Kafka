@@ -5,7 +5,7 @@ namespace Orleans.Streams.Kafka.Serialization
 {
 	public struct SerializationContext
 	{
-		public Serializer SerializationManager { get; set; }
+		public OrleansJsonSerializer SerializationManager { get; set; }
 		public IExternalStreamDeserializer ExternalStreamDeserializer { get; set; }
 	}
 }

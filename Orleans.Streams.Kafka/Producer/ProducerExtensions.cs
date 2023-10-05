@@ -13,7 +13,7 @@ namespace Orleans.Streams.Kafka.Producer
 				batch.StreamId.GetNamespace(),
 				new Message<byte[], KafkaBatchContainer>
 				{
-					Key = Encoding.ASCII.GetBytes(batch.StreamId.GetKeyAsString()),
+					Key = Encoding.UTF8.GetBytes(batch.StreamId.GetKeyAsString()),
 					Value = batch,
 					Timestamp = new Timestamp(DateTimeOffset.UtcNow)
 				}

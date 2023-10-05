@@ -20,7 +20,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly ILogger<KafkaAdapterReceiver> _logger;
 		private readonly string _providerName;
 		private readonly KafkaStreamOptions _options;
-		private readonly Serializer _serializationManager;
+		private readonly OrleansJsonSerializer _serializationManager;
 		private readonly IGrainFactory _grainFactory;
 		private readonly IExternalStreamDeserializer _externalDeserializer;
 		private readonly QueueProperties _queueProperties;
@@ -33,7 +33,7 @@ namespace Orleans.Streams.Kafka.Core
 			string providerName,
 			QueueProperties queueProperties,
 			KafkaStreamOptions options,
-			Serializer serializationManager,
+			OrleansJsonSerializer serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
 			IExternalStreamDeserializer externalDeserializer

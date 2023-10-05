@@ -48,7 +48,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 			using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig
 			{
-				Url = "https://[host name]/schema-registry"
+				Url = "http://kafka-schema-registry.test-data:8081"
 			}))
 			using (var producer = new ProducerBuilder<byte[], TestModelAvro>(config)
 				.SetValueSerializer(new AvroSerializer<TestModelAvro>(schema).AsSyncOverAsync())
@@ -93,7 +93,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 				})
-				.AddAvro("https://[host name]/schema-registry")
+				.AddAvro("http://kafka-schema-registry.test-data:8081")
 				.Build()
 				;
 
@@ -117,7 +117,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 						.AddExternalTopic<TestModelAvro>(Consts.StreamNamespaceExternalAvro)
 						;
 				})
-				.AddAvro("https://[host name]/schema-registry")
+				.AddAvro("http://kafka-schema-registry.test-data:8081")
 				.AddLoggingTracker()
 				.Build();
 	}
