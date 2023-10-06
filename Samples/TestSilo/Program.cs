@@ -1,7 +1,9 @@
 ﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
+using Newtonsoft.Json;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using System;
 using System.Collections.Generic;
@@ -27,7 +29,7 @@ namespace TestSilo
 				"[host name]:39002"
 			};
 
-			var builder = new HostBuilder().UseOrleans( builder =>
+			var builder = new HostBuilder().UseOrleans(builder =>
 				builder
 				.Configure<ClusterOptions>(options =>
 				{
@@ -50,8 +52,7 @@ namespace TestSilo
 					options.AddTopic("sucrose-auto", new TopicCreationConfig { AutoCreate = true, Partitions = 2, ReplicationFactor = 1 , RetentionPeriodInMs = 86400000});
 					options.AddTopic("sucrose-auto2", new TopicCreationConfig { AutoCreate = true, Partitions = 3, ReplicationFactor = 1, RetentionPeriodInMs = 86400000});
 				})
-				.AddLoggingTracker()
-				.Build());
+				.AddLoggingTracker());
 
 			var host = builder.Build();
 			await host.StartAsync();
