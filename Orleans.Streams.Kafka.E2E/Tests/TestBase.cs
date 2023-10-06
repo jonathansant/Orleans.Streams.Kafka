@@ -18,10 +18,9 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 		public static List<string> Brokers = new List<string>
 		{
-			"odin-kafka-bootstrap.test-mw.callisto.nightking.tech:9094"
-			//"[host name]:39000",
-			//"[host name]:39001",
-			//"[host name]:39002"
+			"[host name]:39000",
+			"[host name]:39001",
+			"[host name]:39002"
 		};
 
 		private TestClusterBuilder _builder;
