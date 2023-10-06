@@ -10,19 +10,22 @@ namespace Orleans.Streams.Kafka.Core
 	[GenerateSerializer]
 	public class KafkaBatchContainer : IBatchContainer, IComparable<KafkaBatchContainer>
 	{
-		[Id(0)]
 		private readonly Dictionary<string, object> _requestContext;
 
-		[NonSerialized] internal TopicPartitionOffset TopicPartitionOffSet;
+		internal TopicPartitionOffset TopicPartitionOffSet;
+
+		[Id(0)]
+		public List<object> Events { get; set; }
 
 		[Id(1)]
-		protected List<object> Events { get; set; }
+		public StreamId StreamId { get; set; }
 
 		[Id(2)]
-		public StreamId StreamId { get; }
-
-		[Id(3)]
 		public StreamSequenceToken SequenceToken { get; internal set; }
+
+		public KafkaBatchContainer()
+		{
+		}
 
 		public KafkaBatchContainer(
 			StreamId streamId,
@@ -66,7 +69,7 @@ namespace Orleans.Streams.Kafka.Core
 				return false;
 
 			foreach (var contextProperties in _requestContext)
-				RequestContext.Set(contextProperties.Key, contextProperties.Value);
+				Runtime.RequestContext.Set(contextProperties.Key, contextProperties.Value);
 
 			return true;
 		}

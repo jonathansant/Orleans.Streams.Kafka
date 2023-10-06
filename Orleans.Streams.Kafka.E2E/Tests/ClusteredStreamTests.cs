@@ -2,6 +2,7 @@
 using Confluent.Kafka.Admin;
 using Microsoft.Extensions.Configuration;
 using Orleans.Hosting;
+using Orleans.Runtime;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
@@ -149,7 +150,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		{
 			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
 			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
-			var stream = streamProvider.GetStream<TestModel>(newId);
+			var streamId = StreamId.Create(Consts.StreamNamespace2, newId);
+			var stream = streamProvider.GetStream<TestModel>(streamId);
 
 			var expected = TestModel.Random();
 			var roundTrip = new TaskCompletionSource<TestModel>();
@@ -203,7 +205,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		{
 			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
 			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
-			var stream = streamProvider.GetStream<TestModel>(newId);
+			var streamId = StreamId.Create(Consts.StreamNamespaceAuto, newId);
+			var stream = streamProvider.GetStream<TestModel>(streamId);
 
 			var expected = TestModel.Random();
 			var roundTrip = new TaskCompletionSource<TestModel>();
@@ -304,7 +307,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		{
 			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
 			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
-			var stream = streamProvider.GetStream<TestModel>(newId);
+			var streamId = StreamId.Create(Consts.StreamNamespaceAuto2, newId);
+			var stream = streamProvider.GetStream<TestModel>(streamId);
 
 			var expected = TestModel.Random();
 			var roundTrip = new TaskCompletionSource<TestModel>();
