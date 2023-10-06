@@ -48,7 +48,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 
 			using (var schema = new CachedSchemaRegistryClient(new SchemaRegistryConfig
 			{
-				Url = "http://kafka-schema-registry.test-data:8081"
+				Url = "https://[host name]/schema-registry"
 			}))
 			using (var producer = new ProducerBuilder<byte[], TestModelAvro>(config)
 				.SetValueSerializer(new AvroSerializer<TestModelAvro>(schema).AsSyncOverAsync())
