@@ -93,7 +93,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 					options.PollTimeout = TimeSpan.FromMilliseconds(10);
 					options.ConsumeMode = ConsumeMode.StreamEnd;
 				})
-				.AddAvro("http://kafka-schema-registry.test-data:8081")
+				.AddAvro("https://[host name]/schema-registry")
 				.Build()
 				;
 
@@ -117,7 +117,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 						.AddExternalTopic<TestModelAvro>(Consts.StreamNamespaceExternalAvro)
 						;
 				})
-				.AddAvro("http://kafka-schema-registry.test-data:8081")
+				.AddAvro("https://[host name]/schema-registry")
 				.AddLoggingTracker()
 				.Build();
 	}
