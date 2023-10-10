@@ -5,6 +5,7 @@
     <PackageTags>orleans kafka streams providers streamprovider confluent</PackageTags>
     <LangVersion>11</LangVersion>
   </PropertyGroup>
+  
   <!-- vendor packages -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
@@ -14,12 +15,15 @@
     <PackageReference Include="Microsoft.Orleans.Streaming" Version="$(OrleansVersion)" />
     <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.3.0" />
   </ItemGroup>
-  <!-- packages -->
+
+  <!--packages-->
   <ItemGroup Condition="'$(Configuration)' == 'Release'">
-    <PackageReference Include="Orleans.Streams.Utils" Version="$(StreamUtilsVersion)" />
+    <PackageReference Include="Orleans.Streams.Utils" Version="$(StreamUtilsVersion)"/>
   </ItemGroup>
-  <!-- libraries -->
+
+  <!--libraries-->
   <ItemGroup Condition="'$(Configuration)' == 'Debug'">
-    <ProjectReference Include="..\..\Orleans.Streams.Utils\Orleans.Streams.Utils\Orleans.Streams.Utils.csproj" />
+    <ProjectReference Include="..\..\Orleans.Streams.Utils\Orleans.Streams.Utils\Orleans.Streams.Utils.csproj"/>
   </ItemGroup>
+
 </Project>
