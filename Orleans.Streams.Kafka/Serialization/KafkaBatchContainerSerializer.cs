@@ -1,19 +1,25 @@
 ﻿using Confluent.Kafka;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Core;
+using System.Text;
 
 namespace Orleans.Streams.Kafka.Serialization
 {
 	internal class KafkaBatchContainerSerializer : ISerializer<KafkaBatchContainer>
 	{
-		private readonly SerializationManager _serializationManager;
+		private readonly OrleansJsonSerializer _serializer;
 
-		public KafkaBatchContainerSerializer(SerializationManager serializationManager)
+		public KafkaBatchContainerSerializer(OrleansJsonSerializer serializer)
 		{
-			_serializationManager = serializationManager;
+			_serializer = serializer;
 		}
 
 		public byte[] Serialize(KafkaBatchContainer data, Confluent.Kafka.SerializationContext context)
-			=> _serializationManager.SerializeToByteArray(data);
+		{
+			var serializedString = _serializer.Serialize(data, typeof(KafkaBatchContainer));
+			var bytes = new byte[serializedString.Length];
+			Encoding.UTF8.GetBytes(serializedString, bytes);
+			return bytes;
+		}
 	}
 }
