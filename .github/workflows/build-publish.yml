@@ -1,4 +1,4 @@
-name: CI-build
+name: CI
 
 on:
   push:
@@ -8,7 +8,7 @@ on:
       - feature/*
     paths-ignore:
       - '**.md'
-      -
+
   pull_request:
     branches:
       - master
