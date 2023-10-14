@@ -5,10 +5,9 @@
     <LangVersion>latest</LangVersion>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="Confluent.Apache.Avro" Version="$(ConfluentAvroVersion)" />
-    <PackageReference Include="Confluent.Kafka" Version="$(ConfluentKafkaVersion)" />
-    <PackageReference Include="Microsoft.Orleans.Core.Abstractions" Version="$(OrleansVersion)" />
-    <PackageReference Include="Confluent.SchemaRegistry.Serdes" Version="1.3.0" />
+    <PackageReference Include="Confluent.Apache.Avro" />
+    <PackageReference Include="Confluent.Kafka" />
+    <PackageReference Include="Confluent.SchemaRegistry.Serdes"/>
     <!-- <ProjectReference Include="..\..\..\confluent-kafka-dotnet-jonny\src\Confluent.SchemaRegistry.Serdes\Confluent.SchemaRegistry.Serdes.csproj" /> -->
   </ItemGroup>
 </Project>
