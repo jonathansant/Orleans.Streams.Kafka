@@ -46,7 +46,7 @@ namespace TestClient
 			Console.ReadKey();
 		}
 
-		private static async Task<IClusterClient> StartClientWithRetries(int initializeAttemptsBeforeFailing = 25)
+		private static Task<IClusterClient> StartClientWithRetries(int initializeAttemptsBeforeFailing = 25)
 		{
 			var attempt = 0;
 			IClusterClient client;
@@ -97,7 +97,7 @@ namespace TestClient
 				}
 			}
 
-			return client;
+			return Task.FromResult(client);
 		}
 	}
 }

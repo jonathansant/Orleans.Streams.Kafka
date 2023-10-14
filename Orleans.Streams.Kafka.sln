@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio Version 16
-VisualStudioVersion = 16.0.29009.5
+# Visual Studio Version 17
+VisualStudioVersion = 17.7.34003.232
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Streams.Kafka", "Orleans.Streams.Kafka\Orleans.Streams.Kafka.csproj", "{2A22B25B-D199-47AE-A7AE-8A86E0F8204D}"
 EndProject
@@ -20,11 +20,12 @@ EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "tools", "tools", "{9699A72C-BC03-411A-A748-8865FCA6EF87}"
 	ProjectSection(SolutionItems) = preProject
 		.editorconfig = .editorconfig
+		.github\workflows\build-publish.yml = .github\workflows\build-publish.yml
 		CHANGELOG.md = CHANGELOG.md
 		Directory.Build.props = Directory.Build.props
+		Directory.Packages.props = Directory.Packages.props
 		package.json = package.json
 		README.md = README.md
-		.github\workflows\build-publish.yml = .github\workflows\build-publish.yml
 	EndProjectSection
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "Orleans.Streams.Kafka.E2E", "Orleans.Streams.Kafka.E2E\Orleans.Streams.Kafka.E2E.csproj", "{40241F81-5A3F-407E-BCF0-62952257B622}"
