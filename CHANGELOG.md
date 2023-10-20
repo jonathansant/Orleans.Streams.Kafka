@@ -1,3 +1,10 @@
+## [6.2.1](https://github.com/jonathansant/orleans.streams.kafka/compare/6..2.0...6.2.1~~~~) (2022-02-13)
+
+### Features
+
+- Update ConfluentKafka 1.9.3
+- Resolved incompatibility with Apple M1 processors
+
 ## [6.2.0](https://github.com/jonathansant/orleans.streams.kafka/compare/6.1.1...6.2.0) (2022-02-13)
 
 ### Features
