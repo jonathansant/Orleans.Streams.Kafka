@@ -1,3 +1,9 @@
+## [7.1.0](https://github.com/jonathansant/orleans.streams.kafka/compare/7.0.0...7.1.0) (2023-10-25)
+
+### Features
+
+- Update Orleans version to 7.2.2
+
 ## [7.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/6.2.0...7.0.0) (2022-02-13)
 
 ### Features
