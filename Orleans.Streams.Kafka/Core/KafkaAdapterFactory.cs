@@ -17,8 +17,6 @@ using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.Core
 {
-	using System.Globalization;
-
 	public class KafkaAdapterFactory : IQueueAdapterFactory
 	{
 		private readonly string _name;
@@ -40,23 +38,8 @@ namespace Orleans.Streams.Kafka.Core
 			SimpleQueueCacheOptions cacheOptions,
 			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
-			IGrainFactory grainFactory
-		) : this(name, options, cacheOptions, serializationManager, loggerFactory, grainFactory, null)
-		{
-			if (options.Topics.Any(topic => topic.IsExternal))
-				throw new InvalidOperationException(
-				"Cannot have external topic with no 'IExternalDeserializer' defined. Use 'AddJson' or 'AddAvro'"
-			);
-		}
-
-		public KafkaAdapterFactory(
-			string name,
-			KafkaStreamOptions options,
-			SimpleQueueCacheOptions cacheOptions,
-			SerializationManager serializationManager,
-			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
-			IExternalStreamDeserializer externalDeserializer
+			IServiceProvider services
 		)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
@@ -65,7 +48,7 @@ namespace Orleans.Streams.Kafka.Core
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
 			_grainFactory = grainFactory;
-			_externalDeserializer = externalDeserializer;
+			_externalDeserializer = services.GetServiceByName<IExternalStreamDeserializer>(name);
 			_logger = loggerFactory.CreateLogger<KafkaAdapterFactory>();
 			_adminConfig = new AdminClientBuilder(options.ToAdminProperties());
 
@@ -108,23 +91,19 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			var streamsConfig = services.GetOptionsByName<KafkaStreamOptions>(name);
 			var cacheOptions = services.GetOptionsByName<SimpleQueueCacheOptions>(name);
-			var deserializer = services.GetServiceByName<IExternalStreamDeserializer>(name);
+			var serializer = services.GetRequiredService<SerializationManager>();
+			var logger = services.GetRequiredService<ILoggerFactory>();
+			var grainFactory = services.GetRequiredService<IGrainFactory>();
 
-			KafkaAdapterFactory factory;
-			if (deserializer != null)
-				factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
+			var factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
 					services,
 					name,
 					streamsConfig,
 					cacheOptions,
-					deserializer
-				);
-			else
-				factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
-					services,
-					name,
-					streamsConfig,
-					cacheOptions
+					serializer,
+					logger,
+					grainFactory,
+					services
 				);
 
 			return factory;
@@ -139,7 +118,7 @@ namespace Orleans.Streams.Kafka.Core
 				var currentMetaTopics = meta.Topics.ToList();
 
 				var props = new List<QueueProperties>();
-				var autoProps = new List<(QueueProperties props, short replicationFactor, ulong? retentionPeriodInMs )>();
+				var autoProps = new List<(QueueProperties props, short replicationFactor, ulong? retentionPeriodInMs)>();
 
 				foreach (var topic in _options.Topics)
 				{
@@ -195,21 +174,21 @@ namespace Orleans.Streams.Kafka.Core
 							var tuple = queues.First();
 
 							var topicSpecification = new TopicSpecification
-							                         {
-								                         Name = queues.Key,
-								                         NumPartitions = queues.Count(),
-								                         ReplicationFactor = tuple.replicationFactor
-							                         };
+							{
+								Name = queues.Key,
+								NumPartitions = queues.Count(),
+								ReplicationFactor = tuple.replicationFactor
+							};
 
 							if (tuple.retentionPeriodInMs.HasValue)
 							{
 								topicSpecification.Configs = new Dictionary<string, string>()
-								                             {
-									                             {
-										                             "retention.ms",
-										                             tuple.retentionPeriodInMs.ToString()
-									                             }
-								                             };
+															 {
+																 {
+																	 "retention.ms",
+																	 tuple.retentionPeriodInMs.ToString()
+																 }
+															 };
 							}
 
 							result.Add(topicSpecification);

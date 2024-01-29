@@ -24,7 +24,7 @@ namespace Orleans.Streams.Kafka.Consumer
 
 				var message = serializationContext
 					.ExternalStreamDeserializer
-					.Deserialize(queueProperties, queueProperties.ExternalContractType, result);
+					.Deserialize(queueProperties, queueProperties.ExternalContractType, result.Message.Value);
 
 				return new KafkaBatchContainer(
 					StreamProviderUtils.GenerateStreamGuid(key),
