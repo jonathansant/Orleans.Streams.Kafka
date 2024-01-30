@@ -29,7 +29,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			=> Initialize<ClientBuilderConfigurator, SiloBuilderConfigurator>(noOfSilos);
 
 		protected void Initialize<TClientConfig, TSiloConfig>(short noOfSilos)
-			where TSiloConfig : ISiloConfigurator, new()
+			where TSiloConfig : ISiloBuilderConfigurator, new()
 			where TClientConfig : IClientBuilderConfigurator, new()
 		{
 			_noOfSilos = noOfSilos;
@@ -77,12 +77,13 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				})
 				.AddJson()
 				.Build()
-			;
+				.ConfigureApplicationParts(parts =>
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 	}
 
-	public class SiloBuilderConfigurator : ISiloConfigurator
+	public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 	{
-		public void Configure(ISiloBuilder hostBuilder)
+		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
 				.AddMemoryGrainStorage("PubSubStore")
 				.AddKafka(Consts.KafkaStreamProvider)
@@ -102,6 +103,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				})
 				.AddJson()
 				.AddLoggingTracker()
-				.Build();
+				.Build()
+				.ConfigureApplicationParts(parts =>
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 	}
 }

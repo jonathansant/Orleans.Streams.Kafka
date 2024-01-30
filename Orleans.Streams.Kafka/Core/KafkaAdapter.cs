@@ -1,6 +1,5 @@
 ﻿using Confluent.Kafka;
 using Microsoft.Extensions.Logging;
-using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Producer;
@@ -18,7 +17,7 @@ namespace Orleans.Streams.Kafka.Core
 	{
 		private readonly KafkaStreamOptions _options;
 		private readonly IDictionary<string, QueueProperties> _queueProperties;
-		private readonly OrleansJsonSerializer _serializationManager;
+		private readonly SerializationManager _serializationManager;
 		private readonly ILoggerFactory _loggerFactory;
 		private readonly IGrainFactory _grainFactory;
 		private readonly IExternalStreamDeserializer _externalDeserializer;
@@ -33,7 +32,7 @@ namespace Orleans.Streams.Kafka.Core
 			string providerName,
 			KafkaStreamOptions options,
 			IDictionary<string, QueueProperties> queueProperties,
-			OrleansJsonSerializer serializationManager,
+			SerializationManager serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
 			IExternalStreamDeserializer externalDeserializer
@@ -55,7 +54,8 @@ namespace Orleans.Streams.Kafka.Core
 		}
 
 		public async Task QueueMessageBatchAsync<T>(
-			StreamId streamId,
+			Guid streamGuid,
+			string streamNamespace,
 			IEnumerable<T> events,
 			StreamSequenceToken token,
 			Dictionary<string, object> requestContext
@@ -68,7 +68,8 @@ namespace Orleans.Streams.Kafka.Core
 					return;
 
 				var batch = new KafkaBatchContainer(
-					streamId,
+					streamGuid,
+					streamNamespace,
 					eventList,
 					_options.ImportRequestContext ? requestContext : null
 				);
@@ -79,8 +80,8 @@ namespace Orleans.Streams.Kafka.Core
 			{
 				_logger.LogError(
 					ex, "Failed to publish message: streamNamespace: {namespace}, streamGuid: {guid}",
-					streamId.GetNamespace(),
-					streamId.GetKeyAsString()
+					streamNamespace,
+					streamGuid.ToString()
 				);
 
 				throw;

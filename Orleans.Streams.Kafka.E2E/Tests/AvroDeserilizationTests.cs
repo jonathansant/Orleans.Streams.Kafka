@@ -35,7 +35,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			var completion = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = provider.GetStream<TestModelAvro>(Consts.StreamNamespaceExternalAvro, Consts.StreamId4);
+			var stream = provider.GetStream<TestModelAvro>(Consts.StreamId4, Consts.StreamNamespaceExternalAvro);
 
 			await stream.QuickSubscribe((message, seq) =>
 			{
@@ -95,13 +95,15 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				})
 				.AddAvro("https://[host name]/schema-registry")
 				.Build()
+				.ConfigureApplicationParts(parts =>
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences())
 				;
 
 	}
 
-	public class AvroSiloBuilderConfigurator : ISiloConfigurator
+	public class AvroSiloBuilderConfigurator : ISiloBuilderConfigurator
 	{
-		public void Configure(ISiloBuilder hostBuilder)
+		public void Configure(ISiloHostBuilder hostBuilder)
 			=> hostBuilder
 				.AddMemoryGrainStorage("PubSubStore")
 				.AddKafka(Consts.KafkaStreamProvider)
@@ -119,6 +121,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 				})
 				.AddAvro("https://[host name]/schema-registry")
 				.AddLoggingTracker()
-				.Build();
+				.Build()
+				.ConfigureApplicationParts(parts =>
+					parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 	}
 }

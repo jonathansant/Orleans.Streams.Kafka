@@ -14,7 +14,6 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 	using global::Avro;
 	using global::Avro.Specific;
 
-	[GenerateSerializer]
 	public partial class TestModelAvro : ISpecificRecord
 	{
 		private static Random Rand = new Random();
@@ -32,8 +31,6 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 				return TestModelAvro._SCHEMA;
 			}
 		}
-		
-		[Id(0)]
 		public int numberOfLegs
 		{
 			get
@@ -45,8 +42,6 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 				this._numberOfLegs = value;
 			}
 		}
-		
-		[Id(1)]
 		public int numberOfHeads
 		{
 			get
@@ -58,8 +53,6 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 				this._numberOfHeads = value;
 			}
 		}
-		
-		[Id(2)]
 		public bool isLastMessage
 		{
 			get

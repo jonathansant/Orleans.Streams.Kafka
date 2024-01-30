@@ -2,7 +2,6 @@
 using Confluent.Kafka.Admin;
 using Microsoft.Extensions.Configuration;
 using Orleans.Hosting;
-using Orleans.Runtime;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.E2E.Extensions;
 using Orleans.Streams.Kafka.E2E.Grains;
@@ -40,8 +39,8 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			var grain = await WakeUpGrain<IMultiStreamGrain>();
 
 			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = streamProvider.GetStream<TestModel>(Consts.StreamNamespace, Consts.StreamId);
-			var stream2 = streamProvider.GetStream<TestModel>(Consts.StreamNamespace2, Consts.StreamId2);
+			var stream = streamProvider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
+			var stream2 = streamProvider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespace2);
 
 			var result = grain.Fire();
 
@@ -98,7 +97,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			var completion = new TaskCompletionSource<bool>();
 
 			var provider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
-			var stream = provider.GetStream<TestModel>(Consts.StreamNamespaceExternal, Consts.StreamId2);
+			var stream = provider.GetStream<TestModel>(Consts.StreamId2, Consts.StreamNamespaceExternal);
 
 			await stream.QuickSubscribe((message, seq) =>
 			{
@@ -150,8 +149,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		{
 			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
 			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
-			var streamId = StreamId.Create(Consts.StreamNamespace2, newId);
-			var stream = streamProvider.GetStream<TestModel>(streamId);
+			var stream = streamProvider.GetStream<TestModel>(newId, Consts.StreamNamespace2);
 
 			var expected = TestModel.Random();
 			var roundTrip = new TaskCompletionSource<TestModel>();
@@ -205,8 +203,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		{
 			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
 			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
-			var streamId = StreamId.Create(Consts.StreamNamespaceAuto, newId);
-			var stream = streamProvider.GetStream<TestModel>(streamId);
+			var stream = streamProvider.GetStream<TestModel>(newId, Consts.StreamNamespaceAuto);
 
 			var expected = TestModel.Random();
 			var roundTrip = new TaskCompletionSource<TestModel>();
@@ -248,12 +245,13 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 						options.ConsumeMode = ConsumeMode.StreamEnd;
 					})
 					.Build()
-				;
+					.ConfigureApplicationParts(parts =>
+						parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 		}
 
-		public class SiloBuilderConfigurator : ISiloConfigurator
+		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 		{
-			public void Configure(ISiloBuilder hostBuilder)
+			public void Configure(ISiloHostBuilder hostBuilder)
 				=> hostBuilder
 					.AddMemoryGrainStorage("PubSubStore")
 					.AddKafka(Consts.KafkaStreamProvider)
@@ -271,7 +269,9 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 							;
 					})
 					.AddLoggingTracker()
-					.Build();
+					.Build()
+					.ConfigureApplicationParts(parts =>
+						parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 		}
 	}
 
@@ -307,8 +307,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 		{
 			var streamProvider = Cluster.Client.GetStreamProvider(Consts.KafkaStreamProvider);
 			var newId = Guid.Parse("1bf42d0a-0145-4ff6-9a5c-774559dca2a9");
-			var streamId = StreamId.Create(Consts.StreamNamespaceAuto2, newId);
-			var stream = streamProvider.GetStream<TestModel>(streamId);
+			var stream = streamProvider.GetStream<TestModel>(newId, Consts.StreamNamespaceAuto2);
 
 			var expected = TestModel.Random();
 			var roundTrip = new TaskCompletionSource<TestModel>();
@@ -350,12 +349,13 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 						options.ConsumeMode = ConsumeMode.StreamEnd;
 					})
 					.Build()
-				;
+					.ConfigureApplicationParts(parts =>
+						parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 		}
 
-		public class SiloBuilderConfigurator : ISiloConfigurator
+		public class SiloBuilderConfigurator : ISiloBuilderConfigurator
 		{
-			public void Configure(ISiloBuilder hostBuilder)
+			public void Configure(ISiloHostBuilder hostBuilder)
 				=> hostBuilder
 					.AddMemoryGrainStorage("PubSubStore")
 					.AddKafka(Consts.KafkaStreamProvider)
@@ -373,7 +373,9 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 							;
 					})
 					.AddLoggingTracker()
-					.Build();
+					.Build()
+					.ConfigureApplicationParts(parts =>
+						parts.AddApplicationPart(typeof(RoundTripGrain).Assembly).WithReferences());
 		}
 	}
 
@@ -386,7 +388,7 @@ namespace Orleans.Streams.Kafka.E2E.Tests
 			Initialize(3);
 		}
 
-		[Fact(Skip = "No valid serializer")]
+		[Fact]
 		public async Task E2E()
 		{
 			var grain = await WakeUpGrain<IRoundTripDynamicModelGrain>();

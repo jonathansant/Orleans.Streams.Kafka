@@ -7,36 +7,33 @@ using System.Linq;
 
 namespace Orleans.Streams.Kafka.Core
 {
-	[GenerateSerializer]
+	[Serializable]
 	public class KafkaBatchContainer : IBatchContainer, IComparable<KafkaBatchContainer>
 	{
 		private readonly Dictionary<string, object> _requestContext;
 
-		internal TopicPartitionOffset TopicPartitionOffSet;
+		[NonSerialized] internal TopicPartitionOffset TopicPartitionOffSet;
 
-		[Id(0)]
-		public List<object> Events { get; set; }
+		protected List<object> Events { get; set; }
 
-		[Id(1)]
-		public StreamId StreamId { get; set; }
+		public Guid StreamGuid { get; }
 
-		[Id(2)]
+		public string StreamNamespace { get; }
+
 		public StreamSequenceToken SequenceToken { get; internal set; }
 
-		public KafkaBatchContainer()
-		{
-		}
-
 		public KafkaBatchContainer(
-			StreamId streamId,
+			Guid streamGuid,
+			string streamNamespace,
 			List<object> events,
 			Dictionary<string, object> requestContext
-		) : this(streamId, events, requestContext, null, null)
+		) : this(streamGuid, streamNamespace, events, requestContext, null, null)
 		{
 		}
 
 		public KafkaBatchContainer(
-			StreamId streamId,
+			Guid streamGuid,
+			string streamNamespace,
 			List<object> events,
 			Dictionary<string, object> requestContext,
 			EventSequenceTokenV2 streamSequenceToken,
@@ -45,7 +42,8 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			Events = events ?? throw new ArgumentNullException(nameof(events), "Message contains no events.");
 
-			StreamId = streamId;
+			StreamGuid = streamGuid;
+			StreamNamespace = streamNamespace;
 			SequenceToken = streamSequenceToken;
 			TopicPartitionOffSet = offset;
 			_requestContext = requestContext;
@@ -63,13 +61,21 @@ namespace Orleans.Streams.Kafka.Core
 				);
 		}
 
+		public bool ShouldDeliver(IStreamIdentity stream, object filterData, StreamFilterPredicate shouldReceiveFunc)
+		{
+			// If there is something in this batch that the consumer is interested in, we should send it
+			// else the consumer is not interested in any of these events, so don't send.
+			return Events.Any(item => shouldReceiveFunc(stream, filterData, item));
+		}
+
+
 		public bool ImportRequestContext()
 		{
 			if (_requestContext == null)
 				return false;
 
 			foreach (var contextProperties in _requestContext)
-				Runtime.RequestContext.Set(contextProperties.Key, contextProperties.Value);
+				RequestContext.Set(contextProperties.Key, contextProperties.Value);
 
 			return true;
 		}
@@ -78,6 +84,6 @@ namespace Orleans.Streams.Kafka.Core
 			=> TopicPartitionOffSet.Offset.Value.CompareTo(other.TopicPartitionOffSet.Offset.Value);
 
 		public override string ToString()
-			=> $"[{GetType().Name}:Stream={StreamId.GetNamespace()}.{StreamId.GetKeyAsString()},#Items={Events.Count}]";
+			=> $"[{GetType().Name}:Stream={StreamGuid},#Items={Events.Count}]";
 	}
 }
