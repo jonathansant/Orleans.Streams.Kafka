@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - master
+      - develop
       - '*.x'
       - feature/*
     paths-ignore:
