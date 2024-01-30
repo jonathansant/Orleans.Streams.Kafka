@@ -22,6 +22,7 @@ namespace Orleans.Streams.Kafka.Config
 		public SaslMechanism SaslMechanism { get; set; }
 		public TimeSpan PollBufferTimeout { get; set; } = TimeSpan.FromMilliseconds(500);
 		public bool MessageTrackingEnabled { get; set; }
+		public bool ImportRequestContext { get; set; } = false;
 
 		/// <summary>
 		/// Add a new internal topic.

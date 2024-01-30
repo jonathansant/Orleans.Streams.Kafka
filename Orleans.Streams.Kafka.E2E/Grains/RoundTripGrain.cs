@@ -1,5 +1,6 @@
 ﻿using Orleans.Concurrency;
 using Orleans.Streams.Kafka.E2E.Extensions;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace Orleans.Streams.Kafka.E2E.Grains
@@ -16,10 +17,10 @@ namespace Orleans.Streams.Kafka.E2E.Grains
 		private TestModel _model;
 		private TaskCompletionSource<TestResult> _completion;
 
-		public override async Task OnActivateAsync()
+		public override async Task OnActivateAsync(CancellationToken cancellationToken)
 		{
-			var provider = GetStreamProvider(Consts.KafkaStreamProvider);
-			_stream = provider.GetStream<TestModel>(Consts.StreamId, Consts.StreamNamespace);
+			var provider = this.GetStreamProvider(Consts.KafkaStreamProvider);
+			_stream = provider.GetStream<TestModel>(Consts.StreamNamespace, Consts.StreamId);
 
 			_model = TestModel.Random();
 			_completion = new TaskCompletionSource<TestResult>();

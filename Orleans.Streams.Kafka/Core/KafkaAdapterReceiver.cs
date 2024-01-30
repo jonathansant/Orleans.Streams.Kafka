@@ -20,7 +20,7 @@ namespace Orleans.Streams.Kafka.Core
 		private readonly ILogger<KafkaAdapterReceiver> _logger;
 		private readonly string _providerName;
 		private readonly KafkaStreamOptions _options;
-		private readonly SerializationManager _serializationManager;
+		private readonly OrleansJsonSerializer _serializationManager;
 		private readonly IGrainFactory _grainFactory;
 		private readonly IExternalStreamDeserializer _externalDeserializer;
 		private readonly QueueProperties _queueProperties;
@@ -33,7 +33,7 @@ namespace Orleans.Streams.Kafka.Core
 			string providerName,
 			QueueProperties queueProperties,
 			KafkaStreamOptions options,
-			SerializationManager serializationManager,
+			OrleansJsonSerializer serializationManager,
 			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
 			IExternalStreamDeserializer externalDeserializer
@@ -128,7 +128,15 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			try
 			{
-				await Task.WhenAll(_commitPromise, _consumePromise);
+				var tasks = new List<Task>();
+
+				if (_commitPromise != null)
+					tasks.Add(_commitPromise);
+
+				if (_consumePromise != null)
+					tasks.Add(_consumePromise);
+
+				await Task.WhenAll(tasks);
 			}
 			finally
 			{
@@ -165,6 +173,10 @@ namespace Orleans.Streams.Kafka.Core
 				}
 
 				return batches;
+			}
+			catch (OperationCanceledException ex) when (ex.CancellationToken.IsCancellationRequested)
+			{
+				return new List<IBatchContainer>();
 			}
 			catch (Exception ex)
 			{

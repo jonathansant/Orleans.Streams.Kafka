@@ -1,13 +1,13 @@
-﻿using Microsoft.Extensions.DependencyInjection;
+﻿using Microsoft.Extensions.Hosting;
 using Microsoft.Extensions.Logging;
-using Orleans;
+using Newtonsoft.Json;
 using Orleans.Configuration;
 using Orleans.Hosting;
+using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using System;
 using System.Collections.Generic;
 using System.Net;
-using System.Reflection;
 using System.Threading.Tasks;
 
 namespace TestSilo
@@ -29,7 +29,8 @@ namespace TestSilo
 				"[host name]:39002"
 			};
 
-			var builder = new SiloHostBuilder()
+			var builder = new HostBuilder().UseOrleans(builder =>
+				builder
 				.Configure<ClusterOptions>(options =>
 				{
 					//options.SiloName = "TestCluster";
@@ -38,7 +39,6 @@ namespace TestSilo
 				})
 				.UseDevelopmentClustering(options => options.PrimarySiloEndpoint = new IPEndPoint(siloAddress, siloPort))
 				.ConfigureEndpoints(siloAddress, siloPort, gatewayPort)
-				.ConfigureApplicationParts(parts => parts.AddApplicationPart(Assembly.Load("TestGrains")).WithReferences())
 				.ConfigureLogging(logging => logging.AddConsole())
 				.AddMemoryGrainStorageAsDefault()
 				.AddMemoryGrainStorage("PubSubStore")
@@ -52,8 +52,7 @@ namespace TestSilo
 					options.AddTopic("sucrose-auto", new TopicCreationConfig { AutoCreate = true, Partitions = 2, ReplicationFactor = 1 , RetentionPeriodInMs = 86400000});
 					options.AddTopic("sucrose-auto2", new TopicCreationConfig { AutoCreate = true, Partitions = 3, ReplicationFactor = 1, RetentionPeriodInMs = 86400000});
 				})
-				.AddLoggingTracker()
-				.Build();
+				.AddLoggingTracker());
 
 			var host = builder.Build();
 			await host.StartAsync();

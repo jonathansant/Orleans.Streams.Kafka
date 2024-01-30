@@ -1,8 +1,10 @@
 ﻿using Confluent.Kafka;
 using Orleans.Providers.Streams.Common;
+using Orleans.Runtime;
 using Orleans.Streams.Kafka.Core;
 using Orleans.Streams.Utils;
 using System.Collections.Generic;
+using System.Runtime.Serialization;
 using System.Text;
 using SerializationContext = Orleans.Streams.Kafka.Serialization.SerializationContext;
 
@@ -20,15 +22,15 @@ namespace Orleans.Streams.Kafka.Consumer
 
 			if (queueProperties.IsExternal)
 			{
-				var key = Encoding.UTF8.GetString(result.Key);
+				var key = Encoding.UTF8.GetString(result.Message.Key);
+				var streamId = StreamId.Create(queueProperties.Namespace, key);
 
 				var message = serializationContext
 					.ExternalStreamDeserializer
-					.Deserialize(queueProperties, queueProperties.ExternalContractType, result.Value);
+					.Deserialize(queueProperties, queueProperties.ExternalContractType, result.Message.Value);
 
 				return new KafkaBatchContainer(
-					StreamProviderUtils.GenerateStreamGuid(key),
-					queueProperties.Namespace,
+					streamId,
 					new List<object> { message },
 					null,
 					sequence,
@@ -37,11 +39,11 @@ namespace Orleans.Streams.Kafka.Consumer
 			}
 
 			var serializationManager = serializationContext.SerializationManager;
-			var batchContainer = serializationManager.DeserializeFromByteArray<KafkaBatchContainer>(result.Value);
+			var serializedString = Encoding.UTF8.GetString(result.Message.Value);
+			var batchContainer =
+				(KafkaBatchContainer)serializationManager.Deserialize(typeof(KafkaBatchContainer), serializedString);
 
-			if (batchContainer.SequenceToken == null)
-				batchContainer.SequenceToken = sequence;
-
+			batchContainer.SequenceToken ??= sequence;
 			batchContainer.TopicPartitionOffSet = result.TopicPartitionOffset;
 
 			return batchContainer;
