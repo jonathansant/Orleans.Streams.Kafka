@@ -38,23 +38,8 @@ namespace Orleans.Streams.Kafka.Core
 			SimpleQueueCacheOptions cacheOptions,
 			OrleansJsonSerializer serializationManager,
 			ILoggerFactory loggerFactory,
-			IGrainFactory grainFactory
-		) : this(name, options, cacheOptions, serializationManager, loggerFactory, grainFactory, null)
-		{
-			if (options.Topics.Any(topic => topic.IsExternal))
-				throw new InvalidOperationException(
-				"Cannot have external topic with no 'IExternalDeserializer' defined. Use 'AddJson' or 'AddAvro'"
-			);
-		}
-
-		public KafkaAdapterFactory(
-			string name,
-			KafkaStreamOptions options,
-			SimpleQueueCacheOptions cacheOptions,
-			OrleansJsonSerializer serializationManager,
-			ILoggerFactory loggerFactory,
 			IGrainFactory grainFactory,
-			IExternalStreamDeserializer externalDeserializer
+			IServiceProvider services
 		)
 		{
 			_options = options ?? throw new ArgumentNullException(nameof(options));
@@ -63,7 +48,7 @@ namespace Orleans.Streams.Kafka.Core
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
 			_grainFactory = grainFactory;
-			_externalDeserializer = externalDeserializer;
+			_externalDeserializer = services.GetServiceByName<IExternalStreamDeserializer>(name);
 			_logger = loggerFactory.CreateLogger<KafkaAdapterFactory>();
 			_adminConfig = new AdminClientBuilder(options.ToAdminProperties());
 
@@ -106,23 +91,19 @@ namespace Orleans.Streams.Kafka.Core
 		{
 			var streamsConfig = services.GetOptionsByName<KafkaStreamOptions>(name);
 			var cacheOptions = services.GetOptionsByName<SimpleQueueCacheOptions>(name);
-			var deserializer = services.GetServiceByName<IExternalStreamDeserializer>(name);
+			var serializer = services.GetRequiredService<OrleansJsonSerializer>();
+			var logger = services.GetRequiredService<ILoggerFactory>();
+			var grainFactory = services.GetRequiredService<IGrainFactory>();
 
-			KafkaAdapterFactory factory;
-			if (deserializer != null)
-				factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
+			var factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
 					services,
 					name,
 					streamsConfig,
 					cacheOptions,
-					deserializer
-				);
-			else
-				factory = ActivatorUtilities.CreateInstance<KafkaAdapterFactory>(
-					services,
-					name,
-					streamsConfig,
-					cacheOptions
+					serializer,
+					logger,
+					grainFactory,
+					services
 				);
 
 			return factory;
