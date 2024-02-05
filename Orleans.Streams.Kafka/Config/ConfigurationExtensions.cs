@@ -2,7 +2,6 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Options;
 using Orleans.Configuration;
-using Orleans.Runtime;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Core;
 using Orleans.Streams.Kafka.Serialization;
@@ -21,13 +20,13 @@ namespace Orleans.Hosting
 			string providerName
 		)
 			=> new KafkaStreamClientBuilder(builder, providerName);
-		
+
 		public static KafkaStreamSiloHostBuilder AddKafka(
 			this ISiloBuilder builder,
 			string providerName
 		)
 			=> new KafkaStreamSiloHostBuilder(builder, providerName);
-		
+
 		private static IClientBuilder AddClientProvider(
 			IClientBuilder builder,
 			string providerName,
@@ -49,7 +48,7 @@ namespace Orleans.Hosting
 
 			return builder;
 		}
-		
+
 		public static IClientBuilder AddKafkaStreamProvider(
 			this IClientBuilder builder,
 			string providerName,
@@ -108,7 +107,7 @@ namespace Orleans.Hosting
 
 		private static void AddAvro(this IServiceCollection services, string providerName, string registryUrl)
 			=> services
-				.AddSingletonNamedService<ISchemaRegistryClient>(
+				.AddKeyedSingleton<ISchemaRegistryClient>(
 					providerName,
 					(provider, name) => ActivatorUtilities.CreateInstance<CachedSchemaRegistryClient>(
 						provider,
@@ -117,16 +116,16 @@ namespace Orleans.Hosting
 							Url = registryUrl
 						})
 				)
-				.AddSingletonNamedService<IExternalStreamDeserializer>(
+				.AddKeyedSingleton<IExternalStreamDeserializer>(
 					providerName,
 					(provider, name)
 						=> ActivatorUtilities.CreateInstance<AvroExternalStreamDeserializer>(
 							provider,
-							provider.GetRequiredServiceByName<ISchemaRegistryClient>(providerName))
+							provider.GetRequiredKeyedService<ISchemaRegistryClient>(providerName))
 						);
 
 		private static void AddJson(this IServiceCollection services, string providerName)
 			=> services
-				.AddSingletonNamedService<IExternalStreamDeserializer, JsonExternalStreamDeserializer>(providerName);
+				.AddKeyedSingleton<IExternalStreamDeserializer, JsonExternalStreamDeserializer>(providerName);
 	}
 }

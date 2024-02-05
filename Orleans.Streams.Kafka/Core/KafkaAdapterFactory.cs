@@ -4,7 +4,6 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using Orleans.Configuration;
 using Orleans.Providers.Streams.Common;
-using Orleans.Runtime;
 using Orleans.Serialization;
 using Orleans.Streams.Kafka.Config;
 using Orleans.Streams.Kafka.Utils;
@@ -48,7 +47,7 @@ namespace Orleans.Streams.Kafka.Core
 			_serializationManager = serializationManager;
 			_loggerFactory = loggerFactory;
 			_grainFactory = grainFactory;
-			_externalDeserializer = services.GetServiceByName<IExternalStreamDeserializer>(name);
+			_externalDeserializer = services.GetKeyedService<IExternalStreamDeserializer>(name);
 			_logger = loggerFactory.CreateLogger<KafkaAdapterFactory>();
 			_adminConfig = new AdminClientBuilder(options.ToAdminProperties());
 
@@ -118,7 +117,7 @@ namespace Orleans.Streams.Kafka.Core
 				var currentMetaTopics = meta.Topics.ToList();
 
 				var props = new List<QueueProperties>();
-				var autoProps = new List<(QueueProperties props, short replicationFactor, ulong? retentionPeriodInMs )>();
+				var autoProps = new List<(QueueProperties props, short replicationFactor, ulong? retentionPeriodInMs)>();
 
 				foreach (var topic in _options.Topics)
 				{
@@ -174,21 +173,21 @@ namespace Orleans.Streams.Kafka.Core
 							var tuple = queues.First();
 
 							var topicSpecification = new TopicSpecification
-							                         {
-								                         Name = queues.Key,
-								                         NumPartitions = queues.Count(),
-								                         ReplicationFactor = tuple.replicationFactor
-							                         };
+							{
+								Name = queues.Key,
+								NumPartitions = queues.Count(),
+								ReplicationFactor = tuple.replicationFactor
+							};
 
 							if (tuple.retentionPeriodInMs.HasValue)
 							{
 								topicSpecification.Configs = new Dictionary<string, string>()
-								                             {
-									                             {
-										                             "retention.ms",
-										                             tuple.retentionPeriodInMs.ToString()
-									                             }
-								                             };
+															 {
+																 {
+																	 "retention.ms",
+																	 tuple.retentionPeriodInMs.ToString()
+																 }
+															 };
 							}
 
 							result.Add(topicSpecification);
