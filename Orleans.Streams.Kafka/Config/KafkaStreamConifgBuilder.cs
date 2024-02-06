@@ -1,5 +1,5 @@
-﻿using Orleans.Hosting;
-using Orleans.Runtime;
+﻿using Microsoft.Extensions.DependencyInjection;
+using Orleans.Hosting;
 using Orleans.Streams.Utils.MessageTracking;
 using Orleans.Streams.Utils.Serialization;
 using System;
@@ -28,7 +28,7 @@ namespace Orleans.Streams.Kafka.Config
 			where TDeserializer : class, IExternalStreamDeserializer
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<IExternalStreamDeserializer, TDeserializer>(_providerName)
+				=> services.AddKeyedSingleton<IExternalStreamDeserializer, TDeserializer>(_providerName)
 			);
 
 			return this;
@@ -50,7 +50,7 @@ namespace Orleans.Streams.Kafka.Config
 			where TTraceWriter : class, ITraceWriter
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<ITraceWriter, TTraceWriter>(_providerName)
+				=> services.AddKeyedSingleton<ITraceWriter, TTraceWriter>(_providerName)
 			);
 
 			return this;
@@ -60,9 +60,9 @@ namespace Orleans.Streams.Kafka.Config
 			where TTraceWriter : class, ITraceWriter
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<ITraceWriter>(
+				=> services.AddKeyedSingleton<ITraceWriter>(
 					_providerName,
-					(provider, name) => configure?.Invoke(provider, name))
+					(provider, name) => configure?.Invoke(provider, name.ToString()))
 				);
 
 
@@ -108,7 +108,7 @@ namespace Orleans.Streams.Kafka.Config
 			where TDeserializer : class, IExternalStreamDeserializer
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<IExternalStreamDeserializer, TDeserializer>(_providerName)
+				=> services.AddKeyedSingleton<IExternalStreamDeserializer, TDeserializer>(_providerName)
 			);
 
 			return this;
@@ -130,7 +130,7 @@ namespace Orleans.Streams.Kafka.Config
 			where TTraceWriter : class, ITraceWriter
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<ITraceWriter, TTraceWriter>(_providerName)
+				=> services.AddKeyedSingleton<ITraceWriter, TTraceWriter>(_providerName)
 			);
 
 			return this;
@@ -140,9 +140,9 @@ namespace Orleans.Streams.Kafka.Config
 			where TTraceWriter : class, ITraceWriter
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<ITraceWriter>(
+				=> services.AddKeyedSingleton<ITraceWriter>(
 					_providerName,
-					(provider, name) => configure?.Invoke(provider, name))
+					(provider, name) => configure?.Invoke(provider, name.ToString()))
 			);
 
 
@@ -188,7 +188,7 @@ namespace Orleans.Streams.Kafka.Config
 			where TDeserializer : class, IExternalStreamDeserializer
 		{
 			_hostBuilder.ConfigureServices(services
-				=> services.AddSingletonNamedService<IExternalStreamDeserializer, TDeserializer>(_providerName)
+				=> services.AddKeyedSingleton<IExternalStreamDeserializer, TDeserializer>(_providerName)
 			);
 
 			return this;

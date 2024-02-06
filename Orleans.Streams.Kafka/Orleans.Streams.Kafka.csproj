@@ -1,9 +1,7 @@
 ﻿<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net7.0</TargetFramework>
     <Description>Orleans streaming provider for Kafka.</Description>
     <PackageTags>orleans kafka streams providers streamprovider confluent</PackageTags>
-    <LangVersion>11</LangVersion>
   </PropertyGroup>
   
   <!-- vendor packages -->
