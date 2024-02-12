@@ -1,6 +1,6 @@
 {
   "name": "orleans.streams.kafka",
-  "version": "8.0.0",
+  "version": "7.3.0",
   "description": "Orleans Kafka Stream Provider",
   "solution": "Orleans.Streams.Kafka-build.sln",
   "dependencies": {},
