@@ -7,6 +7,7 @@
   <!-- vendor packages -->
   <ItemGroup>
     <PackageReference Include="Microsoft.Extensions.Logging" Version="$(MicrosoftExtensionsVersion)" />
+    <PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="$(MicrosoftExtensionsVersion)" />
     <PackageReference Include="Confluent.Kafka" Version="$(ConfluentKafkaVersion)" />
     <PackageReference Include="Microsoft.Orleans.Sdk" Version="$(OrleansVersion)" />
     <PackageReference Include="Microsoft.Orleans.Core" Version="$(OrleansVersion)" />
