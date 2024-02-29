@@ -1,9 +1,14 @@
+## [8.0.2](https://github.com/jonathansant/orleans.streams.kafka/compare/7.1.0...8.0.0) (2024-02-29)
+
+### BUG FIXES
+
+- Fix `KafkaBatchContainerSerializer` to be serializable
+
 ## [8.0.0](https://github.com/jonathansant/orleans.streams.kafka/compare/7.1.0...8.0.0) (2024-02-06)
 
 ### Features
 
 - Update Orleans version to 8.0.0
-
 
 ## [7.1.0](https://github.com/jonathansant/orleans.streams.kafka/compare/7.0.0...7.1.0) (2023-10-25)
 
